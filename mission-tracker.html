@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>WT Mission Tracker</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0e10;--bg2:#1a1c20;--bg3:#222528;--border:#2a2c30;--red:#cc0000;--red2:#ff2222;--red-glow:rgba(204,0,0,.3);--gold:#d4a017;--text:#e0ddd8;--text2:#888;--text3:#555;--green:#4caf50;--amber:#ff9800;--blue:#4a9eff}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{text-align:center;padding:20px 16px 12px;border-bottom:2px solid var(--red);background:linear-gradient(180deg,rgba(204,0,0,.08),transparent)}
+header h1{font-size:1.6rem;color:var(--red2);text-shadow:0 0 20px var(--red-glow);letter-spacing:.05em}
+header .star{color:var(--gold);font-size:1.2rem}
+header p{color:var(--text2);font-size:.78rem;margin-top:4px;letter-spacing:.08em}
+.container{max-width:800px;margin:0 auto;padding:16px}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px}
+.panel-title{font-size:.7rem;color:var(--text3);letter-spacing:.1em;margin-bottom:12px}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field.full{grid-column:1/-1}
+.field.half{grid-column:span 1}
+.field label{font-size:.6rem;color:var(--text2);letter-spacing:.06em}
+.field input,.field select{padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.85rem;outline:none}
+.field input:focus,.field select:focus{border-color:var(--red)}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;cursor:pointer}
+.log-btn{width:100%;padding:12px;background:linear-gradient(180deg,#dd0000,#990000);border:2px solid var(--red2);border-radius:8px;color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;letter-spacing:.08em;margin-top:10px;transition:all .15s}
+.log-btn:hover{box-shadow:0 0 20px var(--red-glow)}
+.log-btn:active{transform:scale(.98)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;margin-bottom:14px}
+.sg{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center}
+.sg .lbl{font-size:.55rem;color:var(--text3);letter-spacing:.06em;margin-bottom:2px}
+.sg .val{font-size:1.2rem;font-weight:700}
+.sg .sub{font-size:.58rem;color:var(--text3);margin-top:2px}
+.section-title{font-size:.78rem;color:var(--red2);letter-spacing:.08em;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.section-title .badge{font-size:.65rem;color:var(--text3);background:var(--bg3);padding:2px 8px;border-radius:10px}
+.graph-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px}
+.graph-wrap canvas{width:100%;display:block}
+.filter-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.filter-row input,.filter-row select{padding:6px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.75rem;outline:none;flex:1;min-width:120px}
+.filter-row input:focus,.filter-row select:focus{border-color:var(--red)}
+.match-list{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+.match{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;display:flex;align-items:center;gap:8px;font-size:.78rem;animation:slideIn .2s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.match.best{border-color:rgba(212,160,23,.4);background:rgba(212,160,23,.04)}
+.match.worst{border-color:rgba(255,34,34,.3);background:rgba(255,34,34,.04)}
+.match-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;flex-shrink:0;border:1px solid var(--border);color:var(--text3)}
+.match.best .match-num{border-color:var(--gold);color:var(--gold)}
+.match.worst .match-num{border-color:var(--red2);color:var(--red2)}
+.match-result{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:3px;flex-shrink:0}
+.match-result.W{background:rgba(76,175,80,.15);color:var(--green);border:1px solid rgba(76,175,80,.3)}
+.match-result.L{background:rgba(255,34,34,.12);color:var(--red2);border:1px solid rgba(255,34,34,.3)}
+.match-veh{color:var(--text2);flex-shrink:0;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.match-stats{flex:1;display:flex;gap:8px;flex-wrap:wrap}
+.ms{color:var(--text3);font-size:.7rem}
+.ms b{color:var(--text);font-weight:600}
+.match-rp{color:var(--gold);font-weight:700;font-size:.75rem;flex-shrink:0}
+.match-tag{font-size:.55rem;color:var(--gold);flex-shrink:0}
+.match-del{width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--text3);cursor:pointer;flex-shrink:0;border-radius:3px;font-size:.7rem;transition:color .1s}
+.match-del:hover{color:var(--red2)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.act-btn{padding:8px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:.72rem;cursor:pointer;transition:all .15s;flex:1;text-align:center;min-width:100px}
+.act-btn:hover{border-color:var(--red);color:var(--red2)}
+.act-btn.danger:hover{background:rgba(255,34,34,.08)}
+.empty{text-align:center;padding:30px;color:var(--text3);font-size:.82rem}
+.empty .big{font-size:2rem;margin-bottom:6px}
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center}
+.confirm-overlay.show{display:flex}
+.confirm-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:24px;text-align:center;max-width:320px;width:90%}
+.confirm-box p{margin-bottom:16px;font-size:.9rem}
+.confirm-box .btns{display:flex;gap:8px}
+.confirm-box .btn{flex:1;padding:10px;border-radius:6px;font-weight:700;font-size:.82rem;cursor:pointer;border:1px solid var(--border)}
+.confirm-box .btn.yes{background:var(--red);border-color:var(--red2);color:#fff}
+.confirm-box .btn.no{background:var(--bg3);color:var(--text2)}
+.export-box{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center}
+.export-box.show{display:flex}
+.export-inner{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:20px;max-width:500px;width:90%}
+.export-inner textarea{width:100%;height:200px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:monospace;font-size:.75rem;padding:10px;resize:none;outline:none;margin:10px 0}
+.export-inner .btns{display:flex;gap:8px}
+.export-inner .btn{flex:1;padding:10px;border-radius:6px;font-weight:700;font-size:.82rem;cursor:pointer;border:1px solid var(--border)}
+.export-inner .btn.copy{background:var(--green);border-color:var(--green);color:#fff}
+.export-inner .btn.close{background:var(--bg3);color:var(--text2)}
+.hammer{opacity:.04;position:fixed;bottom:-40px;right:-40px;font-size:18rem;pointer-events:none;z-index:0}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:10px 20px;border-radius:6px;font-size:.82rem;font-weight:600;z-index:300;animation:toastIn .3s ease,toastOut .3s ease 1.7s forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(-50%) translateY(10px)}}
+footer{text-align:center;padding:20px;color:var(--text2);font-size:.68rem;border-top:1px solid var(--border);margin-top:24px;letter-spacing:.06em}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--red);border-radius:3px}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr 1fr}.stats-grid{grid-template-columns:repeat(3,1fr)}.container{padding:10px}}
+</style>
+</head>
+<body>
+<div class="hammer">☭</div>
+<header>
+<div><span class="star">★</span> <span class="star">★</span> <span class="star">★</span></div>
+<h1>WT MISSION TRACKER</h1>
+<p>SESSION PERFORMANCE LOGGING</p>
+</header>
+<div class="container">
+<div class="panel">
+<div class="panel-title">★ LOG MATCH</div>
+<div class="form-grid">
+<div class="field"><label>VEHICLE</label><input type="text" id="fVeh" placeholder="e.g. T-80BVM" value=""></div>
+<div class="field"><label>NATION</label><select id="fNation"><option>USSR</option><option>USA</option><option>Germany</option><option>Britain</option><option>Japan</option><option>France</option><option>Italy</option><option>Sweden</option><option>Israel</option><option>China</option></select></div>
+<div class="field"><label>RESULT</label><select id="fResult"><option value="W">Win</option><option value="L">Loss</option></select></div>
+<div class="field"><label>AIR KILLS</label><input type="number" id="fAK" value="0" min="0" max="50"></div>
+<div class="field"><label>GROUND KILLS</label><input type="number" id="fGK" value="0" min="0" max="50"></div>
+<div class="field"><label>ASSISTS</label><input type="number" id="fAst" value="0" min="0" max="50"></div>
+<div class="field"><label>DEATHS</label><input type="number" id="fD" value="0" min="0" max="20"></div>
+<div class="field"><label>CAPTURES</label><input type="number" id="fCap" value="0" min="0" max="10"></div>
+<div class="field"><label>BASE CAPS</label><input type="number" id="fBC" value="0" min="0" max="10"></div>
+<div class="field"><label>RP EARNED</label><input type="number" id="fRP" value="3000" min="0" max="100000" step="100"></div>
+<div class="field"><label>SL EARNED</label><input type="number" id="fSL" value="20000" min="-100000" max="500000" step="1000"></div>
+</div>
+<button class="log-btn" onclick="logMatch()">★ LOG MATCH ★</button>
+</div>
+<div class="stats-grid" id="statsGrid"></div>
+<div class="section-title"><span>★ PERFORMANCE TREND</span><span class="badge" id="trendBadge">0 matches</span></div>
+<div class="graph-wrap"><canvas id="cv" width="760" height="200"></canvas></div>
+<div class="section-title"><span>★ MATCH HISTORY</span></div>
+<div class="filter-row">
+<input type="text" id="filterVeh" placeholder="Filter by vehicle..." oninput="render()">
+<select id="filterNation" onchange="render()"><option value="">All Nations</option><option>USSR</option><option>USA</option><option>Germany</option><option>Britain</option><option>Japan</option><option>France</option><option>Italy</option><option>Sweden</option><option>Israel</option><option>China</option></select>
+</div>
+<div class="match-list" id="matchList"></div>
+<div class="actions">
+<div class="act-btn" onclick="showExport()">📋 Export for Discord</div>
+<div class="act-btn danger" onclick="showConfirm()">🗑️ Clear Session</div>
+</div>
+</div>
+<div class="confirm-overlay" id="confirmOverlay" onclick="hideConfirm()">
+<div class="confirm-box" onclick="event.stopPropagation()">
+<p>Clear all match data?<br><span style="font-size:.75rem;color:var(--text3)">This cannot be undone.</span></p>
+<div class="btns"><div class="btn yes" onclick="clearAll()">Clear All</div><div class="btn no" onclick="hideConfirm()">Cancel</div></div>
+</div>
+</div>
+<div class="export-box" id="exportOverlay" onclick="hideExport()">
+<div class="export-inner" onclick="event.stopPropagation()">
+<div style="font-size:.85rem;font-weight:700;color:var(--red2)">★ Export Stats for Discord</div>
+<textarea id="exportText" readonly></textarea>
+<div class="btns"><div class="btn copy" onclick="copyExport()">Copy to Clipboard</div><div class="btn close" onclick="hideExport()">Close</div></div>
+</div>
+</div>
+<footer>★ SESSION-BASED — DATA RESETS WHEN PAGE CLOSES ★</footer>
+<script>
+let matches=[];
+function v(id){return parseInt(document.getElementById(id).value)||0}
+function fmt(n){return n.toLocaleString()}
+
+function logMatch(){
+const m={
+veh:document.getElementById("fVeh").value.trim()||"Unknown",
+nation:document.getElementById("fNation").value,
+result:document.getElementById("fResult").value,
+ak:v("fAK"),gk:v("fGK"),ast:v("fAst"),deaths:v("fD"),
+cap:v("fCap"),bc:v("fBC"),rp:v("fRP"),sl:v("fSL"),
+time:new Date(),kills:v("fAK")+v("fGK")
+};
+matches.unshift(m);
+toast("★ Match logged — "+m.veh+" "+m.result);
+render();
+}
+
+function deleteMatch(i){matches.splice(i,1);render()}
+function showConfirm(){document.getElementById("confirmOverlay").classList.add("show")}
+function hideConfirm(){document.getElementById("confirmOverlay").classList.remove("show")}
+function clearAll(){matches=[];hideConfirm();toast("Session cleared");render()}
+
+function getFiltered(){
+const vf=document.getElementById("filterVeh").value.toLowerCase().trim();
+const nf=document.getElementById("filterNation").value;
+return matches.filter(m=>{
+if(vf&&!m.veh.toLowerCase().includes(vf))return false;
+if(nf&&m.nation!==nf)return false;
+return true;
+}).map((m,i)=>({...m,idx:matches.indexOf(m)}));
+}
+
+function render(){
+const list=getFiltered();
+const all=list;const n=all.length;
+
+// Stats
+const sg=document.getElementById("statsGrid");
+if(!n){
+sg.innerHTML="";
+document.getElementById("matchList").innerHTML='<div class="empty"><div class="big">📊</div>No matches logged yet.<br>Fill in the form above and hit Log Match.</div>';
+document.getElementById("trendBadge").textContent="0 matches";
+drawGraph([]);return;
+}
+const totalK=all.reduce((s,m)=>s+m.kills,0);
+const totalD=all.reduce((s,m)=>s+m.deaths,0);
+const totalAK=all.reduce((s,m)=>s+m.ak,0);
+const totalGK=all.reduce((s,m)=>s+m.gk,0);
+const totalAst=all.reduce((s,m)=>s+m.ast,0);
+const totalCap=all.reduce((s,m)=>s+m.cap,0);
+const totalBC=all.reduce((s,m)=>s+m.bc,0);
+const totalRP=all.reduce((s,m)=>s+m.rp,0);
+const totalSL=all.reduce((s,m)=>s+m.sl,0);
+const wins=all.filter(m=>m.result==="W").length;
+const kd=totalD>0?(totalK/totalD).toFixed(2):(totalK>0?totalK+".00":"0.00");
+const wl=n>0?((wins/n)*100).toFixed(0):"0";
+
+sg.innerHTML=`
+<div class="sg"><div class="lbl">MATCHES</div><div class="val" style="color:var(--gold)">${n}</div></div>
+<div class="sg"><div class="lbl">K/D RATIO</div><div class="val" style="color:${parseFloat(kd)>=1?"var(--green)":"var(--red2)"}">${kd}</div><div class="sub">${totalK}K / ${totalD}D</div></div>
+<div class="sg"><div class="lbl">WIN RATE</div><div class="val" style="color:${parseInt(wl)>=50?"var(--green)":"var(--red2)"}">${wl}%</div><div class="sub">${wins}W ${n-wins}L</div></div>
+<div class="sg"><div class="lbl">AVG KILLS</div><div class="val">${(totalK/n).toFixed(1)}</div></div>
+<div class="sg"><div class="lbl">AIR KILLS</div><div class="val" style="color:var(--blue)">${totalAK}</div></div>
+<div class="sg"><div class="lbl">GROUND KILLS</div><div class="val" style="color:var(--amber)">${totalGK}</div></div>
+<div class="sg"><div class="lbl">ASSISTS</div><div class="val">${totalAst}</div></div>
+<div class="sg"><div class="lbl">CAPTURES</div><div class="val">${totalCap+totalBC}</div></div>
+<div class="sg"><div class="lbl">AVG RP</div><div class="val" style="color:var(--gold)">${fmt(Math.round(totalRP/n))}</div></div>
+<div class="sg"><div class="lbl">AVG SL</div><div class="val" style="color:var(--green)">${fmt(Math.round(totalSL/n))}</div></div>
+<div class="sg"><div class="lbl">TOTAL RP</div><div class="val" style="color:var(--gold)">${fmt(totalRP)}</div></div>
+<div class="sg"><div class="lbl">TOTAL SL</div><div class="val" style="color:var(--green)">${fmt(totalSL)}</div></div>`;
+
+// Best/worst
+let bestIdx=-1,worstIdx=-1,bestScore=-Infinity,worstScore=Infinity;
+all.forEach((m,i)=>{
+const score=m.kills*100+m.ast*30-m.deaths*50+m.rp/10+(m.result==="W"?200:0);
+if(score>bestScore){bestScore=score;bestIdx=i}
+if(score<worstScore){worstScore=score;worstIdx=i}
+});
+
+const el=document.getElementById("matchList");
+el.innerHTML=all.map((m,i)=>{
+const cls=i===bestIdx?"best":i===worstIdx?"worst":"";
+const tag=i===bestIdx?"★ BEST":i===worstIdx?"✕ WORST":"";
+const t=m.time;const ts=t.getHours().toString().padStart(2,"0")+":"+t.getMinutes().toString().padStart(2,"0");
+return`<div class="match ${cls}">
+<div class="match-num">${n-i}</div>
+<div class="match-result ${m.result}">${m.result==="W"?"WIN":"LOSS"}</div>
+<div class="match-veh">${m.veh}</div>
+<div class="match-stats">
+<span class="ms"><b>${m.kills}</b>K</span>
+<span class="ms"><b>${m.ast}</b>A</span>
+<span class="ms"><b>${m.deaths}</b>D</span>
+<span class="ms"><b>${m.cap}</b>Cap</span>
+</div>
+<span class="match-rp">${fmt(m.rp)} RP</span>
+${tag?`<span class="match-tag">${tag}</span>`:""}
+<div class="match-del" onclick="deleteMatch(${m.idx})">✕</div>
+</div>`}).join("");
+
+document.getElementById("trendBadge").textContent=n+" matches";
+drawGraph(all);
+}
+
+function drawGraph(data){
+const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
+const w=cv.width,h=cv.height;
+ctx.clearRect(0,0,w,h);
+if(data.length<2){
+ctx.fillStyle="rgba(255,255,255,.1)";ctx.font="12px sans-serif";ctx.textAlign="center";
+ctx.fillText("Log 2+ matches to see trend",w/2,h/2);return;
+}
+// Grid
+ctx.strokeStyle="rgba(255,255,255,.03)";
+for(let i=0;i<w;i+=40){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,h);ctx.stroke()}
+for(let i=0;i<h;i+=30){ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(w,i);ctx.stroke()}
+
+const reversed=[...data].reverse();
+const killsData=reversed.map(m=>m.kills);
+const rpData=reversed.map(m=>m.rp);
+const n=reversed.length;
+const pad=40;
+
+function drawLine(arr,color,label,yAxis){
+const max=Math.max(...arr,1);const min=Math.min(...arr,0);
+const range=max-min||1;
+ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2;
+const pts=[];
+arr.forEach((v,i)=>{
+const x=pad+(i/(n-1))*(w-pad*2);
+const y=(h-pad)-(((v-min)/range)*(h-pad*2));
+pts.push({x,y});
+if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+});
+ctx.stroke();
+// Fill
+ctx.lineTo(pts[pts.length-1].x,h-pad);ctx.lineTo(pts[0].x,h-pad);ctx.closePath();
+ctx.fillStyle=color.replace("1)","0.06)");ctx.fill();
+// Dots
+pts.forEach((p,i)=>{
+ctx.fillStyle=color;ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fill();
+// Win/loss dot
+if(reversed[i]){
+ctx.fillStyle=reversed[i].result==="W"?"rgba(76,175,80,.8)":"rgba(255,34,34,.6)";
+ctx.beginPath();ctx.arc(p.x,h-12,4,0,Math.PI*2);ctx.fill();
+}
+});
+// Label
+ctx.fillStyle=color;ctx.font="bold 10px sans-serif";ctx.textAlign=yAxis==="left"?"left":"right";
+ctx.fillText(label,yAxis==="left"?4:w-4,12);
+}
+
+drawLine(killsData,"rgba(255,191,0,1)","Kills","left");
+drawLine(rpData.map(r=>r/100),"rgba(76,175,80,1)","RP (×100)","right");
+
+// X axis labels
+ctx.fillStyle="rgba(255,255,255,.2)";ctx.font="9px sans-serif";ctx.textAlign="center";
+reversed.forEach((m,i)=>{
+if(n<=20||i%(Math.ceil(n/15))===0){
+const x=pad+(i/(n-1))*(w-pad*2);
+ctx.fillText("#"+(i+1),x,h-2);
+}
+});
+}
+
+function showExport(){
+const all=getFiltered();const n=all.length;
+if(!n){toast("No matches to export");return}
+const totalK=all.reduce((s,m)=>s+m.kills,0);
+const totalD=all.reduce((s,m)=>s+m.deaths,0);
+const totalRP=all.reduce((s,m)=>s+m.rp,0);
+const totalSL=all.reduce((s,m)=>s+m.sl,0);
+const wins=all.filter(m=>m.result==="W").length;
+const kd=totalD>0?(totalK/totalD).toFixed(2):totalK+".00";
+
+let txt=`\`\`\`\n`;
+txt+=`★ WAR THUNDER SESSION REPORT ★\n`;
+txt+=`═══════════════════════════════\n`;
+txt+=`Matches:    ${n}\n`;
+txt+=`Win Rate:   ${((wins/n)*100).toFixed(0)}% (${wins}W / ${n-wins}L)\n`;
+txt+=`K/D Ratio:  ${kd} (${totalK}K / ${totalD}D)\n`;
+txt+=`Avg Kills:  ${(totalK/n).toFixed(1)}\n`;
+txt+=`Avg RP:     ${fmt(Math.round(totalRP/n))}\n`;
+txt+=`Avg SL:     ${fmt(Math.round(totalSL/n))}\n`;
+txt+=`Total RP:   ${fmt(totalRP)}\n`;
+txt+=`Total SL:   ${fmt(totalSL)}\n`;
+txt+=`═══════════════════════════════\n`;
+txt+=`Match Log:\n`;
+all.forEach((m,i)=>{
+txt+=`#${i+1} ${m.result} | ${m.veh} | ${m.kills}K ${m.ast}A ${m.deaths}D | ${fmt(m.rp)}RP\n`;
+});
+txt+=`\`\`\``;
+
+document.getElementById("exportText").value=txt;
+document.getElementById("exportOverlay").classList.add("show");
+}
+function hideExport(){document.getElementById("exportOverlay").classList.remove("show")}
+function copyExport(){
+document.getElementById("exportText").select();
+navigator.clipboard.writeText(document.getElementById("exportText").value);
+toast("★ Copied to clipboard!");
+}
+
+function showConfirm(){document.getElementById("confirmOverlay").classList.add("show")}
+
+function toast(msg){
+const old=document.querySelector(".toast");if(old)old.remove();
+const t=document.createElement("div");t.className="toast";t.textContent=msg;
+document.body.appendChild(t);setTimeout(()=>t.remove(),2000);
+}
+
+render();
+</script>
+</body>
+</html>
