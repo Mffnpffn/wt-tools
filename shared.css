@@ -1,0 +1,55 @@
+/* WT Tools Shared — Navbar, Themes, Scroll-to-top */
+html{scroll-behavior:smooth}
+
+/* ===== NATION THEMES ===== */
+[data-nation="USSR"]{--accent:#cc0000;--accent2:#ff2222;--accent-glow:rgba(204,0,0,.3);--nav-bg:rgba(120,10,10,.85);--flag-bg:"🇷🇺"}
+[data-nation="USA"]{--accent:#1a5276;--accent2:#4a9eff;--accent-glow:rgba(74,158,255,.3);--nav-bg:rgba(10,40,90,.85);--flag-bg:"🇺🇸";--red:#1a5276;--red2:#4a9eff;--red-glow:rgba(74,158,255,.3);--gold:#e0c040}
+[data-nation="Germany"]{--accent:#555;--accent2:#aaa;--accent-glow:rgba(170,170,170,.25);--nav-bg:rgba(50,50,50,.9);--flag-bg:"🇩🇪";--red:#555;--red2:#bbb;--red-glow:rgba(170,170,170,.2);--gold:#c0a030}
+[data-nation="Britain"]{--accent:#1a6b3a;--accent2:#4caf70;--accent-glow:rgba(76,175,80,.25);--nav-bg:rgba(10,60,30,.85);--flag-bg:"🇬🇧";--red:#1a6b3a;--red2:#4caf70;--red-glow:rgba(76,175,80,.2);--gold:#d4a017}
+[data-nation="Japan"]{--accent:#b71c1c;--accent2:#ef5350;--accent-glow:rgba(239,83,80,.25);--nav-bg:rgba(100,15,15,.85);--flag-bg:"🇯🇵";--red:#b71c1c;--red2:#ef5350;--red-glow:rgba(239,83,80,.2);--gold:#e8d0a0}
+[data-nation="France"]{--accent:#1a3a8a;--accent2:#5577dd;--accent-glow:rgba(85,119,221,.25);--nav-bg:rgba(15,30,80,.85);--flag-bg:"🇫🇷";--red:#1a3a8a;--red2:#5577dd;--red-glow:rgba(85,119,221,.2);--gold:#d4a017}
+[data-nation="Italy"]{--accent:#2e7d32;--accent2:#66bb6a;--accent-glow:rgba(102,187,106,.25);--nav-bg:rgba(20,60,20,.85);--flag-bg:"🇮🇹";--red:#2e7d32;--red2:#66bb6a;--red-glow:rgba(102,187,106,.2);--gold:#d4a017}
+[data-nation="Sweden"]{--accent:#1565c0;--accent2:#42a5f5;--accent-glow:rgba(66,165,245,.25);--nav-bg:rgba(10,50,110,.85);--flag-bg:"🇸🇪";--red:#1565c0;--red2:#42a5f5;--red-glow:rgba(66,165,245,.2);--gold:#fdd835}
+[data-nation="Israel"]{--accent:#1565c0;--accent2:#64b5f6;--accent-glow:rgba(100,181,246,.25);--nav-bg:rgba(15,50,100,.85);--flag-bg:"🇮🇱";--red:#1565c0;--red2:#64b5f6;--red-glow:rgba(100,181,246,.2);--gold:#d4a017}
+[data-nation="China"]{--accent:#b71c1c;--accent2:#e53935;--accent-glow:rgba(229,57,53,.25);--nav-bg:rgba(100,15,15,.85);--flag-bg:"🇨🇳";--red:#b71c1c;--red2:#e53935;--red-glow:rgba(229,57,53,.2);--gold:#ffd600}
+
+/* ===== NAVBAR ===== */
+.wt-navbar{position:fixed;top:0;left:0;right:0;z-index:9999;background:var(--nav-bg,rgba(13,14,16,.95));backdrop-filter:blur(12px);border-bottom:2px solid var(--accent,#cc0000);transition:background .4s,border-color .4s}
+.wt-nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;padding:0 8px;height:42px}
+.wt-nav-brand{font-weight:700;font-size:.85rem;color:var(--accent2,#ff2222);text-decoration:none;padding:0 10px;flex-shrink:0;letter-spacing:.06em;display:flex;align-items:center;gap:5px}
+.wt-nav-brand:hover{opacity:.8}
+.wt-nav-scroll{display:flex;overflow-x:auto;flex:1;gap:1px;scrollbar-width:none;-ms-overflow-style:none}
+.wt-nav-scroll::-webkit-scrollbar{display:none}
+.wt-nav-link{padding:6px 9px;font-size:.62rem;color:rgba(255,255,255,.5);text-decoration:none;white-space:nowrap;border-radius:4px;transition:all .15s;letter-spacing:.02em;flex-shrink:0}
+.wt-nav-link:hover{color:#fff;background:rgba(255,255,255,.06)}
+.wt-nav-link.active{color:var(--accent2,#ff2222);background:rgba(255,255,255,.04);font-weight:600}
+.wt-nav-theme{position:relative;flex-shrink:0;padding:0 6px}
+.wt-theme-btn{background:none;border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:4px 8px;color:rgba(255,255,255,.5);font-size:.9rem;cursor:pointer;transition:all .15s;line-height:1}
+.wt-theme-btn:hover{border-color:var(--accent2,#ff2222);color:#fff}
+.wt-theme-dd{display:none;position:absolute;top:100%;right:0;background:var(--bg2,#1a1c20);border:1px solid var(--border,#2a2c30);border-radius:6px;padding:4px;min-width:160px;z-index:10000;box-shadow:0 8px 30px rgba(0,0,0,.6);margin-top:6px}
+.wt-theme-dd.open{display:block}
+.wt-theme-opt{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:.72rem;color:var(--text2,#888);transition:background .1s}
+.wt-theme-opt:hover{background:rgba(255,255,255,.05);color:var(--text,#e0ddd8)}
+.wt-theme-opt.active{color:var(--accent2,#ff2222);font-weight:600}
+.wt-theme-opt .tf{font-size:1rem}
+
+/* Push body content below navbar */
+body{padding-top:44px!important}
+
+/* ===== NATION FLAG BACKGROUND ===== */
+.wt-flag-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.06;font-size:min(60vw,500px);display:flex;align-items:center;justify-content:center;transition:opacity .4s}
+
+/* ===== SCROLL TO TOP ===== */
+.wt-scroll-top{position:fixed;bottom:16px;right:16px;width:38px;height:38px;background:var(--accent,#cc0000);color:#fff;border:none;border-radius:50%;font-size:1.1rem;cursor:pointer;display:none;z-index:9998;box-shadow:0 2px 12px rgba(0,0,0,.4);transition:opacity .2s,transform .2s;align-items:center;justify-content:center}
+.wt-scroll-top.show{display:flex}
+.wt-scroll-top:hover{transform:scale(1.1)}
+.wt-scroll-top:active{transform:scale(.95)}
+
+/* ===== HEADER THEME TRANSITION ===== */
+header{transition:background .4s,border-color .4s}
+header h1{transition:color .4s,text-shadow .4s}
+
+@media(max-width:600px){
+.wt-nav-brand span{display:none}
+.wt-nav-link{font-size:.58rem;padding:5px 7px}
+}
