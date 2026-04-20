@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>WT Ammo Picker</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0e10;--bg2:#1a1c20;--bg3:#222528;--bg4:#2a2d32;--border:#2a2c30;--red:#cc0000;--red2:#ff2222;--red-glow:rgba(204,0,0,.3);--gold:#d4a017;--text:#e0ddd8;--text2:#888;--text3:#555;--green:#4caf50;--blue:#4a9eff;--orange:#ff8c00;--silver:#b0b0b0;--aphe:#d4a017;--ap:#b0b0b0;--heat:#ff8c00;--apds:#4a9eff;--apfsds:#4caf50;--he:#ff4444;--apcr:#c77dff;--hesh:#e67e22;--atgm:#e91e9c}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+h1,h2,h3{font-weight:700}
+header{text-align:center;padding:20px 16px 12px;border-bottom:2px solid var(--red);background:linear-gradient(180deg,rgba(204,0,0,.08),transparent)}
+header h1{font-size:1.6rem;color:var(--red2);text-shadow:0 0 20px var(--red-glow);letter-spacing:.05em}
+header .star{color:var(--gold);font-size:1.2rem}
+header p{color:var(--text2);font-size:.78rem;margin-top:4px;letter-spacing:.08em}
+.container{max-width:850px;margin:0 auto;padding:16px}
+.search-box{position:relative;margin-bottom:16px}
+.search-box input{width:100%;padding:12px 16px 12px 38px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;outline:none}
+.search-box input:focus{border-color:var(--red)}
+.search-box input::placeholder{color:var(--text3)}
+.si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:1rem}
+.dropdown{position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:0 0 8px 8px;max-height:320px;overflow-y:auto;z-index:100;display:none}
+.dropdown.open{display:block}
+.dd-item{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.03);font-size:.82rem}
+.dd-item:hover,.dd-item.hl{background:rgba(204,0,0,.12)}
+.dd-flag{font-size:1.1rem;flex-shrink:0;width:24px;text-align:center}
+.dd-name{flex:1}
+.dd-br{font-size:.8rem;color:var(--gold);font-weight:700}
+.dd-gun{font-size:.68rem;color:var(--text3)}
+.dd-empty{padding:16px;text-align:center;color:var(--text3);font-size:.82rem}
+.vehicle-header{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;display:none}
+.vehicle-header.show{display:block}
+.vh-top{background:linear-gradient(90deg,var(--red),#880000);padding:12px 16px;display:flex;align-items:center;gap:12px}
+.vh-flag{font-size:1.6rem}
+.vh-info{flex:1}
+.vh-name{font-size:1.1rem;font-weight:700;color:#fff}
+.vh-detail{font-size:.75rem;color:rgba(255,255,255,.7);margin-top:2px}
+.vh-br{background:rgba(0,0,0,.3);color:var(--gold);font-size:1.3rem;font-weight:700;padding:4px 14px;border-radius:6px}
+.vh-gun{padding:10px 16px;display:flex;align-items:center;gap:8px;background:var(--bg3);font-size:.8rem;color:var(--text2);border-top:1px solid var(--border)}
+.vh-gun b{color:var(--text);font-weight:600}
+.section-title{font-size:.85rem;color:var(--red2);letter-spacing:.08em;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.ammo-grid{display:flex;flex-direction:column;gap:8px}
+.ammo-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:transform .1s}
+.ammo-card:active{transform:scale(.99)}
+.ammo-top{display:flex;align-items:center;gap:10px;padding:10px 14px}
+.ammo-type-badge{font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:4px;min-width:56px;text-align:center;color:#000;flex-shrink:0}
+.ammo-type-badge.APHE{background:var(--aphe)}.ammo-type-badge.AP{background:var(--ap)}.ammo-type-badge.HEAT{background:var(--heat)}
+.ammo-type-badge.APDS{background:var(--apds)}.ammo-type-badge.APFSDS{background:var(--apfsds);color:#fff}
+.ammo-type-badge.HE{background:var(--he)}.ammo-type-badge.APCR{background:var(--apcr)}.ammo-type-badge.HESH{background:var(--hesh)}
+.ammo-type-badge.ATGM{background:var(--atgm);color:#fff}.ammo-type-badge.APCBC{background:var(--aphe)}
+.ammo-type-badge.HEAT-FS{background:var(--heat)}.ammo-type-badge.HE-VT{background:#e91e9c;color:#fff}
+.ammo-name{flex:1;font-size:.82rem;font-weight:600}
+.ammo-best{font-size:.6rem;padding:2px 6px;border-radius:3px;background:rgba(76,175,80,.15);color:var(--green);border:1px solid rgba(76,175,80,.3);flex-shrink:0}
+.ammo-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:1px;background:var(--border);border-top:1px solid var(--border)}
+.ammo-stat{background:var(--bg2);padding:8px 10px;text-align:center}
+.ammo-stat .label{font-size:.6rem;color:var(--text3);letter-spacing:.06em;margin-bottom:2px}
+.ammo-stat .val{font-size:.95rem;font-weight:700}
+.ammo-stat .unit{font-size:.65rem;color:var(--text3);margin-left:1px}
+.pen-bar{height:4px;background:var(--bg);border-radius:2px;margin-top:4px;overflow:hidden}
+.pen-fill{height:100%;border-radius:2px;transition:width .4s}
+.rec-section{margin-top:20px;display:none}
+.rec-section.show{display:block}
+.rec-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rec-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;transition:border-color .2s}
+.rec-card:hover{border-color:rgba(204,0,0,.3)}
+.rec-icon{font-size:1.4rem;margin-bottom:6px}
+.rec-title{font-size:.75rem;color:var(--text2);letter-spacing:.06em;margin-bottom:6px}
+.rec-ammo{font-weight:700;font-size:.9rem;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.rec-reason{font-size:.72rem;color:var(--text3);line-height:1.4}
+.rec-badge{font-size:.6rem;padding:2px 6px;border-radius:3px;font-weight:700;color:#000}
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:.68rem;color:var(--text2)}
+.legend-dot{width:10px;height:10px;border-radius:2px}
+.hammer{opacity:.04;position:fixed;bottom:-40px;right:-40px;font-size:18rem;pointer-events:none;z-index:0}
+footer{text-align:center;padding:20px;color:var(--text2);font-size:.68rem;border-top:1px solid var(--border);margin-top:24px;letter-spacing:.06em}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--red);border-radius:3px}
+@media(max-width:600px){.rec-grid{grid-template-columns:1fr}.ammo-stats{grid-template-columns:repeat(3,1fr)}.container{padding:10px}}
+</style>
+</head>
+<body>
+<div class="hammer">☭</div>
+<header>
+<div><span class="star">★</span> <span class="star">★</span> <span class="star">★</span></div>
+<h1>WT AMMO PICKER</h1>
+<p>AMMUNITION SELECTION &amp; RECOMMENDATION TOOL</p>
+</header>
+<div class="container">
+<div class="legend">
+<div class="legend-item"><div class="legend-dot" style="background:var(--aphe)"></div>APHE</div>
+<div class="legend-item"><div class="legend-dot" style="background:var(--ap)"></div>AP</div>
+<div class="legend-item"><div class="legend-dot" style="background:var(--heat)"></div>HEAT</div>
+<div class="legend-item"><div class="legend-dot" style="background:var(--apds)"></div>APDS</div>
+<div class="legend-item"><div class="legend-dot" style="background:var(--apfsds)"></div>APFSDS</div>
+<div class="legend-item"><div class="legend-dot" style="background:var(--he)"></div>HE</div>
+<div class="legend-item"><div class="legend-dot" style="background:var(--apcr)"></div>APCR</div>
+<div class="legend-item"><div class="legend-dot" style="background:var(--hesh)"></div>HESH</div>
+<div class="legend-item"><div class="legend-dot" style="background:var(--atgm)"></div>ATGM</div>
+</div>
+<div class="search-box">
+<span class="si">⌕</span>
+<input type="text" id="searchInput" placeholder="Search vehicle name..." autocomplete="off">
+<div class="dropdown" id="dropdown"></div>
+</div>
+<div class="vehicle-header" id="vehicleHeader">
+<div class="vh-top">
+<span class="vh-flag" id="vhFlag"></span>
+<div class="vh-info"><div class="vh-name" id="vhName"></div><div class="vh-detail" id="vhDetail"></div></div>
+<div class="vh-br" id="vhBR"></div>
+</div>
+<div class="vh-gun"><span>🔧</span> <b id="vhGun"></b></div>
+</div>
+<div class="rec-section" id="recSection">
+<div class="section-title">★ RECOMMENDED LOADOUT</div>
+<div class="rec-grid" id="recGrid"></div>
+</div>
+<div id="ammoSection" style="display:none">
+<div class="section-title">★ ALL AVAILABLE AMMUNITION</div>
+<div class="ammo-grid" id="ammoGrid"></div>
+</div>
+</div>
+<footer>★ DATA BASED ON WAR THUNDER GAME VALUES ★ PENETRATION AT 10M UNLESS NOTED ★</footer>
+<script>
+const FLAGS={USA:"🇺🇸",Germany:"🇩🇪",USSR:"🇷🇺",Britain:"🇬🇧",Japan:"🇯🇵",France:"🇫🇷",Italy:"🇮🇹",Sweden:"🇸🇪",Israel:"🇮🇱",China:"🇨🇳"};
+// Vehicle DB: {id,name,nation,br,type,gun,ammo:[{name,type,pen0,pen60,vel,filler,dmgType,note}]}
+const VDB=[
+// ============ USSR ============
+{name:"T-90M",nation:"USSR",br:11.7,type:"MBT",gun:"125mm 2A46M-5",ammo:[
+{name:"3BM60 Svinets-2",type:"APFSDS",pen0:580,pen60:310,vel:1700,filler:0,dmgType:"Kinetic",note:"Top round, excellent at all ranges"},
+{name:"3BM46 Svinets-1",type:"APFSDS",pen0:520,pen60:275,vel:1700,filler:0,dmgType:"Kinetic",note:"Stock APFSDS"},
+{name:"3BM42 Mango",type:"APFSDS",pen0:457,pen60:242,vel:1700,filler:0,dmgType:"Kinetic",note:"Backup kinetic round"},
+{name:"3BK31 Vant",type:"HEAT-FS",pen0:600,pen60:336,vel:905,filler:1.87,dmgType:"Chemical",note:"ERA/composite weakness but high raw pen"},
+{name:"3OF26 Telnik",type:"HE",pen0:43,pen60:22,vel:850,filler:3.27,dmgType:"Explosive",note:"Roof overpressure on light vehicles"},
+{name:"9M119M1 Refleks",type:"ATGM",pen0:750,pen60:410,vel:350,filler:4.04,dmgType:"Chemical",note:"Tandem HEAT, defeats ERA"}
+]},
+{name:"T-80BVM",nation:"USSR",br:11.7,type:"MBT",gun:"125mm 2A46M-1",ammo:[
+{name:"3BM60 Svinets-2",type:"APFSDS",pen0:580,pen60:310,vel:1700,filler:0,dmgType:"Kinetic",note:"Top round"},
+{name:"3BM46 Svinets-1",type:"APFSDS",pen0:520,pen60:275,vel:1700,filler:0,dmgType:"Kinetic",note:"Good backup"},
+{name:"3BM42 Mango",type:"APFSDS",pen0:457,pen60:242,vel:1700,filler:0,dmgType:"Kinetic",note:"Stock round"},
+{name:"3BK31 Vant",type:"HEAT-FS",pen0:600,pen60:336,vel:905,filler:1.87,dmgType:"Chemical",note:"High pen chemical"},
+{name:"3OF26 Telnik",type:"HE",pen0:43,pen60:22,vel:850,filler:3.27,dmgType:"Explosive",note:"Overpressure kills"},
+{name:"9M119M1 Refleks",type:"ATGM",pen0:750,pen60:410,vel:350,filler:4.04,dmgType:"Chemical",note:"Gun-launched ATGM"}
+]},
+{name:"T-80U",nation:"USSR",br:10.7,type:"MBT",gun:"125mm 2A46M-1",ammo:[
+{name:"3BM46 Svinets-1",type:"APFSDS",pen0:520,pen60:275,vel:1700,filler:0,dmgType:"Kinetic",note:"Top round"},
+{name:"3BM42 Mango",type:"APFSDS",pen0:457,pen60:242,vel:1700,filler:0,dmgType:"Kinetic",note:"Stock"},
+{name:"3BK18M",type:"HEAT-FS",pen0:550,pen60:308,vel:905,filler:1.65,dmgType:"Chemical",note:"Chemical option"},
+{name:"3OF26 Telnik",type:"HE",pen0:43,pen60:22,vel:850,filler:3.27,dmgType:"Explosive",note:"Overpressure"},
+{name:"9M119 Refleks",type:"ATGM",pen0:700,pen60:390,vel:350,filler:3.56,dmgType:"Chemical",note:"Gun-launched missile"}
+]},
+{name:"T-72B3",nation:"USSR",br:10.7,type:"MBT",gun:"125mm 2A46M-5",ammo:[
+{name:"3BM60 Svinets-2",type:"APFSDS",pen0:580,pen60:310,vel:1700,filler:0,dmgType:"Kinetic",note:"Top round"},
+{name:"3BM42 Mango",type:"APFSDS",pen0:457,pen60:242,vel:1700,filler:0,dmgType:"Kinetic",note:"Stock"},
+{name:"3BK18M",type:"HEAT-FS",pen0:550,pen60:308,vel:905,filler:1.65,dmgType:"Chemical",note:"Chemical option"},
+{name:"3OF26 Telnik",type:"HE",pen0:43,pen60:22,vel:850,filler:3.27,dmgType:"Explosive",note:"Overpressure"},
+{name:"9M119M1 Refleks",type:"ATGM",pen0:750,pen60:410,vel:350,filler:4.04,dmgType:"Chemical",note:"Tandem HEAT missile"}
+]},
+{name:"T-90A",nation:"USSR",br:10.7,type:"MBT",gun:"125mm 2A46M-5",ammo:[
+{name:"3BM46 Svinets-1",type:"APFSDS",pen0:520,pen60:275,vel:1700,filler:0,dmgType:"Kinetic",note:"Top round"},
+{name:"3BM42 Mango",type:"APFSDS",pen0:457,pen60:242,vel:1700,filler:0,dmgType:"Kinetic",note:"Stock"},
+{name:"3BK18M",type:"HEAT-FS",pen0:550,pen60:308,vel:905,filler:1.65,dmgType:"Chemical",note:"Chemical option"},
+{name:"3OF26 Telnik",type:"HE",pen0:43,pen60:22,vel:850,filler:3.27,dmgType:"Explosive",note:"Overpressure"},
+{name:"9M119M1 Refleks",type:"ATGM",pen0:750,pen60:410,vel:350,filler:4.04,dmgType:"Chemical",note:"ATGM"}
+]},
+{name:"T-64B",nation:"USSR",br:9.7,type:"MBT",gun:"125mm 2A46-2",ammo:[
+{name:"3BM22",type:"APFSDS",pen0:390,pen60:205,vel:1760,filler:0,dmgType:"Kinetic",note:"Top round"},
+{name:"3BM15",type:"APFSDS",pen0:340,pen60:180,vel:1800,filler:0,dmgType:"Kinetic",note:"Stock"},
+{name:"3BK12M",type:"HEAT-FS",pen0:440,pen60:246,vel:905,filler:1.21,dmgType:"Chemical",note:"Chemical option"},
+{name:"3OF22",type:"HE",pen0:38,pen60:20,vel:850,filler:3.05,dmgType:"Explosive",note:"Overpressure"},
+{name:"9M112 Kobra",type:"ATGM",pen0:600,pen60:336,vel:350,filler:2.83,dmgType:"Chemical",note:"Gun-launched ATGM"}
+]},
+{name:"T-72A",nation:"USSR",br:9.3,type:"MBT",gun:"125mm 2A46",ammo:[
+{name:"3BM22",type:"APFSDS",pen0:390,pen60:205,vel:1760,filler:0,dmgType:"Kinetic",note:"Top APFSDS"},
+{name:"3BM15",type:"APFSDS",pen0:340,pen60:180,vel:1800,filler:0,dmgType:"Kinetic",note:"Stock"},
+{name:"3BK12M",type:"HEAT-FS",pen0:440,pen60:246,vel:905,filler:1.21,dmgType:"Chemical",note:"HEAT option"},
+{name:"3OF22",type:"HE",pen0:38,pen60:20,vel:850,filler:3.05,dmgType:"Explosive",note:"HE filler"}
+]},
+{name:"T-62",nation:"USSR",br:8.0,type:"MBT",gun:"115mm U-5TS",ammo:[
+{name:"3BM4",type:"APFSDS",pen0:295,pen60:155,vel:1615,filler:0,dmgType:"Kinetic",note:"Early APFSDS"},
+{name:"3BM3",type:"APDS",pen0:270,pen60:140,vel:1615,filler:0,dmgType:"Kinetic",note:"Stock APDS"},
+{name:"3BK4",type:"HEAT-FS",pen0:440,pen60:246,vel:1060,filler:1.05,dmgType:"Chemical",note:"High pen chemical"},
+{name:"3OF11",type:"HE",pen0:34,pen60:18,vel:905,filler:2.14,dmgType:"Explosive",note:"HE shell"}
+]},
+{name:"T-55A",nation:"USSR",br:8.0,type:"MBT",gun:"100mm D-10T2S",ammo:[
+{name:"3BM25",type:"APFSDS",pen0:335,pen60:175,vel:1430,filler:0,dmgType:"Kinetic",note:"Top APFSDS"},
+{name:"3BM-8",type:"APDS",pen0:265,pen60:140,vel:1415,filler:0,dmgType:"Kinetic",note:"APDS option"},
+{name:"3D3 HEAT",type:"HEAT-FS",pen0:390,pen60:218,vel:1085,filler:1.19,dmgType:"Chemical",note:"Chemical round"},
+{name:"BR-412D",type:"APHE",pen0:239,pen60:75,vel:895,filler:0.061,dmgType:"Kinetic+Frag",note:"Post-pen damage king"},
+{name:"3OF32",type:"HE",pen0:26,pen60:14,vel:900,filler:1.46,dmgType:"Explosive",note:"HE"}
+]},
+{name:"T-34-85",nation:"USSR",br:5.3,type:"MT",gun:"85mm ZiS-S-53",ammo:[
+{name:"BR-365K",type:"APHE",pen0:148,pen60:42,vel:792,filler:0.048,dmgType:"Kinetic+Frag",note:"Solid pen with filler"},
+{name:"BR-365A",type:"APHE",pen0:135,pen60:38,vel:792,filler:0.164,dmgType:"Kinetic+Frag",note:"More filler, less pen"},
+{name:"BR-365P",type:"APCR",pen0:195,pen60:44,vel:1050,filler:0,dmgType:"Kinetic",note:"Emergency high-pen, poor post-pen"},
+{name:"O-365K",type:"HE",pen0:15,pen60:8,vel:785,filler:0.74,dmgType:"Explosive",note:"Anti-open-top"}
+]},
+{name:"IS-2",nation:"USSR",br:5.7,type:"HT",gun:"122mm D-25T",ammo:[
+{name:"BR-471B",type:"APHE",pen0:207,pen60:58,vel:795,filler:0.246,dmgType:"Kinetic+Frag",note:"Top round, devastating post-pen"},
+{name:"BR-471",type:"APHE",pen0:200,pen60:56,vel:795,filler:0.246,dmgType:"Kinetic+Frag",note:"Stock APHE"},
+{name:"OF-471",type:"HE",pen0:37,pen60:19,vel:795,filler:3.6,dmgType:"Explosive",note:"Huge HE, overpressure kills"}
+]},
+{name:"IS-2 1944",nation:"USSR",br:6.3,type:"HT",gun:"122mm D-25T",ammo:[
+{name:"BR-471B",type:"APHE",pen0:207,pen60:58,vel:795,filler:0.246,dmgType:"Kinetic+Frag",note:"Top round"},
+{name:"BR-471D",type:"APHE",pen0:230,pen60:65,vel:795,filler:0.246,dmgType:"Kinetic+Frag",note:"Improved nose"},
+{name:"OF-471",type:"HE",pen0:37,pen60:19,vel:795,filler:3.6,dmgType:"Explosive",note:"Overpressure"}
+]},
+{name:"IS-3",nation:"USSR",br:7.0,type:"HT",gun:"122mm D-25T",ammo:[
+{name:"BR-471D",type:"APHE",pen0:230,pen60:65,vel:795,filler:0.246,dmgType:"Kinetic+Frag",note:"Top APHE"},
+{name:"BR-471B",type:"APHE",pen0:207,pen60:58,vel:795,filler:0.246,dmgType:"Kinetic+Frag",note:"Stock"},
+{name:"OF-471",type:"HE",pen0:37,pen60:19,vel:795,filler:3.6,dmgType:"Explosive",note:"Anti-light"}
+]},
+{name:"KV-2",nation:"USSR",br:4.0,type:"HT",gun:"152mm M-10T",ammo:[
+{name:"G-530",type:"HE",pen0:54,pen60:28,vel:436,filler:5.9,dmgType:"Explosive",note:"THE meme shell. Overpressures everything"},
+{name:"PB-35",type:"APHE",pen0:110,pen60:31,vel:436,filler:0.48,dmgType:"Kinetic+Frag",note:"APHE for hard targets"}
+]},
+{name:"KV-1 ZiS-5",nation:"USSR",br:4.3,type:"HT",gun:"76mm ZiS-5",ammo:[
+{name:"BR-350B",type:"APHE",pen0:110,pen60:31,vel:680,filler:0.15,dmgType:"Kinetic+Frag",note:"Best all-round"},
+{name:"BR-350A",type:"APHE",pen0:95,pen60:27,vel:680,filler:0.155,dmgType:"Kinetic+Frag",note:"Stock, slightly less pen"},
+{name:"BR-350P",type:"APCR",pen0:145,pen60:33,vel:950,filler:0,dmgType:"Kinetic",note:"Emergency pen"},
+{name:"OF-350M",type:"HE",pen0:12,pen60:6,vel:680,filler:0.62,dmgType:"Explosive",note:"HE"}
+]},
+{name:"T-34 1942",nation:"USSR",br:3.7,type:"MT",gun:"76mm F-34",ammo:[
+{name:"BR-350B",type:"APHE",pen0:110,pen60:31,vel:680,filler:0.15,dmgType:"Kinetic+Frag",note:"Best all-round choice"},
+{name:"BR-350A",type:"APHE",pen0:95,pen60:27,vel:680,filler:0.155,dmgType:"Kinetic+Frag",note:"Stock round"},
+{name:"BR-350P",type:"APCR",pen0:145,pen60:33,vel:950,filler:0,dmgType:"Kinetic",note:"Emergency pen only"},
+{name:"OF-350M",type:"HE",pen0:12,pen60:6,vel:680,filler:0.62,dmgType:"Explosive",note:"Anti-open-top"}
+]},
+{name:"BMP-2M",nation:"USSR",br:9.3,type:"IFV",gun:"30mm 2A42 + Kornet ATGM",ammo:[
+{name:"9M133FM-3 Kornet",type:"ATGM",pen0:1200,pen60:672,vel:300,filler:7.0,dmgType:"Chemical",note:"Tandem HEAT, highest pen ATGM in game"},
+{name:"9M133M-2 Kornet",type:"ATGM",pen0:1200,pen60:672,vel:300,filler:5.16,dmgType:"Chemical",note:"Tandem HEAT variant"},
+{name:"30mm APDS",type:"APDS",pen0:82,pen60:43,vel:970,filler:0,dmgType:"Kinetic",note:"Autocannon belt"},
+{name:"30mm HEI",type:"HE",pen0:4,pen60:2,vel:960,filler:0.049,dmgType:"Explosive",note:"Anti-air / light vehicles"}
+]},
+// ============ USA ============
+{name:"M1A2 SEP V2",nation:"USA",br:12.3,type:"MBT",gun:"120mm M256",ammo:[
+{name:"M829A2",type:"APFSDS",pen0:625,pen60:333,vel:1680,filler:0,dmgType:"Kinetic",note:"Top round, excellent flat pen"},
+{name:"M829A1",type:"APFSDS",pen0:577,pen60:305,vel:1680,filler:0,dmgType:"Kinetic",note:"Backup APFSDS"},
+{name:"M830A1 MPAT",type:"HEAT-FS",pen0:480,pen60:269,vel:1410,filler:0.63,dmgType:"Chemical",note:"Proxy fuse, good vs helicopters"},
+{name:"M830",type:"HEAT-FS",pen0:480,pen60:269,vel:1140,filler:1.14,dmgType:"Chemical",note:"Standard HEAT"},
+{name:"M908 HE",type:"HE",pen0:36,pen60:19,vel:1050,filler:1.76,dmgType:"Explosive",note:"Overpressure kills"}
+]},
+{name:"M1A2 SEP Abrams",nation:"USA",br:11.7,type:"MBT",gun:"120mm M256",ammo:[
+{name:"M829A2",type:"APFSDS",pen0:625,pen60:333,vel:1680,filler:0,dmgType:"Kinetic",note:"Top round"},
+{name:"M829A1",type:"APFSDS",pen0:577,pen60:305,vel:1680,filler:0,dmgType:"Kinetic",note:"Backup"},
+{name:"M830A1 MPAT",type:"HEAT-FS",pen0:480,pen60:269,vel:1410,filler:0.63,dmgType:"Chemical",note:"Proxy fuse"},
+{name:"M830",type:"HEAT-FS",pen0:480,pen60:269,vel:1140,filler:1.14,dmgType:"Chemical",note:"HEAT"},
+{name:"M908 HE",type:"HE",pen0:36,pen60:19,vel:1050,filler:1.76,dmgType:"Explosive",note:"HE"}
+]},
+{name:"M1A2 Abrams",nation:"USA",br:11.7,type:"MBT",gun:"120mm M256",ammo:[
+{name:"M829A1",type:"APFSDS",pen0:577,pen60:305,vel:1680,filler:0,dmgType:"Kinetic",note:"Top round"},
+{name:"M829",type:"APFSDS",pen0:493,pen60:261,vel:1670,filler:0,dmgType:"Kinetic",note:"Stock"},
+{name:"M830",type:"HEAT-FS",pen0:480,pen60:269,vel:1140,filler:1.14,dmgType:"Chemical",note:"HEAT option"},
+{name:"M908 HE",type:"HE",pen0:36,pen60:19,vel:1050,filler:1.76,dmgType:"Explosive",note:"HE"}
+]},
+{name:"M1A1 Abrams",nation:"USA",br:11.0,type:"MBT",gun:"120mm M256",ammo:[
+{name:"M829A1",type:"APFSDS",pen0:577,pen60:305,vel:1680,filler:0,dmgType:"Kinetic",note:"Top round"},
+{name:"M829",type:"APFSDS",pen0:493,pen60:261,vel:1670,filler:0,dmgType:"Kinetic",note:"Stock APFSDS"},
+{name:"M830",type:"HEAT-FS",pen0:480,pen60:269,vel:1140,filler:1.14,dmgType:"Chemical",note:"HEAT"},
+{name:"M908 HE",type:"HE",pen0:36,pen60:19,vel:1050,filler:1.76,dmgType:"Explosive",note:"HE"}
+]},
+{name:"M1 Abrams",nation:"USA",br:10.3,type:"MBT",gun:"105mm M68A1",ammo:[
+{name:"M774",type:"APFSDS",pen0:372,pen60:197,vel:1509,filler:0,dmgType:"Kinetic",note:"Top APFSDS"},
+{name:"M735",type:"APFSDS",pen0:292,pen60:154,vel:1501,filler:0,dmgType:"Kinetic",note:"Stock"},
+{name:"M456A1",type:"HEAT-FS",pen0:400,pen60:224,vel:1174,filler:0.59,dmgType:"Chemical",note:"Chemical option"},
+{name:"M393A2",type:"HESH",pen0:127,pen60:65,vel:732,filler:2.4,dmgType:"Chemical",note:"Good vs light vehicles"}
+]},
+{name:"M60A3 TTS",nation:"USA",br:9.0,type:"MBT",gun:"105mm M68",ammo:[
+{name:"M774",type:"APFSDS",pen0:372,pen60:197,vel:1509,filler:0,dmgType:"Kinetic",note:"Top APFSDS"},
+{name:"M735",type:"APFSDS",pen0:292,pen60:154,vel:1501,filler:0,dmgType:"Kinetic",note:"Stock"},
+{name:"M456A1",type:"HEAT-FS",pen0:400,pen60:224,vel:1174,filler:0.59,dmgType:"Chemical",note:"HEAT option"},
+{name:"M393A2",type:"HESH",pen0:127,pen60:65,vel:732,filler:2.4,dmgType:"Chemical",note:"HESH"},
+{name:"M416",type:"HE",pen0:17,pen60:9,vel:730,filler:0.86,dmgType:"Explosive",note:"HE filler"}
+]},
+{name:"M48A1 Patton III",nation:"USA",br:7.3,type:"MBT",gun:"90mm M41",ammo:[
+{name:"M82",type:"APHE",pen0:185,pen60:52,vel:853,filler:0.14,dmgType:"Kinetic+Frag",note:"Best post-pen damage"},
+{name:"M332",type:"APCR",pen0:268,pen60:61,vel:1160,filler:0,dmgType:"Kinetic",note:"Emergency pen"},
+{name:"M431",type:"HEAT-FS",pen0:305,pen60:171,vel:1219,filler:0.38,dmgType:"Chemical",note:"Angle-proof"},
+{name:"M71",type:"HE",pen0:18,pen60:9,vel:823,filler:0.85,dmgType:"Explosive",note:"HE"}
+]},
+{name:"M4A3E2 76 Jumbo",nation:"USA",br:6.3,type:"HT",gun:"76mm M1",ammo:[
+{name:"M62",type:"APHE",pen0:149,pen60:42,vel:792,filler:0.063,dmgType:"Kinetic+Frag",note:"Good post-pen with filler"},
+{name:"M79",type:"AP",pen0:157,pen60:44,vel:792,filler:0,dmgType:"Kinetic",note:"Solid shot, slightly more pen"},
+{name:"M93",type:"APCR",pen0:210,pen60:48,vel:1036,filler:0,dmgType:"Kinetic",note:"Emergency pen vs heavy armour"},
+{name:"M42A1",type:"HE",pen0:13,pen60:7,vel:800,filler:0.39,dmgType:"Explosive",note:"Anti-open-top"}
+]},
+{name:"M4A2 76 Sherman",nation:"USA",br:5.0,type:"MT",gun:"76mm M1",ammo:[
+{name:"M62",type:"APHE",pen0:149,pen60:42,vel:792,filler:0.063,dmgType:"Kinetic+Frag",note:"Best all-round"},
+{name:"M79",type:"AP",pen0:157,pen60:44,vel:792,filler:0,dmgType:"Kinetic",note:"Solid shot"},
+{name:"M93",type:"APCR",pen0:210,pen60:48,vel:1036,filler:0,dmgType:"Kinetic",note:"High pen emergency"},
+{name:"M42A1",type:"HE",pen0:13,pen60:7,vel:800,filler:0.39,dmgType:"Explosive",note:"HE"}
+]},
+{name:"M4 Sherman",nation:"USA",br:3.7,type:"MT",gun:"75mm M3",ammo:[
+{name:"M61",type:"APHE",pen0:104,pen60:29,vel:619,filler:0.063,dmgType:"Kinetic+Frag",note:"APHE filler, one-shot potential"},
+{name:"M72",type:"AP",pen0:91,pen60:26,vel:619,filler:0,dmgType:"Kinetic",note:"Solid shot stock"},
+{name:"M48",type:"HE",pen0:10,pen60:5,vel:463,filler:0.65,dmgType:"Explosive",note:"Anti-open-top"}
+]},
+{name:"M18 Hellcat",nation:"USA",br:5.3,type:"TD",gun:"76mm M1",ammo:[
+{name:"M62",type:"APHE",pen0:149,pen60:42,vel:792,filler:0.063,dmgType:"Kinetic+Frag",note:"One-shot machine"},
+{name:"M79",type:"AP",pen0:157,pen60:44,vel:792,filler:0,dmgType:"Kinetic",note:"Solid AP"},
+{name:"M93",type:"APCR",pen0:210,pen60:48,vel:1036,filler:0,dmgType:"Kinetic",note:"Tiger-busting pen"},
+{name:"M42A1",type:"HE",pen0:13,pen60:7,vel:800,filler:0.39,dmgType:"Explosive",note:"HE"}
+]},
+{name:"T29",nation:"USA",br:6.7,type:"HT",gun:"105mm T5E2",ammo:[
+{name:"T13",type:"APHE",pen0:238,pen60:67,vel:945,filler:0.14,dmgType:"Kinetic+Frag",note:"Devastating 105mm APHE"},
+{name:"T29E3",type:"APHE",pen0:246,pen60:69,vel:945,filler:0.069,dmgType:"Kinetic+Frag",note:"Slightly more pen"},
+{name:"T30E1",type:"APCR",pen0:304,pen60:69,vel:1128,filler:0,dmgType:"Kinetic",note:"Extreme pen vs flat armour"},
+{name:"M67",type:"HE",pen0:24,pen60:12,vel:945,filler:1.39,dmgType:"Explosive",note:"HE option"}
+]},
+// ============ GERMANY ============
+{name:"Leopard 2A7V",nation:"Germany",br:12.0,type:"MBT",gun:"120mm L/55",ammo:[
+{name:"DM53",type:"APFSDS",pen0:625,pen60:333,vel:1750,filler:0,dmgType:"Kinetic",note:"Top round, extreme velocity"},
+{name:"DM43",type:"APFSDS",pen0:481,pen60:255,vel:1650,filler:0,dmgType:"Kinetic",note:"Stock APFSDS"},
+{name:"DM11",type:"HE",pen0:28,pen60:15,vel:1100,filler:1.34,dmgType:"Explosive",note:"Programmable HE"},
+{name:"DM12A1",type:"HEAT-FS",pen0:480,pen60:269,vel:1140,filler:1.08,dmgType:"Chemical",note:"HEAT option"}
+]},
+{name:"Leopard 2A6",nation:"Germany",br:11.3,type:"MBT",gun:"120mm L/55",ammo:[
+{name:"DM53",type:"APFSDS",pen0:625,pen60:333,vel:1750,filler:0,dmgType:"Kinetic",note:"Top round"},
+{name:"DM33",type:"APFSDS",pen0:408,pen60:216,vel:1650,filler:0,dmgType:"Kinetic",note:"Stock"},
+{name:"DM12A1",type:"HEAT-FS",pen0:480,pen60:269,vel:1140,filler:1.08,dmgType:"Chemical",note:"HEAT"},
+{name:"DM11",type:"HE",pen0:28,pen60:15,vel:1100,filler:1.34,dmgType:"Explosive",note:"HE"}
+]},
+{name:"Leopard 2A5",nation:"Germany",br:11.0,type:"MBT",gun:"120mm L/44",ammo:[
+{name:"DM53",type:"APFSDS",pen0:580,pen60:307,vel:1680,filler:0,dmgType:"Kinetic",note:"Top round"},
+{name:"DM33",type:"APFSDS",pen0:408,pen60:216,vel:1650,filler:0,dmgType:"Kinetic",note:"Stock"},
+{name:"DM12A1",type:"HEAT-FS",pen0:480,pen60:269,vel:1140,filler:1.08,dmgType:"Chemical",note:"HEAT"},
+{name:"DM11",type:"HE",pen0:28,pen60:15,vel:1100,filler:1.34,dmgType:"Explosive",note:"HE"}
+]},
+{name:"Leopard 2A4",nation:"Germany",br:10.3,type:"MBT",gun:"120mm L/44",ammo:[
+{name:"DM33",type:"APFSDS",pen0:408,pen60:216,vel:1650,filler:0,dmgType:"Kinetic",note:"Top round"},
+{name:"DM23",type:"APFSDS",pen0:362,pen60:192,vel:1640,filler:0,dmgType:"Kinetic",note:"Stock"},
+{name:"DM12A1",type:"HEAT-FS",pen0:480,pen60:269,vel:1140,filler:1.08,dmgType:"Chemical",note:"HEAT option"},
+{name:"DM11",type:"HE",pen0:28,pen60:15,vel:1100,filler:1.34,dmgType:"Explosive",note:"HE"}
+]},
+{name:"Tiger H1",nation:"Germany",br:5.3,type:"HT",gun:"88mm KwK 36",ammo:[
+{name:"PzGr 39",type:"APHE",pen0:165,pen60:46,vel:773,filler:0.108,dmgType:"Kinetic+Frag",note:"Best all-round, good filler"},
+{name:"PzGr",type:"APHE",pen0:154,pen60:43,vel:773,filler:0.064,dmgType:"Kinetic+Frag",note:"Stock APHE"},
+{name:"Hl.Gr 39",type:"HEAT",pen0:110,pen60:62,vel:600,filler:0.31,dmgType:"Chemical",note:"Angle-independent, low pen"},
+{name:"Sprgr. L/4.5",type:"HE",pen0:13,pen60:7,vel:820,filler:0.68,dmgType:"Explosive",note:"Anti-open-top"}
+]},
+{name:"Tiger II H",nation:"Germany",br:6.7,type:"HT",gun:"88mm KwK 43",ammo:[
+{name:"PzGr 39/43",type:"APHE",pen0:237,pen60:67,vel:1000,filler:0.108,dmgType:"Kinetic+Frag",note:"Excellent pen + filler combo"},
+{name:"PzGr 40/43",type:"APCR",pen0:303,pen60:69,vel:1130,filler:0,dmgType:"Kinetic",note:"Extreme pen, poor post-pen"},
+{name:"Hl.Gr 39",type:"HEAT",pen0:110,pen60:62,vel:600,filler:0.31,dmgType:"Chemical",note:"Weak HEAT"},
+{name:"Sprgr.43",type:"HE",pen0:13,pen60:7,vel:820,filler:0.68,dmgType:"Explosive",note:"HE"}
+]},
+{name:"Panther D",nation:"Germany",br:5.3,type:"MT",gun:"75mm KwK 42",ammo:[
+{name:"PzGr 39/42",type:"APHE",pen0:192,pen60:54,vel:925,filler:0.028,dmgType:"Kinetic+Frag",note:"High velocity APHE, great at range"},
+{name:"PzGr 40/42",type:"APCR",pen0:228,pen60:52,vel:1120,filler:0,dmgType:"Kinetic",note:"Emergency pen"},
+{name:"Sprgr. 42",type:"HE",pen0:10,pen60:5,vel:700,filler:0.34,dmgType:"Explosive",note:"HE"}
+]},
+{name:"Pz.IV F2",nation:"Germany",br:3.3,type:"MT",gun:"75mm KwK 40 L/43",ammo:[
+{name:"PzGr 39",type:"APHE",pen0:133,pen60:37,vel:740,filler:0.017,dmgType:"Kinetic+Frag",note:"Good pen for the BR"},
+{name:"PzGr 40",type:"APCR",pen0:177,pen60:40,vel:990,filler:0,dmgType:"Kinetic",note:"High pen solid shot"},
+{name:"Hl.Gr 38B",type:"HEAT",pen0:80,pen60:45,vel:450,filler:0.24,dmgType:"Chemical",note:"Chemical"},
+{name:"Sprgr. 34",type:"HE",pen0:10,pen60:5,vel:590,filler:0.68,dmgType:"Explosive",note:"HE"}
+]},
+// ============ BRITAIN ============
+{name:"Challenger 2 TES",nation:"Britain",br:11.0,type:"MBT",gun:"120mm L30A1",ammo:[
+{name:"L27A1",type:"APFSDS",pen0:564,pen60:299,vel:1534,filler:0,dmgType:"Kinetic",note:"Top round"},
+{name:"L26",type:"APFSDS",pen0:493,pen60:261,vel:1534,filler:0,dmgType:"Kinetic",note:"Stock"},
+{name:"L31A7",type:"HESH",pen0:152,pen60:78,vel:670,filler:3.56,dmgType:"Chemical",note:"HESH, good vs light targets"},
+{name:"L34",type:"HE",pen0:27,pen60:14,vel:670,filler:2.72,dmgType:"Explosive",note:"HE"}
+]},
+{name:"Chieftain Mk 10",nation:"Britain",br:9.0,type:"MBT",gun:"120mm L11A5",ammo:[
+{name:"L23A1",type:"APFSDS",pen0:390,pen60:206,vel:1525,filler:0,dmgType:"Kinetic",note:"Top APFSDS"},
+{name:"L15A3",type:"APDS",pen0:303,pen60:160,vel:1370,filler:0,dmgType:"Kinetic",note:"Stock APDS"},
+{name:"L31A7",type:"HESH",pen0:152,pen60:78,vel:670,filler:3.56,dmgType:"Chemical",note:"HESH good for flanking"},
+{name:"L34",type:"HE",pen0:27,pen60:14,vel:670,filler:2.72,dmgType:"Explosive",note:"HE"}
+]},
+{name:"Centurion Mk 3",nation:"Britain",br:6.7,type:"MT",gun:"84mm QF 20-pdr",ammo:[
+{name:"Shot Mk.3",type:"APDS",pen0:285,pen60:150,vel:1430,filler:0,dmgType:"Kinetic",note:"Excellent APDS pen for BR"},
+{name:"Shot Mk.1",type:"AP",pen0:232,pen60:65,vel:1020,filler:0,dmgType:"Kinetic",note:"Stock solid AP"},
+{name:"Shell Mk.1",type:"HE",pen0:18,pen60:9,vel:610,filler:0.57,dmgType:"Explosive",note:"HE"}
+]},
+{name:"Cromwell V",nation:"Britain",br:3.7,type:"MT",gun:"75mm QF Mk.V",ammo:[
+{name:"M61",type:"APHE",pen0:104,pen60:29,vel:619,filler:0.063,dmgType:"Kinetic+Frag",note:"APHE with filler"},
+{name:"M72",type:"AP",pen0:91,pen60:26,vel:619,filler:0,dmgType:"Kinetic",note:"Stock solid shot"},
+{name:"M48",type:"HE",pen0:10,pen60:5,vel:463,filler:0.65,dmgType:"Explosive",note:"HE"}
+]},
+// ============ FRANCE ============
+{name:"Leclerc S2",nation:"France",br:11.3,type:"MBT",gun:"120mm CN120-26",ammo:[
+{name:"OFL 120 F2",type:"APFSDS",pen0:575,pen60:305,vel:1790,filler:0,dmgType:"Kinetic",note:"Top round, highest velocity 120mm"},
+{name:"OFL 120 F1",type:"APFSDS",pen0:498,pen60:264,vel:1740,filler:0,dmgType:"Kinetic",note:"Stock"},
+{name:"OCC 120 G1",type:"HEAT-FS",pen0:480,pen60:269,vel:1100,filler:1.36,dmgType:"Chemical",note:"HEAT option"},
+{name:"OE 120 HE",type:"HE",pen0:35,pen60:18,vel:800,filler:2.08,dmgType:"Explosive",note:"HE"}
+]},
+// ============ SWEDEN ============
+{name:"Strv 122",nation:"Sweden",br:11.3,type:"MBT",gun:"120mm L/44",ammo:[
+{name:"slpprj m/95",type:"APFSDS",pen0:580,pen60:307,vel:1680,filler:0,dmgType:"Kinetic",note:"DM53 equivalent"},
+{name:"DM33",type:"APFSDS",pen0:408,pen60:216,vel:1650,filler:0,dmgType:"Kinetic",note:"Stock"},
+{name:"DM12A1",type:"HEAT-FS",pen0:480,pen60:269,vel:1140,filler:1.08,dmgType:"Chemical",note:"HEAT"},
+{name:"slsgr m/95",type:"HE",pen0:28,pen60:15,vel:1100,filler:1.34,dmgType:"Explosive",note:"HE"}
+]},
+// ============ JAPAN ============
+{name:"Type 10",nation:"Japan",br:11.3,type:"MBT",gun:"120mm L/44",ammo:[
+{name:"Type 10",type:"APFSDS",pen0:615,pen60:327,vel:1730,filler:0,dmgType:"Kinetic",note:"Top round, excellent"},
+{name:"JM33",type:"APFSDS",pen0:408,pen60:216,vel:1650,filler:0,dmgType:"Kinetic",note:"Stock DM33 equiv"},
+{name:"JM12A1",type:"HEAT-FS",pen0:480,pen60:269,vel:1140,filler:1.08,dmgType:"Chemical",note:"HEAT"},
+{name:"M830 HE",type:"HE",pen0:28,pen60:15,vel:1100,filler:1.34,dmgType:"Explosive",note:"HE"}
+]},
+// ============ ISRAEL ============
+{name:"Merkava Mk.4M",nation:"Israel",br:11.7,type:"MBT",gun:"120mm MG253",ammo:[
+{name:"M322",type:"APFSDS",pen0:589,pen60:312,vel:1700,filler:0,dmgType:"Kinetic",note:"Top round"},
+{name:"M338",type:"APFSDS",pen0:530,pen60:281,vel:1700,filler:0,dmgType:"Kinetic",note:"Backup"},
+{name:"M325",type:"HEAT-FS",pen0:480,pen60:269,vel:1140,filler:1.14,dmgType:"Chemical",note:"HEAT"},
+{name:"LAHAT",type:"ATGM",pen0:800,pen60:448,vel:285,filler:3.08,dmgType:"Chemical",note:"Gun-launched ATGM, tandem HEAT"},
+{name:"M329",type:"HE",pen0:40,pen60:21,vel:1050,filler:1.96,dmgType:"Explosive",note:"HE with proxy fuse"}
+]},
+// ============ ITALY ============
+{name:"Ariete AMV",nation:"Italy",br:11.3,type:"MBT",gun:"120mm L/44",ammo:[
+{name:"CL3143",type:"APFSDS",pen0:625,pen60:333,vel:1680,filler:0,dmgType:"Kinetic",note:"Top round"},
+{name:"DM33",type:"APFSDS",pen0:408,pen60:216,vel:1650,filler:0,dmgType:"Kinetic",note:"Stock"},
+{name:"DM12A1",type:"HEAT-FS",pen0:480,pen60:269,vel:1140,filler:1.08,dmgType:"Chemical",note:"HEAT"},
+{name:"DM11",type:"HE",pen0:28,pen60:15,vel:1100,filler:1.34,dmgType:"Explosive",note:"HE"}
+]},
+// ============ CHINA ============
+{name:"ZTZ99A",nation:"China",br:11.3,type:"MBT",gun:"125mm ZPT-98",ammo:[
+{name:"DTB-125",type:"APFSDS",pen0:577,pen60:305,vel:1700,filler:0,dmgType:"Kinetic",note:"Top round"},
+{name:"125-I",type:"APFSDS",pen0:466,pen60:247,vel:1700,filler:0,dmgType:"Kinetic",note:"Stock"},
+{name:"DTP-125",type:"HEAT-FS",pen0:600,pen60:336,vel:905,filler:1.87,dmgType:"Chemical",note:"High pen HEAT"},
+{name:"DTB-125 HE",type:"HE",pen0:43,pen60:22,vel:850,filler:3.27,dmgType:"Explosive",note:"Big HE"},
+{name:"GP125",type:"ATGM",pen0:750,pen60:420,vel:350,filler:3.81,dmgType:"Chemical",note:"Gun-launched ATGM"}
+]}
+];
+
+const input=document.getElementById("searchInput"),dd=document.getElementById("dropdown");
+let hlIdx=-1,filtered=[];
+
+input.addEventListener("input",()=>{
+const q=input.value.toLowerCase().trim();
+if(!q){dd.classList.remove("open");return}
+filtered=VDB.filter(v=>v.name.toLowerCase().includes(q)||v.nation.toLowerCase().includes(q)).slice(0,40);
+hlIdx=-1;renderDD()
+});
+input.addEventListener("focus",()=>{if(input.value.trim())input.dispatchEvent(new Event("input"))});
+document.addEventListener("click",e=>{if(!e.target.closest(".search-box"))dd.classList.remove("open")});
+input.addEventListener("keydown",e=>{
+if(!dd.classList.contains("open"))return;
+if(e.key==="ArrowDown"){e.preventDefault();hlIdx=Math.min(hlIdx+1,filtered.length-1);renderDD()}
+else if(e.key==="ArrowUp"){e.preventDefault();hlIdx=Math.max(hlIdx-1,0);renderDD()}
+else if(e.key==="Enter"&&hlIdx>=0){e.preventDefault();selectVehicle(filtered[hlIdx])}
+});
+
+function renderDD(){
+if(!filtered.length){dd.innerHTML='<div class="dd-empty">No vehicles found</div>';dd.classList.add("open");return}
+dd.innerHTML=filtered.map((v,i)=>`<div class="dd-item${i===hlIdx?" hl":""}" data-i="${i}">
+<span class="dd-flag">${FLAGS[v.nation]||""}</span><span class="dd-name">${v.name}</span>
+<span class="dd-gun">${v.gun}</span><span class="dd-br">${v.br.toFixed(1)}</span></div>`).join("");
+dd.classList.add("open");
+dd.querySelectorAll(".dd-item").forEach(el=>el.addEventListener("click",()=>selectVehicle(filtered[+el.dataset.i])));
+const h=dd.querySelector(".hl");if(h)h.scrollIntoView({block:"nearest"})
+}
+
+function selectVehicle(v){
+input.value=v.name;dd.classList.remove("open");
+document.getElementById("vhFlag").textContent=FLAGS[v.nation]||"";
+document.getElementById("vhName").textContent=v.name;
+document.getElementById("vhDetail").textContent=`${v.nation} • ${v.type} • BR ${v.br.toFixed(1)}`;
+document.getElementById("vhBR").textContent=v.br.toFixed(1);
+document.getElementById("vhGun").textContent=v.gun;
+document.getElementById("vehicleHeader").classList.add("show");
+renderAmmo(v);
+renderRecs(v);
+}
+
+function typeColor(t){
+const m={"APHE":"var(--aphe)","APCBC":"var(--aphe)","AP":"var(--ap)","HEAT":"var(--heat)","HEAT-FS":"var(--heat)",
+"APDS":"var(--apds)","APFSDS":"var(--apfsds)","HE":"var(--he)","APCR":"var(--apcr)","HESH":"var(--hesh)",
+"ATGM":"var(--atgm)","HE-VT":"#e91e9c"};
+return m[t]||"var(--text2)"
+}
+
+function renderAmmo(v){
+const maxPen=Math.max(...v.ammo.map(a=>a.pen0));
+const sec=document.getElementById("ammoSection");sec.style.display="block";
+const grid=document.getElementById("ammoGrid");
+// find best for each situation
+const recs=getRecs(v);
+const bestNames=new Set(Object.values(recs).map(r=>r.name));
+
+grid.innerHTML=v.ammo.map(a=>{
+const penPct=(a.pen0/maxPen*100).toFixed(0);
+const col=typeColor(a.type);
+return`<div class="ammo-card">
+<div class="ammo-top">
+<span class="ammo-type-badge ${a.type.replace('-','')}" style="background:${col}">${a.type}</span>
+<span class="ammo-name">${a.name}</span>
+${bestNames.has(a.name)?'<span class="ammo-best">★ RECOMMENDED</span>':''}
+</div>
+<div class="ammo-stats">
+<div class="ammo-stat"><div class="label">PEN @ 0°</div><div class="val" style="color:${col}">${a.pen0}<span class="unit">mm</span></div>
+<div class="pen-bar"><div class="pen-fill" style="width:${penPct}%;background:${col}"></div></div></div>
+<div class="ammo-stat"><div class="label">PEN @ 60°</div><div class="val">${a.pen60}<span class="unit">mm</span></div></div>
+<div class="ammo-stat"><div class="label">VELOCITY</div><div class="val">${a.vel}<span class="unit">m/s</span></div></div>
+<div class="ammo-stat"><div class="label">FILLER</div><div class="val">${a.filler>0?a.filler.toFixed(2)+"<span class='unit'>kg</span>":"—"}</div></div>
+<div class="ammo-stat"><div class="label">DAMAGE TYPE</div><div class="val" style="font-size:.72rem">${a.dmgType}</div></div>
+<div class="ammo-stat"><div class="label">NOTES</div><div class="val" style="font-size:.68rem;color:var(--text2)">${a.note}</div></div>
+</div></div>`}).join("")
+}
+
+function getRecs(v){
+const ammo=v.ammo;
+const recs={};
+// Long range sniping: highest velocity kinetic with good pen
+const sniping=ammo.filter(a=>["APFSDS","APDS","APHE","AP","APCBC"].includes(a.type)).sort((a,b)=>{
+const sa=a.vel*0.4+a.pen0*0.6;const sb=b.vel*0.4+b.pen0*0.6;return sb-sa});
+if(sniping[0])recs.snipe={...sniping[0],reason:"Highest velocity + penetration for reliable hits at distance"};
+// Close range brawling: best post-pen (filler + pen combo)
+const brawl=ammo.filter(a=>a.pen0>30).sort((a,b)=>{
+const sa=a.filler*500+a.pen0+(a.type.includes("APHE")?100:0);
+const sb=b.filler*500+b.pen0+(b.type.includes("APHE")?100:0);return sb-sa});
+if(brawl[0])recs.brawl={...brawl[0],reason:brawl[0].filler>0?"Explosive filler maximises internal damage for one-shot kills":"Best combination of penetration and damage at close range"};
+// Heavy tanks: highest raw penetration
+const heavy=ammo.slice().sort((a,b)=>b.pen0-a.pen0);
+if(heavy[0])recs.heavy={...heavy[0],reason:`Highest penetration at ${heavy[0].pen0}mm to defeat heavy armour frontally`};
+// Light vehicles: HE or HEAT for overpressure
+const light=ammo.filter(a=>["HE","HEAT","HEAT-FS","HESH","HE-VT"].includes(a.type)).sort((a,b)=>b.filler-a.filler);
+if(light[0])recs.light={...light[0],reason:"Explosive damage for overpressure kills on light/open-top vehicles"};
+else{const fallback=ammo.filter(a=>a.filler>0).sort((a,b)=>b.filler-a.filler);if(fallback[0])recs.light={...fallback[0],reason:"Best available explosive filler for post-pen damage"}}
+return recs
+}
+
+function renderRecs(v){
+const recs=getRecs(v);
+const sec=document.getElementById("recSection");
+if(!Object.keys(recs).length){sec.classList.remove("show");return}
+sec.classList.add("show");
+const grid=document.getElementById("recGrid");
+const scenarios=[
+{key:"snipe",icon:"🎯",title:"LONG RANGE SNIPING"},
+{key:"brawl",icon:"💥",title:"CLOSE RANGE BRAWL"},
+{key:"heavy",icon:"🛡️",title:"VS HEAVY ARMOUR"},
+{key:"light",icon:"💨",title:"VS LIGHT VEHICLES"}
+];
+grid.innerHTML=scenarios.filter(s=>recs[s.key]).map(s=>{
+const r=recs[s.key];const col=typeColor(r.type);
+return`<div class="rec-card">
+<div class="rec-icon">${s.icon}</div>
+<div class="rec-title">${s.title}</div>
+<div class="rec-ammo"><span class="rec-badge" style="background:${col}">${r.type}</span>${r.name}</div>
+<div class="rec-reason">${r.reason}</div>
+</div>`}).join("")
+}
+</script>
+</body>
+</html>
