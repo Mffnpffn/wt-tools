@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>WT Crew Skill Calculator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0e10;--bg2:#1a1c20;--bg3:#222528;--border:#2a2c30;--red:#cc0000;--red2:#ff2222;--red-glow:rgba(204,0,0,.3);--gold:#d4a017;--text:#e0ddd8;--text2:#888;--text3:#555;--green:#4caf50;--amber:#ff9800;--blue:#4a9eff}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{text-align:center;padding:20px 16px 12px;border-bottom:2px solid var(--red);background:linear-gradient(180deg,rgba(204,0,0,.08),transparent)}
+header h1{font-size:1.6rem;color:var(--red2);text-shadow:0 0 20px var(--red-glow);letter-spacing:.05em}
+header .star{color:var(--gold);font-size:1.2rem}
+header p{color:var(--text2);font-size:.78rem;margin-top:4px;letter-spacing:.08em}
+.container{max-width:800px;margin:0 auto;padding:16px}
+.controls{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px}
+.ctrl-title{font-size:.7rem;color:var(--text3);letter-spacing:.1em;margin-bottom:12px}
+.ctrl-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:.68rem;color:var(--text2);letter-spacing:.06em}
+.field select,.field input{padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.88rem;outline:none;appearance:none}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer}
+.field input:focus,.field select:focus{border-color:var(--red)}
+.pool-bar{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:16px}
+.pool-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.pool-label{font-size:.7rem;color:var(--text2);letter-spacing:.06em}
+.pool-nums{font-size:.85rem;font-weight:700}
+.pool-nums .spent{color:var(--amber)}
+.pool-nums .total{color:var(--green)}
+.pool-nums .over{color:var(--red2)}
+.pool-track{height:8px;background:var(--bg);border-radius:4px;overflow:hidden}
+.pool-fill{height:100%;border-radius:4px;transition:width .3s}
+.play-row{display:flex;gap:6px;margin-bottom:16px}
+.play-btn{flex:1;padding:8px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text3);font-size:.72rem;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;letter-spacing:.04em}
+.play-btn.active{background:rgba(204,0,0,.15);border-color:var(--red);color:var(--red2)}
+.play-btn .icon{display:block;font-size:1.1rem;margin-bottom:2px}
+.section-title{font-size:.8rem;color:var(--red2);letter-spacing:.08em;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.section-title .badge{font-size:.65rem;color:var(--text3);background:var(--bg3);padding:2px 8px;border-radius:10px}
+.skill-list{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.skill{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:border-color .15s}
+.skill.important{border-color:rgba(212,160,23,.3)}
+.skill-top{display:flex;align-items:center;gap:10px;padding:10px 12px}
+.skill-icon{font-size:1.2rem;flex-shrink:0;width:28px;text-align:center}
+.skill-info{flex:1;min-width:0}
+.skill-name{font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:6px}
+.skill-name .gold-star{color:var(--gold);font-size:.7rem}
+.skill-desc{font-size:.68rem;color:var(--text3);margin-top:2px;line-height:1.3}
+.skill-ctrl{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.skill-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text2);cursor:pointer;font-size:.9rem;font-weight:700;transition:all .1s;user-select:none}
+.skill-btn:hover{border-color:var(--red);color:var(--red2)}
+.skill-btn:active{transform:scale(.9)}
+.skill-level{font-size:.9rem;font-weight:700;min-width:28px;text-align:center}
+.skill-bottom{padding:4px 12px 10px}
+.skill-bar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.skill-fill{height:100%;border-radius:3px;transition:width .2s}
+.skill-fill.green{background:var(--green)}.skill-fill.amber{background:var(--amber)}.skill-fill.gold{background:var(--gold)}.skill-fill.red{background:var(--red2)}
+.skill-cost{display:flex;justify-content:space-between;margin-top:3px;font-size:.6rem;color:var(--text3)}
+.rec-panel{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:16px;display:none}
+.rec-panel.show{display:block}
+.rec-title{font-size:.75rem;color:var(--gold);letter-spacing:.08em;margin-bottom:10px}
+.rec-list{display:flex;flex-direction:column;gap:4px}
+.rec-item{display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg);border-radius:6px;font-size:.78rem}
+.rec-pri{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;flex-shrink:0}
+.rec-pri.p1{background:rgba(255,34,34,.15);color:var(--red2);border:1px solid rgba(255,34,34,.3)}
+.rec-pri.p2{background:rgba(255,152,0,.1);color:var(--amber);border:1px solid rgba(255,152,0,.2)}
+.rec-pri.p3{background:rgba(76,175,80,.1);color:var(--green);border:1px solid rgba(76,175,80,.2)}
+.rec-name{flex:1;font-weight:600}
+.rec-pts{color:var(--gold);font-weight:700;flex-shrink:0}
+.rec-why{font-size:.65rem;color:var(--text3);flex-shrink:0;max-width:140px;text-align:right}
+.apply-btn{width:100%;padding:10px;background:linear-gradient(180deg,#dd0000,#990000);border:2px solid var(--red2);border-radius:6px;color:#fff;font-size:.85rem;font-weight:700;cursor:pointer;letter-spacing:.06em;margin-top:8px;transition:all .15s}
+.apply-btn:hover{box-shadow:0 0 16px var(--red-glow)}
+.apply-btn:active{transform:scale(.98)}
+.reset-btn{width:100%;padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text3);font-size:.75rem;cursor:pointer;margin-top:6px;transition:all .15s}
+.reset-btn:hover{color:var(--red2);border-color:var(--red)}
+.hammer{opacity:.04;position:fixed;bottom:-40px;right:-40px;font-size:18rem;pointer-events:none;z-index:0}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:10px 20px;border-radius:6px;font-size:.82rem;font-weight:600;z-index:100;animation:toastIn .3s ease,toastOut .3s ease 1.7s forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(-50%) translateY(10px)}}
+footer{text-align:center;padding:20px;color:var(--text2);font-size:.68rem;border-top:1px solid var(--border);margin-top:24px;letter-spacing:.06em}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--red);border-radius:3px}
+@media(max-width:500px){.ctrl-grid{grid-template-columns:1fr}.play-row{flex-wrap:wrap}.play-btn{min-width:calc(33% - 4px)}.container{padding:10px}}
+</style>
+</head>
+<body>
+<div class="hammer">☭</div>
+<header>
+<div><span class="star">★</span> <span class="star">★</span> <span class="star">★</span></div>
+<h1>WT CREW SKILLS</h1>
+<p>CREW SKILL DISTRIBUTION CALCULATOR</p>
+</header>
+<div class="container">
+<div class="controls">
+<div class="ctrl-title">★ CREW CONFIGURATION</div>
+<div class="ctrl-grid">
+<div class="field"><label>CREW ROLE</label><select id="roleSelect" onchange="loadRole()">
+<option value="tank">Tank Crew</option>
+<option value="pilot">Pilot (Aircraft)</option>
+<option value="gunner_air">Gunner (Aircraft)</option>
+</select></div>
+<div class="field"><label>AVAILABLE CREW POINTS</label><input type="number" id="pointsInput" value="500" min="0" max="5000" step="10" onchange="render()"></div>
+</div>
+</div>
+<div class="pool-bar" id="poolBar">
+<div class="pool-row">
+<span class="pool-label">CREW POINTS</span>
+<span class="pool-nums"><span class="spent" id="spent">0</span> / <span class="total" id="totalPts">500</span></span>
+</div>
+<div class="pool-track"><div class="pool-fill" id="poolFill" style="width:0%;background:var(--green)"></div></div>
+</div>
+<div class="play-row">
+<div class="play-btn" data-p="aggressive" onclick="setPlay(this)"><span class="icon">⚔️</span>Aggressive</div>
+<div class="play-btn" data-p="defensive" onclick="setPlay(this)"><span class="icon">🛡️</span>Defensive</div>
+<div class="play-btn" data-p="support" onclick="setPlay(this)"><span class="icon">🔧</span>Support</div>
+<div class="play-btn" data-p="balanced" onclick="setPlay(this)"><span class="icon">⚖️</span>Balanced</div>
+</div>
+<div class="rec-panel" id="recPanel">
+<div class="rec-title">★ RECOMMENDED PRIORITY ORDER</div>
+<div class="rec-list" id="recList"></div>
+<button class="apply-btn" onclick="applyRec()">★ APPLY RECOMMENDATION ★</button>
+</div>
+<div id="skillSections"></div>
+<button class="reset-btn" onclick="resetAll()">Reset All Skills to 0</button>
+</div>
+<footer>★ CREW POINTS ARE EARNED BY PLAYING BATTLES ★ SPEND WISELY COMRADE ★</footer>
+<script>
+// Skill DB: {id,name,icon,desc,maxLevel,costPer,important,category,playstyle:{aggressive,defensive,support,balanced}}
+// Priority: 1=max first, 2=second, 3=third, 0=skip
+const ROLES={
+tank:{
+categories:["Commander","Driver","Gunner","Loader","General"],
+skills:[
+{id:"keen",name:"Keen Vision",icon:"👁️",desc:"Spot enemies further away. Shows red markers on targets sooner — critical for seeing threats first.",maxLevel:5,costPer:15,important:true,cat:"Commander",play:{aggressive:2,defensive:1,support:1,balanced:1}},
+{id:"leadership",name:"Leadership",icon:"⭐",desc:"Boosts all other crew skills slightly. A multiplier on everything — always valuable.",maxLevel:5,costPer:25,important:true,cat:"Commander",play:{aggressive:2,defensive:2,support:2,balanced:1}},
+{id:"target_track",name:"Field Repair",icon:"🔧",desc:"Repair damaged modules faster on the field. Less time sitting still = less time vulnerable.",maxLevel:5,costPer:15,important:false,cat:"Commander",play:{aggressive:3,defensive:1,support:2,balanced:2}},
+{id:"radio",name:"Radio Communication",icon:"📡",desc:"Share spotted enemy locations with teammates further away. Crucial for team play.",maxLevel:5,costPer:10,important:false,cat:"Commander",play:{aggressive:0,defensive:3,support:1,balanced:3}},
+{id:"driving",name:"Driving",icon:"🚗",desc:"Faster acceleration and higher top speed. Get to positions first and dodge shots better.",maxLevel:5,costPer:15,important:true,cat:"Driver",play:{aggressive:1,defensive:3,support:3,balanced:2}},
+{id:"offroad",name:"Off-road Driving",icon:"🏔️",desc:"Better speed on rough terrain like mud, sand, and snow. Huge on some maps.",maxLevel:5,costPer:10,important:false,cat:"Driver",play:{aggressive:2,defensive:3,support:3,balanced:3}},
+{id:"braking",name:"Brake Force",icon:"🛑",desc:"Stop faster after moving. Helps you peek corners and brake before overshooting cover.",maxLevel:5,costPer:8,important:false,cat:"Driver",play:{aggressive:2,defensive:2,support:0,balanced:3}},
+{id:"turret",name:"Turret Rotation",icon:"🔄",desc:"Turret turns faster. Essential for reacting to flankers and tracking moving targets.",maxLevel:5,costPer:15,important:true,cat:"Gunner",play:{aggressive:1,defensive:1,support:3,balanced:1}},
+{id:"accuracy",name:"Targeting",icon:"🎯",desc:"Gun accuracy at range and faster scope stabilisation after moving. Land first shots.",maxLevel:5,costPer:15,important:true,cat:"Gunner",play:{aggressive:1,defensive:1,support:2,balanced:1}},
+{id:"range",name:"Rangefinding",icon:"📏",desc:"Faster and more accurate rangefinder. Critical for long-range engagements without laser RF.",maxLevel:5,costPer:12,important:false,cat:"Gunner",play:{aggressive:3,defensive:1,support:2,balanced:2}},
+{id:"reload",name:"Reloading",icon:"📦",desc:"Faster reload speed. Directly reduces time between shots — one of the most impactful skills.",maxLevel:5,costPer:20,important:true,cat:"Loader",play:{aggressive:1,defensive:1,support:2,balanced:1}},
+{id:"ammo_swap",name:"Ammo Switching",icon:"🔀",desc:"Change ammo type faster mid-combat. Useful when switching between APFSDS and HE.",maxLevel:5,costPer:8,important:false,cat:"Loader",play:{aggressive:3,defensive:3,support:3,balanced:3}},
+{id:"vitality",name:"Vitality",icon:"❤️",desc:"Crew members survive hits better. Can mean the difference between a knocked-out crew and surviving to return fire.",maxLevel:5,costPer:20,important:true,cat:"General",play:{aggressive:1,defensive:1,support:1,balanced:1}},
+{id:"repair_rank",name:"Repair Rank",icon:"🔩",desc:"Repair higher-rank vehicles faster. Must match vehicle rank for full repair speed.",maxLevel:5,costPer:10,important:false,cat:"General",play:{aggressive:3,defensive:2,support:2,balanced:2}},
+{id:"agility",name:"Agility",icon:"🏃",desc:"Crew swaps positions faster when a crew member is knocked out. Keeps the tank fighting.",maxLevel:5,costPer:12,important:false,cat:"General",play:{aggressive:2,defensive:2,support:3,balanced:2}}
+]},
+pilot:{
+categories:["Pilot","Stamina","Gunnery","General"],
+skills:[
+{id:"g_tol",name:"G-Tolerance",icon:"💫",desc:"Withstand higher G-forces before blacking out. Essential for dogfighting and hard turns.",maxLevel:5,costPer:20,important:true,cat:"Pilot",play:{aggressive:1,defensive:1,support:2,balanced:1}},
+{id:"awareness",name:"Awareness",icon:"👁️",desc:"Spot enemy aircraft at greater distances. See dots before they see you.",maxLevel:5,costPer:15,important:true,cat:"Pilot",play:{aggressive:2,defensive:1,support:1,balanced:1}},
+{id:"keen_air",name:"Keen Vision",icon:"🔭",desc:"Identify aircraft type and see name tags sooner. Know what you're fighting before committing.",maxLevel:5,costPer:15,important:true,cat:"Pilot",play:{aggressive:2,defensive:1,support:1,balanced:1}},
+{id:"stamina",name:"Stamina",icon:"💪",desc:"Maintain performance during extended manoeuvres. Prevents accuracy loss from sustained Gs.",maxLevel:5,costPer:18,important:true,cat:"Stamina",play:{aggressive:1,defensive:2,support:3,balanced:1}},
+{id:"vitality_air",name:"Vitality",icon:"❤️",desc:"Pilot survives hits from bullets and shrapnel better. Prevents pilot snipes.",maxLevel:5,costPer:20,important:true,cat:"Stamina",play:{aggressive:1,defensive:1,support:1,balanced:1}},
+{id:"weapon_maint",name:"Weapon Maintenance",icon:"🔧",desc:"Guns jam less often during sustained fire. Critical for spray-and-pray head-ons.",maxLevel:5,costPer:12,important:false,cat:"Gunnery",play:{aggressive:1,defensive:3,support:2,balanced:2}},
+{id:"precision",name:"G-Force Precision",icon:"🎯",desc:"Maintain gun accuracy while pulling Gs. Allows accurate deflection shots in hard turns.",maxLevel:5,costPer:15,important:true,cat:"Gunnery",play:{aggressive:1,defensive:2,support:3,balanced:2}},
+{id:"reload_air",name:"Reload Speed",icon:"📦",desc:"Reload guns faster (for planes with limited ammo or turret gunners). Also affects bomb reload in AB.",maxLevel:5,costPer:10,important:false,cat:"Gunnery",play:{aggressive:2,defensive:3,support:2,balanced:3}},
+{id:"repair_air",name:"Repair Rank",icon:"🔩",desc:"Repair higher-rank aircraft on the airfield faster. Match to your highest plane rank.",maxLevel:5,costPer:10,important:false,cat:"General",play:{aggressive:0,defensive:2,support:2,balanced:3}},
+{id:"fire_prot",name:"Fire Protection",icon:"🔥",desc:"Better chance to extinguish engine fires. Can save your plane from burning down.",maxLevel:5,costPer:8,important:false,cat:"General",play:{aggressive:3,defensive:2,support:3,balanced:3}}
+]},
+gunner_air:{
+categories:["Turret Gunner","Accuracy","Survivability"],
+skills:[
+{id:"fire_acc",name:"Fire Accuracy",icon:"🎯",desc:"AI gunners aim better and hit more often. The single most important gunner skill for bombers.",maxLevel:5,costPer:18,important:true,cat:"Turret Gunner",play:{aggressive:1,defensive:1,support:1,balanced:1}},
+{id:"fire_prec",name:"Fire Precision",icon:"💎",desc:"Tighter bullet spread from turret guns. More shots on target means faster kills on attackers.",maxLevel:5,costPer:15,important:true,cat:"Turret Gunner",play:{aggressive:1,defensive:1,support:1,balanced:1}},
+{id:"g_tol_gun",name:"G-Tolerance",icon:"💫",desc:"Gunners maintain aim during evasive manoeuvres. Less wobble while you dodge.",maxLevel:5,costPer:12,important:false,cat:"Turret Gunner",play:{aggressive:2,defensive:2,support:2,balanced:2}},
+{id:"gun_vitality",name:"Vitality",icon:"❤️",desc:"Gunners survive enemy fire longer. Dead gunners can't shoot back.",maxLevel:5,costPer:20,important:true,cat:"Survivability",play:{aggressive:1,defensive:1,support:1,balanced:1}},
+{id:"gun_count",name:"Number of Gunners",icon:"👥",desc:"More crew trained as backup gunners. When one dies, another takes over faster.",maxLevel:5,costPer:15,important:false,cat:"Survivability",play:{aggressive:3,defensive:2,support:2,balanced:2}},
+{id:"track_speed",name:"Tracking Speed",icon:"🔄",desc:"Turrets rotate faster to track enemy planes. Essential against fast-moving fighters.",maxLevel:5,costPer:15,important:true,cat:"Accuracy",play:{aggressive:2,defensive:1,support:1,balanced:1}},
+{id:"fire_range",name:"Fire Range",icon:"📏",desc:"Gunners open fire at greater distances. More time shooting at approaching enemies.",maxLevel:5,costPer:10,important:false,cat:"Accuracy",play:{aggressive:3,defensive:2,support:2,balanced:3}}
+]}
+};
+
+let role="tank",playstyle="",levels={};
+
+function loadRole(){
+role=document.getElementById("roleSelect").value;
+levels={};
+ROLES[role].skills.forEach(s=>levels[s.id]=0);
+playstyle="";
+document.querySelectorAll(".play-btn").forEach(b=>b.classList.remove("active"));
+render();
+}
+
+function setPlay(el){
+document.querySelectorAll(".play-btn").forEach(b=>b.classList.remove("active"));
+el.classList.add("active");
+playstyle=el.dataset.p;
+renderRec();
+}
+
+function setLevel(id,delta){
+const s=ROLES[role].skills.find(x=>x.id===id);
+const pts=parseInt(document.getElementById("pointsInput").value)||0;
+const spent=getSpent();
+const newLvl=Math.max(0,Math.min(s.maxLevel,(levels[id]||0)+delta));
+const cost=(newLvl-(levels[id]||0))*s.costPer;
+if(delta>0&&spent+cost>pts){toast("Not enough crew points!");return}
+levels[id]=newLvl;
+render();
+}
+
+function getSpent(){return ROLES[role].skills.reduce((s,sk)=>(s+(levels[sk.id]||0)*sk.costPer),0)}
+
+function render(){
+const pts=parseInt(document.getElementById("pointsInput").value)||0;
+const spent=getSpent();
+const pct=pts>0?Math.min((spent/pts)*100,100):0;
+const over=spent>pts;
+
+document.getElementById("spent").textContent=spent;
+document.getElementById("spent").className="spent"+(over?" over":"");
+document.getElementById("totalPts").textContent=pts;
+document.getElementById("totalPts").className=over?"over":"total";
+const fill=document.getElementById("poolFill");
+fill.style.width=pct+"%";
+fill.style.background=over?"var(--red2)":pct>80?"var(--amber)":"var(--green)";
+
+const data=ROLES[role];
+const sections={};
+data.categories.forEach(c=>sections[c]=[]);
+data.skills.forEach(s=>{if(sections[s.cat])sections[s.cat].push(s)});
+
+const el=document.getElementById("skillSections");
+el.innerHTML=Object.entries(sections).map(([cat,skills])=>{
+const catSpent=skills.reduce((s,sk)=>(s+(levels[sk.id]||0)*sk.costPer),0);
+return`<div class="section-title"><span>★ ${cat.toUpperCase()}</span><span class="badge">${catSpent} pts</span></div>
+<div class="skill-list">${skills.map(s=>{
+const lvl=levels[s.id]||0;
+const pctFill=(lvl/s.maxLevel)*100;
+const barCls=s.important?"gold":pctFill>=80?"green":pctFill>=40?"amber":"red";
+const totalCost=lvl*s.costPer;
+return`<div class="skill${s.important?" important":""}">
+<div class="skill-top">
+<span class="skill-icon">${s.icon}</span>
+<div class="skill-info">
+<div class="skill-name">${s.name}${s.important?'<span class="gold-star">★ KEY</span>':''}</div>
+<div class="skill-desc">${s.desc}</div>
+</div>
+<div class="skill-ctrl">
+<div class="skill-btn" onclick="setLevel('${s.id}',-1)">−</div>
+<div class="skill-level">${lvl}</div>
+<div class="skill-btn" onclick="setLevel('${s.id}',1)">+</div>
+</div>
+</div>
+<div class="skill-bottom">
+<div class="skill-bar"><div class="skill-fill ${barCls}" style="width:${pctFill}%"></div></div>
+<div class="skill-cost"><span>${totalCost} pts spent (${s.costPer}/lvl)</span><span>${lvl}/${s.maxLevel}</span></div>
+</div></div>`}).join("")}</div>`}).join("");
+
+if(playstyle)renderRec();
+}
+
+function renderRec(){
+if(!playstyle)return;
+const panel=document.getElementById("recPanel");
+panel.classList.add("show");
+const data=ROLES[role];
+const sorted=[...data.skills].filter(s=>s.play[playstyle]>0).sort((a,b)=>a.play[playstyle]-b.play[playstyle]);
+
+document.getElementById("recList").innerHTML=sorted.map((s,i)=>{
+const pri=s.play[playstyle];
+const priCls=pri===1?"p1":pri===2?"p2":"p3";
+const maxCost=s.maxLevel*s.costPer;
+const reasons={1:"Max this first",2:"High priority",3:"Fill after core"};
+return`<div class="rec-item">
+<div class="rec-pri ${priCls}">P${pri}</div>
+<span style="font-size:1rem">${s.icon}</span>
+<span class="rec-name">${s.name}</span>
+<span class="rec-pts">${maxCost} pts</span>
+<span class="rec-why">${reasons[pri]}</span>
+</div>`}).join("");
+}
+
+function applyRec(){
+if(!playstyle){toast("Select a playstyle first");return}
+const pts=parseInt(document.getElementById("pointsInput").value)||0;
+const data=ROLES[role];
+// Reset
+data.skills.forEach(s=>levels[s.id]=0);
+// Sort by priority
+const sorted=[...data.skills].filter(s=>s.play[playstyle]>0).sort((a,b)=>a.play[playstyle]-b.play[playstyle]);
+let remaining=pts;
+// Distribute: fill priority 1 first, then 2, then 3
+for(const s of sorted){
+const canAfford=Math.floor(remaining/s.costPer);
+const toAdd=Math.min(canAfford,s.maxLevel);
+levels[s.id]=toAdd;
+remaining-=toAdd*s.costPer;
+}
+toast("★ "+playstyle.charAt(0).toUpperCase()+playstyle.slice(1)+" build applied!");
+render();
+}
+
+function resetAll(){
+ROLES[role].skills.forEach(s=>levels[s.id]=0);
+toast("All skills reset to 0");render();
+}
+
+function toast(msg){
+const old=document.querySelector(".toast");if(old)old.remove();
+const t=document.createElement("div");t.className="toast";t.textContent=msg;
+document.body.appendChild(t);setTimeout(()=>t.remove(),2000);
+}
+
+loadRole();
+</script>
+</body>
+</html>
