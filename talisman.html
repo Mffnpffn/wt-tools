@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>WT Talisman Calculator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0e10;--bg2:#1a1c20;--bg3:#222528;--border:#2a2c30;--red:#cc0000;--red2:#ff2222;--red-glow:rgba(204,0,0,.3);--gold:#d4a017;--text:#e0ddd8;--text2:#888;--text3:#555;--green:#4caf50;--amber:#ff9800;--blue:#4a9eff}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{text-align:center;padding:20px 16px 12px;border-bottom:2px solid var(--red);background:linear-gradient(180deg,rgba(204,0,0,.08),transparent)}
+header h1{font-size:1.6rem;color:var(--red2);text-shadow:0 0 20px var(--red-glow);letter-spacing:.05em}
+header .star{color:var(--gold);font-size:1.2rem}
+header p{color:var(--text2);font-size:.78rem;margin-top:4px;letter-spacing:.08em}
+.container{max-width:750px;margin:0 auto;padding:16px}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px}
+.panel-title{font-size:.68rem;color:var(--text3);letter-spacing:.1em;margin-bottom:10px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field.full{grid-column:1/-1}
+.field label{font-size:.58rem;color:var(--text2);letter-spacing:.06em}
+.field input,.field select{padding:9px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.82rem;outline:none}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;cursor:pointer}
+.field input:focus,.field select:focus{border-color:var(--red)}
+.field .hint{font-size:.55rem;color:var(--text3)}
+.search-box{position:relative}
+.search-box input{width:100%;padding:9px 10px 9px 28px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.82rem;outline:none}
+.search-box input:focus{border-color:var(--red)}
+.search-box input::placeholder{color:var(--text3)}
+.si{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.8rem}
+.dd{position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:0 0 6px 6px;max-height:250px;overflow-y:auto;z-index:100;display:none}
+.dd.open{display:block}
+.dd-item{padding:7px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:.75rem;border-bottom:1px solid rgba(255,255,255,.03)}
+.dd-item:hover,.dd-item.hl{background:rgba(204,0,0,.12)}
+.dd-flag{font-size:.9rem;width:18px;text-align:center;flex-shrink:0}
+.dd-name{flex:1}
+.dd-br{color:var(--gold);font-weight:700;font-size:.7rem;flex-shrink:0}
+.dd-type{font-size:.55rem;color:var(--text3);background:var(--bg3);padding:1px 4px;border-radius:3px;flex-shrink:0}
+.dd-empty{padding:10px;text-align:center;color:var(--text3);font-size:.72rem}
+.vh{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px;display:none}
+.vh.show{display:block}
+.vh-top{background:linear-gradient(90deg,var(--red),#880000);padding:10px 14px;display:flex;align-items:center;gap:10px}
+.vh-flag{font-size:1.4rem}
+.vh-info{flex:1}.vh-name{font-size:.95rem;font-weight:700;color:#fff}.vh-detail{font-size:.7rem;color:rgba(255,255,255,.6);margin-top:1px}
+.vh-br{background:rgba(0,0,0,.3);color:var(--gold);font-weight:700;padding:3px 12px;border-radius:5px;font-size:1rem}
+.verdict-box{border-radius:8px;padding:20px;text-align:center;margin-bottom:14px;display:none}
+.verdict-box.show{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.verdict-box.buy{background:rgba(76,175,80,.08);border:2px solid rgba(76,175,80,.3)}
+.verdict-box.skip{background:rgba(255,34,34,.06);border:2px solid rgba(255,34,34,.2)}
+.verdict-box.maybe{background:rgba(255,152,0,.06);border:2px solid rgba(255,152,0,.2)}
+.verdict-icon{font-size:2.4rem;margin-bottom:6px}
+.verdict-text{font-size:1.3rem;font-weight:700}
+.verdict-reason{font-size:.8rem;color:var(--text2);margin-top:6px;line-height:1.5}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:14px;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.compare-col{padding:14px;text-align:center}
+.compare-col.no{background:var(--bg2)}
+.compare-col.yes{background:rgba(76,175,80,.04)}
+.cc-title{font-size:.65rem;color:var(--text3);letter-spacing:.1em;margin-bottom:10px;font-weight:600}
+.cc-title.yes{color:var(--green)}
+.cc-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:.75rem}
+.cc-row:last-child{border:none}
+.cc-row .k{color:var(--text3)}.cc-row .v{font-weight:600}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;margin-bottom:14px}
+.sg{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center}
+.sg .lbl{font-size:.5rem;color:var(--text3);letter-spacing:.06em;margin-bottom:2px}
+.sg .val{font-size:1.15rem;font-weight:700}
+.sg .sub{font-size:.55rem;color:var(--text3);margin-top:2px}
+.savings-bar{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px;display:none}
+.savings-bar.show{display:block}
+.sb-title{font-size:.68rem;color:var(--text3);letter-spacing:.06em;margin-bottom:8px;display:flex;justify-content:space-between}
+.sb-track{height:12px;background:var(--bg);border-radius:6px;overflow:hidden;display:flex;margin-bottom:4px}
+.sb-fill-no{height:100%;background:var(--red2);transition:width .4s}
+.sb-fill-yes{height:100%;background:var(--green);transition:width .4s}
+.sb-labels{display:flex;justify-content:space-between;font-size:.62rem}
+.sb-labels .no{color:var(--red2)}.sb-labels .yes{color:var(--green)}
+.section-title{font-size:.75rem;color:var(--red2);letter-spacing:.08em;margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.breakeven{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px;display:none}
+.breakeven.show{display:block}
+.be-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.be-icon{font-size:1.1rem}
+.be-title{font-size:.82rem;font-weight:600}
+.be-text{font-size:.75rem;color:var(--text2);line-height:1.5}
+.be-val{color:var(--gold);font-weight:700}
+.hammer{opacity:.04;position:fixed;bottom:-40px;right:-40px;font-size:18rem;pointer-events:none;z-index:0}
+footer{text-align:center;padding:20px;color:var(--text2);font-size:.68rem;border-top:1px solid var(--border);margin-top:24px;letter-spacing:.06em}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--red);border-radius:3px}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}.compare{grid-template-columns:1fr}.container{padding:10px}}
+</style>
+</head>
+<body>
+<div class="hammer">☭</div>
+<header>
+<div><span class="star">★</span> <span class="star">★</span> <span class="star">★</span></div>
+<h1>WT TALISMAN CALC</h1>
+<p>IS THE TALISMAN WORTH THE GOLDEN EAGLES?</p>
+</header>
+<div class="container">
+<div class="panel">
+<div class="panel-title">★ SELECT VEHICLE</div>
+<div class="search-box"><span class="si">⌕</span><input type="text" id="searchInput" placeholder="Search vehicle..." autocomplete="off"><div class="dd" id="dropdown"></div></div>
+</div>
+<div class="vh" id="vehicleHeader">
+<div class="vh-top"><span class="vh-flag" id="vhFlag"></span><div class="vh-info"><div class="vh-name" id="vhName"></div><div class="vh-detail" id="vhDetail"></div></div><div class="vh-br" id="vhBR"></div></div>
+</div>
+<div class="panel" id="inputPanel" style="display:none">
+<div class="panel-title">★ YOUR PROGRESS</div>
+<div class="form-grid">
+<div class="field"><label>CURRENT RP ON NEXT VEHICLE</label><input type="number" id="curRP" value="0" min="0" step="1000" oninput="calc()"><div class="hint">RP already earned toward next research</div></div>
+<div class="field"><label>AVG RP PER MATCH</label><input type="number" id="avgRP" value="3000" min="100" step="500" oninput="calc()"><div class="hint">Your typical RP from a good match</div></div>
+<div class="field"><label>AVG MATCH LENGTH (MIN)</label><input type="number" id="matchLen" value="12" min="3" max="30" step="1" oninput="calc()"><div class="hint">Including queue and loading</div></div>
+<div class="field"><label>MATCHES PER DAY</label><input type="number" id="matchesDay" value="10" min="1" max="50" step="1" oninput="calc()"><div class="hint">How many matches you play daily</div></div>
+</div>
+</div>
+<div class="verdict-box" id="verdict"></div>
+<div class="stats-grid" id="statsGrid"></div>
+<div class="savings-bar" id="savingsBar"></div>
+<div class="compare" id="compare" style="display:none"></div>
+<div class="breakeven" id="breakeven"></div>
+</div>
+<footer>★ TALISMAN DOUBLES RP EARNED ON THE VEHICLE ★ GE COSTS ARE APPROXIMATE ★</footer>
+<script>
+const FLAGS={USA:"🇺🇸",Germany:"🇩🇪",USSR:"🇷🇺",Britain:"🇬🇧",Japan:"🇯🇵",France:"🇫🇷",Italy:"🇮🇹",Sweden:"🇸🇪",Israel:"🇮🇱",China:"🇨🇳"};
+const TN={F:"Fighter",B:"Bomber",A:"Attacker",H:"Helicopter",LT:"Light Tank",MT:"Medium Tank",HT:"Heavy Tank",TD:"Tank Destroyer",AA:"SPAA",I:"Interceptor"};
+const DB=[
+["P-26A-34 Peashooter","USA",1.0,"F"],["F2A-1 Buffalo","USA",1.7,"F"],["P-36G Hawk","USA",2.3,"F"],["P-39N Airacobra","USA",2.7,"F"],["P-40E Warhawk","USA",2.7,"F"],["F4F-4 Wildcat","USA",2.7,"F"],["P-38G Lightning","USA",3.3,"F"],["F4U-1A Corsair","USA",3.0,"F"],["P-47D-25 Thunderbolt","USA",3.7,"F"],["P-47D-28 Thunderbolt","USA",4.3,"F"],["F4U-4B Corsair","USA",5.7,"F"],["P-51D-5 Mustang","USA",4.0,"F"],["P-51D-30 Mustang","USA",4.7,"F"],["P-51H-5 Mustang","USA",6.3,"F"],["F6F-5 Hellcat","USA",3.7,"F"],["F8F-1B Bearcat","USA",5.7,"F"],["P-63A-10 Kingcobra","USA",3.7,"F"],["F-80A Shooting Star","USA",7.0,"F"],["F-84B Thunderjet","USA",7.0,"F"],["F-86A-5 Sabre","USA",8.3,"F"],["F-86F-25 Sabre","USA",8.7,"F"],["F-100D Super Sabre","USA",9.3,"F"],["F-104A Starfighter","USA",9.3,"F"],["F-4C Phantom II","USA",10.3,"F"],["F-4E Phantom II","USA",11.0,"F"],["F-5E Tiger II","USA",10.7,"F"],["F-14A Tomcat","USA",11.3,"F"],["F-14B Tomcat","USA",12.0,"F"],["F-15A Eagle","USA",12.0,"F"],["F-16C Fighting Falcon","USA",13.0,"F"],["F/A-18E Super Hornet","USA",13.3,"F"],["A-10A Late","USA",10.3,"A"],["B-29A Superfortress","USA",7.7,"B"],["B-52H Stratofortress","USA",10.0,"B"],["AH-64D Apache","USA",11.3,"H"],["M1 Abrams","USA",10.3,"MT"],["M1A1 Abrams","USA",11.0,"MT"],["M1A2 Abrams","USA",11.7,"MT"],["M1A2 SEP V2","USA",12.3,"MT"],["M18 Hellcat","USA",5.3,"TD"],["T29","USA",6.7,"HT"],
+["Bf 109 F-4","Germany",3.7,"F"],["Bf 109 G-6","Germany",4.7,"F"],["Bf 109 K-4","Germany",5.7,"F"],["Fw 190 D-9","Germany",5.3,"F"],["Me 262 A-1a","Germany",7.0,"F"],["MiG-29","Germany",12.3,"F"],["Eurofighter Typhoon","Germany",13.0,"F"],["Tiger H1","Germany",5.3,"HT"],["Tiger II H","Germany",6.7,"HT"],["Panther D","Germany",5.3,"MT"],["Leopard I","Germany",7.3,"MT"],["Leopard 2A4","Germany",10.3,"MT"],["Leopard 2A6","Germany",11.3,"MT"],["Leopard 2A7V","Germany",12.0,"MT"],["Maus","Germany",7.7,"HT"],
+["La-7","USSR",4.3,"F"],["Yak-3","USSR",4.0,"F"],["MiG-15bis","USSR",8.3,"F"],["MiG-21bis","USSR",10.7,"F"],["MiG-29","USSR",12.3,"F"],["Su-27","USSR",12.0,"F"],["Su-30MK2","USSR",13.3,"F"],["Ka-52","USSR",11.3,"H"],["T-34-85","USSR",5.3,"MT"],["IS-2","USSR",5.7,"HT"],["T-54 1947","USSR",7.3,"MT"],["T-55A","USSR",8.0,"MT"],["T-72B3","USSR",10.7,"MT"],["T-80U","USSR",10.7,"MT"],["T-80BVM","USSR",11.7,"MT"],["T-90M","USSR",11.7,"MT"],["BMP-2M","USSR",9.3,"LT"],["Pantsir-S1","USSR",12.0,"AA"],["KV-2","USSR",4.0,"HT"],
+["Spitfire LF Mk IX","Britain",5.3,"F"],["Typhoon FGR4","Britain",13.0,"F"],["Challenger 2 TES","Britain",11.0,"MT"],["Challenger 3 TD","Britain",12.0,"MT"],["Centurion Mk 3","Britain",6.7,"MT"],
+["A6M5 Zero","Japan",4.7,"F"],["F-15J","Japan",13.0,"F"],["Type 10","Japan",11.3,"MT"],["Type 90","Japan",10.7,"MT"],
+["Leclerc S2","France",11.3,"MT"],["Rafale C","France",13.3,"F"],["AMX-13","France",6.0,"LT"],
+["Ariete AMV","Italy",11.3,"MT"],["Strv 122","Sweden",11.3,"MT"],["JAS39C Gripen","Sweden",13.3,"F"],
+["Merkava Mk.4M","Israel",11.7,"MT"],["F-15A Baz","Israel",12.3,"F"],
+["ZTZ99A","China",11.3,"MT"],["J-11A","China",13.0,"F"]
+];
+const vehicles=DB.map(d=>({name:d[0],nation:d[1],br:d[2],type:TN[d[3]]||d[3],tc:d[3]}));
+
+function getResRP(br){
+if(br<=1.5)return 2000;if(br<=2.5)return 5000;if(br<=3.5)return 9000;if(br<=4.5)return 18000;
+if(br<=5.5)return 32000;if(br<=6.5)return 55000;if(br<=7.5)return 80000;if(br<=8.5)return 120000;
+if(br<=9.5)return 180000;if(br<=10.5)return 250000;if(br<=11.5)return 340000;if(br<=12.5)return 400000;return 450000;
+}
+function getTalismanGE(br){
+if(br<=1.5)return 160;if(br<=2.5)return 250;if(br<=3.5)return 400;if(br<=4.5)return 640;
+if(br<=5.5)return 900;if(br<=6.5)return 1200;if(br<=7.5)return 1500;if(br<=8.5)return 1900;
+if(br<=9.5)return 2200;if(br<=10.5)return 2500;if(br<=11.5)return 2700;if(br<=12.5)return 2900;return 3100;
+}
+function fmt(n){return n.toLocaleString()}
+
+let selectedV=null;
+const inp=document.getElementById("searchInput"),dd=document.getElementById("dropdown");
+let hlIdx=-1,filtered=[];
+inp.addEventListener("input",()=>{
+const q=inp.value.toLowerCase().trim();
+if(!q){dd.classList.remove("open");return}
+filtered=vehicles.filter(v=>v.name.toLowerCase().includes(q)||v.nation.toLowerCase().includes(q)||v.type.toLowerCase().includes(q)).slice(0,35);
+hlIdx=-1;renderDD()
+});
+inp.addEventListener("focus",()=>{if(inp.value.trim())inp.dispatchEvent(new Event("input"))});
+document.addEventListener("click",e=>{if(!e.target.closest(".search-box"))dd.classList.remove("open")});
+inp.addEventListener("keydown",e=>{
+if(!dd.classList.contains("open"))return;
+if(e.key==="ArrowDown"){e.preventDefault();hlIdx=Math.min(hlIdx+1,filtered.length-1);renderDD()}
+else if(e.key==="ArrowUp"){e.preventDefault();hlIdx=Math.max(hlIdx-1,0);renderDD()}
+else if(e.key==="Enter"&&hlIdx>=0){e.preventDefault();selectVehicle(filtered[hlIdx])}
+});
+function renderDD(){
+if(!filtered.length){dd.innerHTML='<div class="dd-empty">No vehicles found</div>';dd.classList.add("open");return}
+dd.innerHTML=filtered.map((v,i)=>`<div class="dd-item${i===hlIdx?" hl":""}" data-i="${i}"><span class="dd-flag">${FLAGS[v.nation]||""}</span><span class="dd-name">${v.name}</span><span class="dd-type">${v.type}</span><span class="dd-br">${v.br.toFixed(1)}</span></div>`).join("");
+dd.classList.add("open");
+dd.querySelectorAll(".dd-item").forEach(el=>el.addEventListener("click",()=>selectVehicle(filtered[+el.dataset.i])));
+}
+function selectVehicle(v){
+selectedV=v;inp.value=v.name;dd.classList.remove("open");
+document.getElementById("vhFlag").textContent=FLAGS[v.nation]||"";
+document.getElementById("vhName").textContent=v.name;
+document.getElementById("vhDetail").textContent=`${v.nation} • ${v.type} • BR ${v.br.toFixed(1)}`;
+document.getElementById("vhBR").textContent=v.br.toFixed(1);
+document.getElementById("vehicleHeader").classList.add("show");
+document.getElementById("inputPanel").style.display="block";
+calc();
+}
+
+function calc(){
+if(!selectedV)return;
+const resRP=getResRP(selectedV.br);
+const gePrice=getTalismanGE(selectedV.br);
+const geSLRate=45; // ~45 SL per GE equivalent
+const slEquiv=gePrice*geSLRate;
+const curRP=parseInt(document.getElementById("curRP").value)||0;
+const avgRP=parseInt(document.getElementById("avgRP").value)||3000;
+const matchLen=parseInt(document.getElementById("matchLen").value)||12;
+const matchesDay=parseInt(document.getElementById("matchesDay").value)||10;
+
+const remaining=Math.max(0,resRP-curRP);
+const matchesNo=Math.ceil(remaining/avgRP);
+const matchesYes=Math.ceil(remaining/(avgRP*2)); // talisman doubles RP
+const saved=matchesNo-matchesYes;
+const timeSavedMin=saved*matchLen;
+const timeSavedHrs=(timeSavedMin/60).toFixed(1);
+const daysNo=Math.ceil(matchesNo/matchesDay);
+const daysYes=Math.ceil(matchesYes/matchesDay);
+const daysSaved=daysNo-daysYes;
+
+// Break-even: if you'd play enough matches that the time saved is "worth" the GE
+// Simple heuristic: worth it if you save more than 20 matches
+const breakEvenMatches=20;
+const worthIt=saved>=breakEvenMatches&&remaining>avgRP*5;
+const almostDone=remaining<=avgRP*5;
+
+// Verdict
+const vd=document.getElementById("verdict");
+vd.style.display="block";
+let cls,icon,text,reason;
+if(almostDone){
+cls="skip";icon="⏭️";text="SKIP — ALMOST DONE";
+reason=`You only have ${matchesNo} matches left. The talisman would save ${saved} matches — not worth ${fmt(gePrice)} GE when you're this close to finishing.`;
+}else if(worthIt){
+cls="buy";icon="✅";text="BUY — WORTH IT";
+reason=`The talisman saves you ${saved} matches (${timeSavedHrs} hours / ${daysSaved} days). At ${fmt(gePrice)} GE, that's excellent value for ${fmt(remaining)} RP remaining.`;
+}else if(saved>=10){
+cls="maybe";icon="🤔";text="MAYBE — MARGINAL VALUE";
+reason=`You'd save ${saved} matches (${timeSavedHrs} hours). At ${fmt(gePrice)} GE it's borderline — worth it if you play this vehicle a lot beyond just researching.`;
+}else{
+cls="skip";icon="❌";text="SKIP — NOT WORTH IT";
+reason=`Only ${saved} matches saved for ${fmt(gePrice)} GE. The talisman doesn't pay off with ${fmt(remaining)} RP remaining.`;
+}
+vd.className="verdict-box show "+cls;
+vd.innerHTML=`<div class="verdict-icon">${icon}</div><div class="verdict-text" style="color:${cls==="buy"?"var(--green)":cls==="maybe"?"var(--amber)":"var(--red2)"}">${text}</div><div class="verdict-reason">${reason}</div>`;
+
+// Stats grid
+document.getElementById("statsGrid").innerHTML=`
+<div class="sg"><div class="lbl">TALISMAN COST</div><div class="val" style="color:var(--gold)">${fmt(gePrice)}<span style="font-size:.6rem;color:var(--text3)"> GE</span></div><div class="sub">≈ ${fmt(slEquiv)} SL</div></div>
+<div class="sg"><div class="lbl">RP REMAINING</div><div class="val" style="color:var(--amber)">${fmt(remaining)}</div><div class="sub">of ${fmt(resRP)} total</div></div>
+<div class="sg"><div class="lbl">MATCHES SAVED</div><div class="val" style="color:var(--green)">${saved}</div><div class="sub">${matchesNo} → ${matchesYes}</div></div>
+<div class="sg"><div class="lbl">TIME SAVED</div><div class="val" style="color:var(--blue)">${timeSavedHrs}<span style="font-size:.6rem;color:var(--text3)">h</span></div><div class="sub">${daysSaved} days faster</div></div>
+<div class="sg"><div class="lbl">DAYS WITHOUT</div><div class="val" style="color:var(--red2)">${daysNo}</div><div class="sub">at ${matchesDay}/day</div></div>
+<div class="sg"><div class="lbl">DAYS WITH</div><div class="val" style="color:var(--green)">${daysYes}</div><div class="sub">at ${matchesDay}/day</div></div>`;
+
+// Savings bar
+const sb=document.getElementById("savingsBar");
+sb.className="savings-bar show";
+const total=matchesNo||1;
+const noPct=(matchesNo/total*100).toFixed(0);
+const yesPct=(matchesYes/total*100).toFixed(0);
+sb.innerHTML=`<div class="sb-title"><span>MATCHES COMPARISON</span><span style="color:var(--green)">${saved} saved (${Math.round((1-matchesYes/matchesNo)*100)}% fewer)</span></div>
+<div class="sb-track"><div class="sb-fill-no" style="width:100%"></div></div>
+<div class="sb-labels"><span class="no">Without: ${matchesNo} matches</span><span class="yes">With: ${matchesYes} matches</span></div>
+<div style="margin-top:6px"><div class="sb-track"><div class="sb-fill-yes" style="width:${yesPct}%"></div></div></div>`;
+
+// Side by side compare
+const cp=document.getElementById("compare");
+cp.style.display="grid";
+const rows=[
+["RP per match",fmt(avgRP),fmt(avgRP*2)],
+["Total RP needed",fmt(remaining),fmt(remaining)],
+["Matches needed",matchesNo,matchesYes],
+["Days to complete",daysNo,daysYes],
+["Hours of play",((matchesNo*matchLen)/60).toFixed(1)+"h",((matchesYes*matchLen)/60).toFixed(1)+"h"],
+["GE cost","Free",fmt(gePrice)+" GE"],
+["Effective RP/GE","—",Math.round(remaining/gePrice)+" RP/GE"]
+];
+cp.innerHTML=`<div class="compare-col no"><div class="cc-title">WITHOUT TALISMAN</div>${rows.map(r=>`<div class="cc-row"><span class="k">${r[0]}</span><span class="v">${r[1]}</span></div>`).join("")}</div>
+<div class="compare-col yes"><div class="cc-title yes">WITH TALISMAN ★</div>${rows.map(r=>`<div class="cc-row"><span class="k">${r[0]}</span><span class="v" style="color:${r[0]==="GE cost"?"var(--gold)":"var(--green)"}">${r[2]}</span></div>`).join("")}</div>`;
+
+// Break-even analysis
+const be=document.getElementById("breakeven");
+be.className="breakeven show";
+const rpPerGE=Math.round(remaining/gePrice);
+const matchesBeyond=Math.round(gePrice*2/avgRP); // matches to "earn back" the GE value in extra RP
+be.innerHTML=`<div class="be-header"><span class="be-icon">📊</span><span class="be-title">Break-Even Analysis</span></div>
+<div class="be-text">
+The talisman costs <span class="be-val">${fmt(gePrice)} GE</span> and gives you <span class="be-val">${fmt(rpPerGE)} RP per GE</span> spent.<br><br>
+You break even after <span class="be-val">${matchesBeyond} matches</span> — after that, every match earns pure bonus RP. ${matchesYes>matchesBeyond?`Since you need ${matchesYes} matches, you'll get <span class="be-val">${matchesYes-matchesBeyond} matches of pure profit</span> beyond break-even.`:`You'll break even before finishing research.`}<br><br>
+${selectedV.br>=9?"At BR "+selectedV.br.toFixed(1)+", research costs are high — talismans become more valuable at top tier where RP requirements are massive.":"At BR "+selectedV.br.toFixed(1)+", research costs are moderate — the talisman is "+( worthIt?"a solid investment.":"less critical.")}
+</div>`;
+}
+</script>
+</body>
+</html>
