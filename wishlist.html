@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>WT Wishlist Tracker</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0e10;--bg2:#1a1c20;--bg3:#222528;--border:#2a2c30;--red:#cc0000;--red2:#ff2222;--red-glow:rgba(204,0,0,.3);--gold:#d4a017;--text:#e0ddd8;--text2:#888;--text3:#555;--green:#4caf50;--amber:#ff9800;--blue:#4a9eff}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{text-align:center;padding:20px 16px 12px;border-bottom:2px solid var(--red);background:linear-gradient(180deg,rgba(204,0,0,.08),transparent)}
+header h1{font-size:1.6rem;color:var(--red2);text-shadow:0 0 20px var(--red-glow);letter-spacing:.05em}
+header .star{color:var(--gold);font-size:1.2rem}
+header p{color:var(--text2);font-size:.78rem;margin-top:4px;letter-spacing:.08em}
+.container{max-width:800px;margin:0 auto;padding:16px}
+.dash{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;margin-bottom:14px}
+.dc{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center}
+.dc .lbl{font-size:.52rem;color:var(--text3);letter-spacing:.06em;margin-bottom:2px}
+.dc .val{font-size:1.1rem;font-weight:700}
+.dc .sub{font-size:.55rem;color:var(--text3);margin-top:2px}
+.dash-bar{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:14px}
+.dash-bar .lbl{font-size:.6rem;color:var(--text3);letter-spacing:.06em;margin-bottom:4px;display:flex;justify-content:space-between}
+.progress-track{height:10px;background:var(--bg);border-radius:5px;overflow:hidden}
+.progress-fill{height:100%;border-radius:5px;transition:width .4s;background:linear-gradient(90deg,var(--red2),var(--amber),var(--green))}
+.tab-row{display:flex;gap:4px;margin-bottom:14px;background:var(--bg2);border-radius:8px;padding:4px;border:1px solid var(--border)}
+.tab-btn{flex:1;padding:10px;text-align:center;border-radius:6px;font-size:.78rem;font-weight:600;color:var(--text3);cursor:pointer;transition:all .15s}
+.tab-btn.active{background:rgba(204,0,0,.15);color:var(--red2)}
+.tab-btn .icon{display:block;font-size:1rem;margin-bottom:2px}
+.tc{display:none}.tc.active{display:block}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px}
+.panel-title{font-size:.68rem;color:var(--text3);letter-spacing:.1em;margin-bottom:10px}
+.ctrl-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:3px;flex:1;min-width:120px}
+.field label{font-size:.58rem;color:var(--text2);letter-spacing:.06em}
+.field input,.field select{padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.82rem;outline:none}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;cursor:pointer}
+.field input:focus,.field select:focus{border-color:var(--red)}
+.search-box{position:relative;flex:2;min-width:180px}
+.search-box input{width:100%;padding:8px 10px 8px 28px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.82rem;outline:none}
+.search-box input:focus{border-color:var(--red)}
+.search-box input::placeholder{color:var(--text3)}
+.si{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.8rem}
+.dd{position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:0 0 6px 6px;max-height:220px;overflow-y:auto;z-index:100;display:none}
+.dd.open{display:block}
+.dd-item{padding:7px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:.74rem;border-bottom:1px solid rgba(255,255,255,.03)}
+.dd-item:hover,.dd-item.hl{background:rgba(204,0,0,.12)}
+.dd-flag{font-size:.9rem;width:18px;text-align:center;flex-shrink:0}
+.dd-name{flex:1}
+.dd-br{color:var(--gold);font-weight:700;font-size:.7rem;flex-shrink:0}
+.dd-type{font-size:.55rem;color:var(--text3);background:var(--bg3);padding:1px 4px;border-radius:3px;flex-shrink:0}
+.dd-empty{padding:10px;text-align:center;color:var(--text3);font-size:.72rem}
+.section-title{font-size:.75rem;color:var(--red2);letter-spacing:.08em;margin:12px 0 6px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.section-title .badge{font-size:.6rem;color:var(--text3);background:var(--bg3);padding:2px 7px;border-radius:10px}
+.wl-list{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+.wl-item{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;cursor:grab;animation:slideIn .2s ease}
+.wl-item.dragging{opacity:.4}
+@keyframes slideIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.wl-top{display:flex;align-items:center;gap:8px;padding:8px 10px}
+.wl-grip{color:var(--text3);font-size:.7rem;cursor:grab;flex-shrink:0;padding:0 2px}
+.wl-num{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:700;border:1px solid var(--border);color:var(--text3);flex-shrink:0}
+.wl-flag{font-size:.9rem;flex-shrink:0}
+.wl-info{flex:1;min-width:0}
+.wl-name{font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wl-detail{font-size:.58rem;color:var(--text3);margin-top:1px}
+.wl-br{color:var(--gold);font-weight:700;font-size:.75rem;flex-shrink:0}
+.wl-del{width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--text3);cursor:pointer;font-size:.65rem;flex-shrink:0}
+.wl-del:hover{color:var(--red2)}
+.wl-progress{padding:4px 10px 8px}
+.wl-pbar{display:flex;align-items:center;gap:6px}
+.wl-pbar .track{flex:1;height:5px;background:var(--bg);border-radius:3px;overflow:hidden}
+.wl-pbar .fill{height:100%;border-radius:3px;transition:width .3s}
+.wl-pbar .pct{font-size:.6rem;color:var(--text3);min-width:30px;text-align:right}
+.wl-costs{display:flex;gap:8px;margin-top:3px;flex-wrap:wrap}
+.wl-cost{font-size:.6rem;color:var(--text3)}
+.wl-cost b{font-weight:600}
+.wl-cost b.rp{color:var(--gold)}.wl-cost b.sl{color:var(--green)}.wl-cost b.match{color:var(--blue)}
+.mod-list{display:flex;flex-direction:column;gap:3px;margin-bottom:14px}
+.mod-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;font-size:.78rem}
+.mod-item.done{opacity:.5}
+.mod-cb{width:18px;height:18px;border-radius:4px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;font-size:.7rem;color:transparent}
+.mod-cb:hover{border-color:var(--red)}
+.mod-cb.checked{background:var(--green);border-color:var(--green);color:#fff}
+.mod-icon{font-size:.9rem;flex-shrink:0}
+.mod-info{flex:1}
+.mod-name{font-weight:600}
+.mod-desc{font-size:.6rem;color:var(--text3);margin-top:1px}
+.mod-rp{font-size:.72rem;color:var(--gold);font-weight:700;flex-shrink:0}
+.mod-pri{font-size:.55rem;padding:2px 6px;border-radius:3px;flex-shrink:0;font-weight:600}
+.mod-pri.p1{background:rgba(255,34,34,.1);color:var(--red2);border:1px solid rgba(255,34,34,.2)}
+.mod-pri.p2{background:rgba(255,152,0,.08);color:var(--amber);border:1px solid rgba(255,152,0,.2)}
+.mod-pri.p3{background:rgba(74,158,255,.06);color:var(--blue);border:1px solid rgba(74,158,255,.2)}
+.mod-del{width:18px;height:18px;display:flex;align-items:center;justify-content:center;color:var(--text3);cursor:pointer;font-size:.6rem;flex-shrink:0}
+.mod-del:hover{color:var(--red2)}
+.empty{text-align:center;padding:20px;color:var(--text3);font-size:.78rem}
+.empty .big{font-size:1.6rem;margin-bottom:4px}
+.btn{padding:7px 12px;border-radius:6px;font-size:.7rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text2);transition:all .15s;flex-shrink:0}
+.btn:hover{border-color:var(--red);color:var(--red2)}
+.btn.primary{background:linear-gradient(180deg,#dd0000,#990000);border-color:var(--red2);color:#fff}
+.hammer{opacity:.04;position:fixed;bottom:-40px;right:-40px;font-size:18rem;pointer-events:none;z-index:0}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:10px 20px;border-radius:6px;font-size:.82rem;font-weight:600;z-index:100;animation:toastIn .3s ease,toastOut .3s ease 1.7s forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(-50%) translateY(10px)}}
+footer{text-align:center;padding:20px;color:var(--text2);font-size:.68rem;border-top:1px solid var(--border);margin-top:24px;letter-spacing:.06em}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--red);border-radius:3px}
+@media(max-width:600px){.ctrl-row{flex-direction:column}.dash{grid-template-columns:repeat(3,1fr)}.container{padding:10px}}
+</style>
+</head>
+<body>
+<div class="hammer">☭</div>
+<header>
+<div><span class="star">★</span> <span class="star">★</span> <span class="star">★</span></div>
+<h1>WT WISHLIST</h1>
+<p>VEHICLE &amp; MODIFICATION TRACKER</p>
+</header>
+<div class="container">
+<div class="dash" id="dashboard"></div>
+<div class="dash-bar" id="dashBar"></div>
+<div class="tab-row">
+<div class="tab-btn active" onclick="setTab('vehicles',this)"><span class="icon">🎖️</span>Vehicles</div>
+<div class="tab-btn" onclick="setTab('mods',this)"><span class="icon">🔧</span>Modifications</div>
+</div>
+<div class="tc active" id="tabVehicles">
+<div class="panel">
+<div class="panel-title">★ ADD VEHICLE TO WISHLIST</div>
+<div class="ctrl-row">
+<div class="search-box"><span class="si">⌕</span><input type="text" id="vehSearch" placeholder="Search vehicle..." autocomplete="off"><div class="dd" id="vehDD"></div></div>
+</div>
+<div class="ctrl-row" style="margin-top:8px">
+<div class="field"><label>YOUR CURRENT RP</label><input type="number" id="curRP" value="0" min="0" step="1000" onchange="save();renderVeh()"></div>
+<div class="field"><label>YOUR CURRENT SL</label><input type="number" id="curSL" value="0" min="0" step="10000" onchange="save();renderVeh()"></div>
+<div class="field"><label>AVG RP PER MATCH</label><input type="number" id="avgRP" value="3000" min="100" step="500" onchange="save();renderVeh()"></div>
+</div>
+</div>
+<div class="section-title"><span>★ VEHICLE WISHLIST</span><span class="badge" id="vehCount">0</span></div>
+<div class="wl-list" id="vehList"></div>
+</div>
+<div class="tc" id="tabMods">
+<div class="panel">
+<div class="panel-title">★ ADD MODIFICATION</div>
+<div class="ctrl-row">
+<div class="field"><label>SELECT VEHICLE</label><select id="modVehSel" onchange="updateModList()"><option value="">— Choose vehicle —</option></select></div>
+<div class="field"><label>SELECT MODIFICATION</label><select id="modSel"><option value="">— Choose mod —</option></select></div>
+<div class="btn primary" onclick="addMod()" style="align-self:flex-end;margin-bottom:3px">Add Mod</div>
+</div>
+</div>
+<div class="section-title"><span>★ MODIFICATION WISHLIST</span><span class="badge" id="modCount">0</span></div>
+<div class="mod-list" id="modList"></div>
+</div>
+</div>
+<footer>★ ALL DATA SAVED TO LOCAL STORAGE ★ ACCESSIBLE BY OTHER WT TOOLS ★</footer>
+<script>
+const FLAGS={USA:"🇺🇸",Germany:"🇩🇪",USSR:"🇷🇺",Britain:"🇬🇧",Japan:"🇯🇵",France:"🇫🇷",Italy:"🇮🇹",Sweden:"🇸🇪",Israel:"🇮🇱",China:"🇨🇳"};
+const TN={F:"Fighter",B:"Bomber",A:"Attacker",H:"Helicopter",LT:"Light Tank",MT:"Medium Tank",HT:"Heavy Tank",TD:"Tank Destroyer",AA:"SPAA",I:"Interceptor"};
+const DB=[
+["P-26A-34 Peashooter","USA",1.0,"F"],["F2A-1 Buffalo","USA",1.7,"F"],["P-36G Hawk","USA",2.3,"F"],["P-39N Airacobra","USA",2.7,"F"],["P-40E Warhawk","USA",2.7,"F"],["F4F-4 Wildcat","USA",2.7,"F"],["P-38G Lightning","USA",3.3,"F"],["F4U-1A Corsair","USA",3.0,"F"],["P-47D-25 Thunderbolt","USA",3.7,"F"],["P-47D-28 Thunderbolt","USA",4.3,"F"],["F4U-4B Corsair","USA",5.7,"F"],["P-51D-5 Mustang","USA",4.0,"F"],["P-51D-30 Mustang","USA",4.7,"F"],["P-51H-5 Mustang","USA",6.3,"F"],["F6F-5 Hellcat","USA",3.7,"F"],["F8F-1B Bearcat","USA",5.7,"F"],["P-63A-10 Kingcobra","USA",3.7,"F"],["F-80A Shooting Star","USA",7.0,"F"],["F-84B Thunderjet","USA",7.0,"F"],["F-86A-5 Sabre","USA",8.3,"F"],["F-86F-25 Sabre","USA",8.7,"F"],["F-86F-2 Sabre","USA",9.0,"F"],["F-100D Super Sabre","USA",9.3,"F"],["F-104A Starfighter","USA",9.3,"F"],["F-4C Phantom II","USA",10.3,"F"],["F-4E Phantom II","USA",11.0,"F"],["F-5E Tiger II","USA",10.7,"F"],["F-14A Tomcat","USA",11.3,"F"],["F-14B Tomcat","USA",12.0,"F"],["F-15A Eagle","USA",12.0,"F"],["F-15C Eagle","USA",12.7,"F"],["F-16A Fighting Falcon","USA",12.0,"F"],["F-16C Fighting Falcon","USA",13.0,"F"],["F/A-18C Early Hornet","USA",12.7,"F"],["F/A-18C Late Hornet","USA",13.0,"F"],["F/A-18E Super Hornet","USA",13.3,"F"],["A-10A Thunderbolt II","USA",10.0,"A"],["A-10A Late","USA",10.3,"A"],["F-117A Nighthawk","USA",10.3,"A"],["F-4S Phantom II","USA",11.0,"F"],["F-4J Phantom II","USA",10.7,"F"],["B-17E Flying Fortress","USA",4.0,"B"],["B-17G Flying Fortress","USA",5.0,"B"],["B-24D Liberator","USA",4.3,"B"],["B-29A Superfortress","USA",7.7,"B"],["B-52H Stratofortress","USA",10.0,"B"],["B-57A Canberra","USA",7.7,"B"],["B-57B Canberra","USA",8.0,"B"],["AH-1G Cobra","USA",8.3,"H"],["AH-1Z Viper","USA",11.3,"H"],["AH-64A Apache","USA",10.7,"H"],["AH-64A GR Apache","USA",10.7,"H"],["AH-64D Apache","USA",11.3,"H"],["UH-1B","USA",8.0,"H"],["M2A4","USA",1.0,"LT"],["M3 Stuart","USA",1.3,"LT"],["M5A1 Stuart","USA",2.0,"LT"],["M22 Locust","USA",1.7,"LT"],["M24 Chaffee","USA",3.0,"LT"],["M41A1 Walker Bulldog","USA",6.0,"LT"],["M551 Sheridan","USA",8.0,"LT"],["M3 Lee","USA",2.3,"MT"],["M4 Sherman","USA",3.7,"MT"],["M4A1 Sherman","USA",3.3,"MT"],["M4A2 76 Sherman","USA",5.0,"MT"],["M4A3 76 Sherman","USA",5.3,"MT"],["M4A3E2 Jumbo","USA",5.3,"HT"],["M4A3E2 76 Jumbo","USA",6.3,"HT"],["M26 Pershing","USA",6.3,"MT"],["M46 Patton","USA",7.0,"MT"],["M47 Patton II","USA",7.0,"MT"],["M48A1 Patton III","USA",7.3,"MT"],["M60","USA",8.0,"MT"],["M60A1 RISE","USA",8.7,"MT"],["M60A3 TTS","USA",9.0,"MT"],["M1 Abrams","USA",10.3,"MT"],["IPM1 Abrams","USA",10.7,"MT"],["M1A1 Abrams","USA",11.0,"MT"],["M1A1 HC Abrams","USA",11.3,"MT"],["M1A2 Abrams","USA",11.7,"MT"],["M1A2 SEP Abrams","USA",11.7,"MT"],["M1A2 SEP V2","USA",12.3,"MT"],["T14","USA",4.7,"HT"],["T26E5","USA",6.7,"HT"],["T29","USA",6.7,"HT"],["T32","USA",7.3,"HT"],["T34","USA",6.7,"HT"],["M10 Wolverine","USA",3.3,"TD"],["M18 Hellcat","USA",5.3,"TD"],["M36 Jackson","USA",5.3,"TD"],["T95","USA",7.0,"TD"],["M56 Scorpion","USA",6.3,"TD"],["M16 MGMC","USA",2.7,"AA"],["M19A1","USA",4.0,"AA"],["M163 VADS","USA",8.3,"AA"],["M247 Sgt York","USA",9.3,"AA"],
+["Bf 109 F-4","Germany",3.7,"F"],["Bf 109 G-6","Germany",4.7,"F"],["Bf 109 K-4","Germany",5.7,"F"],["Fw 190 D-9","Germany",5.3,"F"],["Me 262 A-1a","Germany",7.0,"F"],["MiG-29","Germany",12.3,"F"],["Eurofighter Typhoon","Germany",13.0,"F"],["Panther D","Germany",5.3,"MT"],["Tiger H1","Germany",5.3,"HT"],["Tiger II H","Germany",6.7,"HT"],["Leopard I","Germany",7.3,"MT"],["Leopard 2A4","Germany",10.3,"MT"],["Leopard 2A5","Germany",11.0,"MT"],["Leopard 2A6","Germany",11.3,"MT"],["Leopard 2A7V","Germany",12.0,"MT"],["Gepard","Germany",8.3,"AA"],["Pz.IV F2","Germany",3.3,"MT"],["Maus","Germany",7.7,"HT"],["Jagdtiger","Germany",6.7,"TD"],
+["T-34-85","USSR",5.3,"MT"],["IS-2","USSR",5.7,"HT"],["T-54 1947","USSR",7.3,"MT"],["T-55A","USSR",8.0,"MT"],["T-62","USSR",8.0,"MT"],["T-64B","USSR",9.7,"MT"],["T-72B3","USSR",10.7,"MT"],["T-80U","USSR",10.7,"MT"],["T-80BVM","USSR",11.7,"MT"],["T-90M","USSR",11.7,"MT"],["BMP-2M","USSR",9.3,"LT"],["Pantsir-S1","USSR",12.0,"AA"],["KV-2","USSR",4.0,"HT"],["IS-3","USSR",7.0,"HT"],["MiG-21bis","USSR",10.7,"F"],["MiG-29","USSR",12.3,"F"],["Su-27","USSR",12.0,"F"],["Su-30MK2","USSR",13.3,"F"],["Ka-52","USSR",11.3,"H"],["Mi-28N","USSR",11.0,"H"],
+["Spitfire LF Mk IX","Britain",5.3,"F"],["Typhoon FGR4","Britain",13.0,"F"],["Challenger 2 TES","Britain",11.0,"MT"],["Challenger 3 TD","Britain",12.0,"MT"],["Centurion Mk 3","Britain",6.7,"MT"],["Conqueror","Britain",7.3,"HT"],
+["A6M5 Zero","Japan",4.7,"F"],["F-15J","Japan",13.0,"F"],["Type 90","Japan",10.7,"MT"],["Type 10","Japan",11.3,"MT"],
+["Leclerc S2","France",11.3,"MT"],["Rafale C","France",13.3,"F"],["AMX-13","France",6.0,"LT"],
+["Ariete AMV","Italy",11.3,"MT"],["Eurofighter Typhoon","Italy",13.0,"F"],["Centauro I 120","Italy",9.3,"TD"],
+["Strv 122","Sweden",11.3,"MT"],["JAS39C Gripen","Sweden",13.3,"F"],["CV 90120","Sweden",10.3,"LT"],
+["Merkava Mk.4M","Israel",11.7,"MT"],["F-15A Baz","Israel",12.3,"F"],
+["ZTZ99A","China",11.3,"MT"],["J-11A","China",13.0,"F"],["Z-10","China",10.3,"H"]
+];
+const vehicles=DB.map(d=>({name:d[0],nation:d[1],br:d[2],type:TN[d[3]]||d[3],tc:d[3]}));
+
+function getResearchRP(br){
+if(br<=1.5)return 2000;if(br<=2.5)return 5000;if(br<=3.5)return 9000;if(br<=4.5)return 18000;
+if(br<=5.5)return 32000;if(br<=6.5)return 55000;if(br<=7.5)return 80000;if(br<=8.5)return 120000;
+if(br<=9.5)return 180000;if(br<=10.5)return 250000;if(br<=11.5)return 340000;if(br<=12.5)return 400000;return 450000;
+}
+function getPurchaseSL(br){
+if(br<=2)return 4000;if(br<=4)return 20000;if(br<=6)return 100000;if(br<=8)return 270000;
+if(br<=10)return 580000;if(br<=12)return 890000;return 1020000;
+}
+function fmt(n){return n.toLocaleString()}
+
+const MODS_DB={
+ground:[
+{name:"Parts",icon:"🔧",desc:"Repair damaged modules in the field",rp:1,pri:1,tier:1},
+{name:"FPE",icon:"🔥",desc:"Fire Protection Equipment — extinguish fires",rp:1,pri:1,tier:1},
+{name:"Tracks",icon:"⛓️",desc:"Improved track durability and repair speed",rp:0.8,pri:2,tier:1},
+{name:"Horizontal Drive",icon:"🔄",desc:"Faster turret rotation speed",rp:0.8,pri:2,tier:1},
+{name:"Adjustment of Fire",icon:"🎯",desc:"Better gun accuracy and faster zeroing",rp:1.2,pri:2,tier:2},
+{name:"Elevation Mechanism",icon:"↕️",desc:"Faster gun elevation and depression speed",rp:0.8,pri:2,tier:2},
+{name:"Engine",icon:"⚙️",desc:"More horsepower — better acceleration and speed",rp:1.5,pri:2,tier:3},
+{name:"Transmission",icon:"🔩",desc:"Better gear shifting and reverse speed",rp:1.2,pri:3,tier:3},
+{name:"Filters",icon:"🌫️",desc:"Engine performance in dusty/sandy conditions",rp:1,pri:3,tier:2},
+{name:"Brake System",icon:"🛑",desc:"Shorter braking distance",rp:0.6,pri:3,tier:2},
+{name:"Suspension",icon:"🏔️",desc:"Better off-road handling and gun stabilisation",rp:1,pri:3,tier:3},
+{name:"Crew Replenishment",icon:"👥",desc:"Replace knocked-out crew members mid-battle",rp:1.5,pri:2,tier:3},
+{name:"NVD",icon:"🌙",desc:"Night Vision Device for driver/gunner/commander",rp:1.8,pri:3,tier:4},
+{name:"Laser Rangefinder",icon:"📏",desc:"Instant accurate range measurement",rp:2,pri:1,tier:3},
+{name:"Smoke Grenades",icon:"💨",desc:"Defensive smoke screen launchers",rp:0.8,pri:2,tier:2},
+{name:"Top APFSDS",icon:"💎",desc:"Best kinetic penetrator available for the gun",rp:2.5,pri:1,tier:4},
+{name:"HEAT-FS",icon:"🔶",desc:"Chemical energy anti-tank round",rp:1.5,pri:3,tier:2},
+{name:"ERA",icon:"🛡️",desc:"Explosive Reactive Armour add-on protection",rp:2,pri:2,tier:4}
+],
+air:[
+{name:"Fuselage Repair",icon:"🔧",desc:"Repair fuselage damage in the field",rp:1,pri:1,tier:1},
+{name:"Radiator",icon:"🌡️",desc:"Better engine cooling, less overheating",rp:0.8,pri:2,tier:1},
+{name:"Compressor",icon:"⚙️",desc:"Better high-altitude engine performance",rp:1,pri:2,tier:2},
+{name:"Airframe",icon:"✈️",desc:"Structural reinforcement for higher G loads",rp:1.2,pri:2,tier:2},
+{name:"Wings Repair",icon:"🦅",desc:"Repair wing damage mid-flight",rp:1,pri:1,tier:1},
+{name:"Engine",icon:"🔥",desc:"More thrust and better acceleration",rp:1.5,pri:2,tier:3},
+{name:"Engine Injection",icon:"💉",desc:"WEP / afterburner performance boost",rp:2,pri:2,tier:3},
+{name:"New Boosters",icon:"🚀",desc:"Better roll rate and control surface response",rp:1.2,pri:2,tier:2},
+{name:"G-suit",icon:"👨‍✈️",desc:"Higher G-tolerance before blackout",rp:1.8,pri:1,tier:3},
+{name:"New Cannons",icon:"🔫",desc:"Better accuracy and less spread on guns",rp:1.5,pri:2,tier:3},
+{name:"Top Missiles",icon:"🚀",desc:"Best air-to-air missiles for the aircraft",rp:2.5,pri:1,tier:4},
+{name:"Countermeasures",icon:"💨",desc:"Chaff and flares against missiles",rp:1.5,pri:1,tier:2},
+{name:"Bombs/Rockets",icon:"💣",desc:"Ground attack ordnance",rp:1,pri:3,tier:2}
+]};
+
+// State
+let data={vehWishlist:[],modWishlist:[],curRP:0,curSL:0,avgRP:3000};
+function load(){try{const s=JSON.parse(localStorage.getItem("wt_wishlist"));if(s){data=s;document.getElementById("curRP").value=data.curRP||0;document.getElementById("curSL").value=data.curSL||0;document.getElementById("avgRP").value=data.avgRP||3000}}catch(e){}}
+function save(){
+data.curRP=parseInt(document.getElementById("curRP").value)||0;
+data.curSL=parseInt(document.getElementById("curSL").value)||0;
+data.avgRP=parseInt(document.getElementById("avgRP").value)||3000;
+localStorage.setItem("wt_wishlist",JSON.stringify(data));
+// Also save vehicle names list for other tools
+localStorage.setItem("wt_wishlist_vehicles",JSON.stringify(data.vehWishlist.map(v=>v.name)));
+}
+function setTab(id,el){
+document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+el.classList.add("active");
+document.querySelectorAll(".tc").forEach(t=>t.classList.remove("active"));
+document.getElementById(id==="vehicles"?"tabVehicles":"tabMods").classList.add("active");
+}
+
+// Vehicle dropdown
+const vInp=document.getElementById("vehSearch"),vDD=document.getElementById("vehDD");
+let vHL=-1,vFil=[];
+vInp.addEventListener("input",()=>{
+const q=vInp.value.toLowerCase().trim();
+if(!q){vDD.classList.remove("open");return}
+vFil=vehicles.filter(v=>v.name.toLowerCase().includes(q)||v.nation.toLowerCase().includes(q)).slice(0,35);
+vHL=-1;renderVDD()
+});
+vInp.addEventListener("focus",()=>{if(vInp.value.trim())vInp.dispatchEvent(new Event("input"))});
+document.addEventListener("click",e=>{if(!e.target.closest(".search-box"))vDD.classList.remove("open")});
+vInp.addEventListener("keydown",e=>{
+if(!vDD.classList.contains("open"))return;
+if(e.key==="ArrowDown"){e.preventDefault();vHL=Math.min(vHL+1,vFil.length-1);renderVDD()}
+else if(e.key==="ArrowUp"){e.preventDefault();vHL=Math.max(vHL-1,0);renderVDD()}
+else if(e.key==="Enter"&&vHL>=0){e.preventDefault();addVeh(vFil[vHL])}
+});
+function renderVDD(){
+if(!vFil.length){vDD.innerHTML='<div class="dd-empty">No vehicles found</div>';vDD.classList.add("open");return}
+vDD.innerHTML=vFil.map((v,i)=>`<div class="dd-item${i===vHL?" hl":""}" data-i="${i}"><span class="dd-flag">${FLAGS[v.nation]||""}</span><span class="dd-name">${v.name}</span><span class="dd-type">${v.type}</span><span class="dd-br">${v.br.toFixed(1)}</span></div>`).join("");
+vDD.classList.add("open");
+vDD.querySelectorAll(".dd-item").forEach(el=>el.addEventListener("click",()=>addVeh(vFil[+el.dataset.i])))
+}
+function addVeh(v){
+if(data.vehWishlist.some(w=>w.name===v.name)){toast("Already on wishlist");return}
+data.vehWishlist.push({name:v.name,nation:v.nation,br:v.br,type:v.type,tc:v.tc});
+vInp.value="";vDD.classList.remove("open");save();renderVeh();renderDash();toast("★ "+v.name+" added to wishlist")
+}
+function removeVeh(i){data.vehWishlist.splice(i,1);save();renderVeh();renderDash()}
+
+// Drag reorder vehicles
+let dragIdx=null;
+function vDragStart(e,i){dragIdx=i;e.target.closest(".wl-item").classList.add("dragging")}
+function vDragEnd(e){e.target.closest(".wl-item").classList.remove("dragging")}
+function vDragOver(e){e.preventDefault()}
+function vDrop(e,i){
+e.preventDefault();if(dragIdx===null||dragIdx===i)return;
+const item=data.vehWishlist.splice(dragIdx,1)[0];
+data.vehWishlist.splice(i,0,item);dragIdx=null;save();renderVeh()
+}
+
+function renderVeh(){
+const el=document.getElementById("vehList");
+document.getElementById("vehCount").textContent=data.vehWishlist.length;
+if(!data.vehWishlist.length){el.innerHTML='<div class="empty"><div class="big">🎖️</div>No vehicles on wishlist yet</div>';return}
+const avgRP=data.avgRP||3000;
+el.innerHTML=data.vehWishlist.map((v,i)=>{
+const resRP=getResearchRP(v.br);const purSL=getPurchaseSL(v.br);
+const pct=Math.min(100,Math.round((data.curRP/resRP)*100));
+const matches=Math.max(0,Math.ceil((resRP-data.curRP)/avgRP));
+const col=pct>=100?"var(--green)":pct>=50?"var(--amber)":"var(--red2)";
+return`<div class="wl-item" draggable="true" ondragstart="vDragStart(event,${i})" ondragend="vDragEnd(event)" ondragover="vDragOver(event)" ondrop="vDrop(event,${i})">
+<div class="wl-top">
+<span class="wl-grip">☰</span>
+<div class="wl-num">${i+1}</div>
+<span class="wl-flag">${FLAGS[v.nation]||""}</span>
+<div class="wl-info"><div class="wl-name">${v.name}</div><div class="wl-detail">${v.nation} • ${v.type}</div></div>
+<span class="wl-br">${v.br.toFixed(1)}</span>
+<div class="wl-del" onclick="removeVeh(${i})">✕</div>
+</div>
+<div class="wl-progress">
+<div class="wl-pbar"><div class="track"><div class="fill" style="width:${pct}%;background:${col}"></div></div><span class="pct" style="color:${col}">${pct}%</span></div>
+<div class="wl-costs">
+<span class="wl-cost">RP: <b class="rp">${fmt(resRP)}</b></span>
+<span class="wl-cost">SL: <b class="sl">${fmt(purSL)}</b></span>
+<span class="wl-cost">${pct>=100?"<b style='color:var(--green)'>READY</b>":`Matches: <b class="match">${fmt(matches)}</b>`}</span>
+</div>
+</div></div>`}).join("")
+}
+
+// Modifications
+function populateModVeh(){
+const sel=document.getElementById("modVehSel");
+const opts=data.vehWishlist.length?data.vehWishlist:vehicles.slice(0,50);
+sel.innerHTML='<option value="">— Choose vehicle —</option>'+opts.map((v,i)=>`<option value="${v.name}" data-br="${v.br}" data-tc="${v.tc}">${FLAGS[v.nation]||""} ${v.name}</option>`).join("")
+}
+function updateModList(){
+const sel=document.getElementById("modVehSel");
+const opt=sel.selectedOptions[0];if(!opt||!opt.value)return;
+const tc=opt.dataset.tc;
+const isGround=["LT","MT","HT","TD","AA"].includes(tc);
+const mods=isGround?MODS_DB.ground:MODS_DB.air;
+const modSel=document.getElementById("modSel");
+modSel.innerHTML='<option value="">— Choose mod —</option>'+mods.map((m,i)=>`<option value="${i}">${m.icon} ${m.name} (T${m.tier})</option>`).join("")
+}
+function addMod(){
+const veh=document.getElementById("modVehSel").value;
+const modIdx=document.getElementById("modSel").value;
+if(!veh||modIdx===""){toast("Select vehicle and mod");return}
+const opt=document.getElementById("modVehSel").selectedOptions[0];
+const tc=opt.dataset.tc;const br=parseFloat(opt.dataset.br)||5;
+const isGround=["LT","MT","HT","TD","AA"].includes(tc);
+const mod=isGround?MODS_DB.ground[modIdx]:MODS_DB.air[modIdx];
+if(data.modWishlist.some(m=>m.veh===veh&&m.name===mod.name)){toast("Already tracked");return}
+const baseRP=br<=4?1500:br<=7?3500:br<=10?7000:12000;
+const rp=Math.round(baseRP*mod.rp/100)*100;
+data.modWishlist.push({veh,name:mod.name,icon:mod.icon,desc:mod.desc,rp,pri:mod.pri,tier:mod.tier,done:false});
+save();renderMods();renderDash();toast("★ "+mod.name+" for "+veh+" added")
+}
+function toggleMod(i){data.modWishlist[i].done=!data.modWishlist[i].done;save();renderMods();renderDash()}
+function removeMod(i){data.modWishlist.splice(i,1);save();renderMods();renderDash()}
+
+function renderMods(){
+const el=document.getElementById("modList");
+document.getElementById("modCount").textContent=data.modWishlist.length;
+populateModVeh();
+if(!data.modWishlist.length){el.innerHTML='<div class="empty"><div class="big">🔧</div>No modifications tracked yet</div>';return}
+const sorted=[...data.modWishlist].map((m,i)=>({...m,idx:i})).sort((a,b)=>a.done-b.done||a.pri-b.pri);
+el.innerHTML=sorted.map(m=>{
+const priCls=m.pri===1?"p1":m.pri===2?"p2":"p3";
+const priTxt=m.pri===1?"CRITICAL":m.pri===2?"HIGH":"LOW";
+return`<div class="mod-item${m.done?" done":""}">
+<div class="mod-cb${m.done?" checked":""}" onclick="toggleMod(${m.idx})">${m.done?"✓":""}</div>
+<span class="mod-icon">${m.icon}</span>
+<div class="mod-info"><div class="mod-name">${m.name}</div><div class="mod-desc">${m.veh} — ${m.desc}</div></div>
+<span class="mod-rp">${fmt(m.rp)} RP</span>
+<span class="mod-pri ${priCls}">${priTxt}</span>
+<div class="mod-del" onclick="removeMod(${m.idx})">✕</div>
+</div>`}).join("")
+}
+
+function renderDash(){
+const totalResRP=data.vehWishlist.reduce((s,v)=>s+getResearchRP(v.br),0);
+const totalPurSL=data.vehWishlist.reduce((s,v)=>s+getPurchaseSL(v.br),0);
+const totalModRP=data.modWishlist.filter(m=>!m.done).reduce((s,m)=>s+m.rp,0);
+const modsDone=data.modWishlist.filter(m=>m.done).length;
+const modsTotal=data.modWishlist.length;
+const grandRP=totalResRP+totalModRP;
+const rpPct=grandRP>0?Math.min(100,Math.round((data.curRP/grandRP)*100)):0;
+const slPct=totalPurSL>0?Math.min(100,Math.round((data.curSL/totalPurSL)*100)):0;
+const matchesRP=data.avgRP>0?Math.max(0,Math.ceil((grandRP-data.curRP)/data.avgRP)):0;
+
+document.getElementById("dashboard").innerHTML=`
+<div class="dc"><div class="lbl">VEHICLES</div><div class="val" style="color:var(--gold)">${data.vehWishlist.length}</div></div>
+<div class="dc"><div class="lbl">MODS</div><div class="val" style="color:var(--blue)">${modsTotal>0?modsDone+"/"+modsTotal:"0"}</div></div>
+<div class="dc"><div class="lbl">TOTAL RP NEEDED</div><div class="val" style="color:var(--amber)">${grandRP>999999?(grandRP/1000000).toFixed(1)+"M":fmt(grandRP)}</div></div>
+<div class="dc"><div class="lbl">TOTAL SL NEEDED</div><div class="val" style="color:var(--green)">${totalPurSL>999999?(totalPurSL/1000000).toFixed(1)+"M":fmt(totalPurSL)}</div></div>
+<div class="dc"><div class="lbl">MATCHES TO GO</div><div class="val" style="color:var(--red2)">${fmt(matchesRP)}</div></div>
+<div class="dc"><div class="lbl">YOUR RP</div><div class="val">${fmt(data.curRP)}</div></div>`;
+
+const overallPct=Math.round((rpPct+slPct)/2);
+document.getElementById("dashBar").innerHTML=`<div class="lbl"><span>OVERALL PROGRESS</span><span style="color:var(--gold)">${overallPct}%</span></div>
+<div class="progress-track"><div class="progress-fill" style="width:${overallPct}%"></div></div>`;
+}
+
+function toast(msg){const old=document.querySelector(".toast");if(old)old.remove();const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2000)}
+
+load();renderVeh();renderMods();renderDash();
+</script>
+</body>
+</html>
