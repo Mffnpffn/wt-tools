@@ -329,8 +329,112 @@ footer a:hover{text-decoration:underline}
 </div>
 </a>
 <div class="divider">MORE TOOLS COMING SOON</div>
+
+<div id="wtTip" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:20px;text-align:center">
+<div style="font-size:.65rem;color:var(--text3);letter-spacing:.1em;margin-bottom:6px">★ WAR THUNDER TIP</div>
+<div id="wtTipText" style="font-size:.82rem;color:var(--text2);line-height:1.5"></div>
 </div>
-<footer>★ WT TOOLS ★ Built for the community ★ <a href="https://github.com/Mffnpffn/wt-tools">GitHub</a> ★</footer>
+
+<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px">
+<div style="padding:10px 14px;font-size:.7rem;color:var(--text3);letter-spacing:.1em;border-bottom:1px solid var(--border)">★ DID YOU KNOW?</div>
+<div id="wtFact" style="padding:14px;font-size:.82rem;color:var(--text2);line-height:1.6;min-height:50px;transition:opacity .3s"></div>
+</div>
+
+<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px">
+<div style="padding:10px 14px;font-size:.7rem;color:var(--text3);letter-spacing:.1em;border-bottom:1px solid var(--border)">★ GAMEPLAY TIP</div>
+<div id="wtGameTip" style="padding:14px;font-size:.82rem;color:var(--text2);line-height:1.6;min-height:50px;transition:opacity .3s"></div>
+</div>
+
+<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px">
+<div style="padding:10px 14px;font-size:.7rem;color:var(--text3);letter-spacing:.1em;border-bottom:1px solid var(--border)">★ CHANGELOG</div>
+<div style="padding:10px 14px;font-size:.75rem;color:var(--text2);line-height:1.8">
+<div><span style="color:var(--green)">v1.5</span> — Nation themes, navbar, PWA, flags, settings panel, fuzzy search, favourites</div>
+<div><span style="color:var(--green)">v1.4</span> — Air Spawn Calculator, Talisman Calculator, Bomb Drop Calculator</div>
+<div><span style="color:var(--green)">v1.3</span> — Stat Tracker, Grind Planner, Wishlist & Mod Tracker</div>
+<div><span style="color:var(--green)">v1.2</span> — Lineup Builder, Tier List, Mission Tracker, Premium RP Calc</div>
+<div><span style="color:var(--green)">v1.1</span> — Crew Skills, Penetration Calc, Spawn Points, Vehicle Comparer</div>
+<div><span style="color:var(--green)">v1.0</span> — Bomb Calculator, BR Calculator, Ammo Picker, KOS Tracker, Repair Cost</div>
+</div>
+</div>
+</div>
+<footer>★ WT TOOLS v1.5 ★ Built for the community ★ <a href="https://github.com/Mffnpffn/wt-tools">GitHub</a> ★</footer>
+<script>
+const FACTS=[
+"The SR-71 Blackbird had over 4,000 missiles fired at it during its service and none ever hit.",
+"The B-2 Spirit costs $2.1 billion per aircraft. One was destroyed in 2008 when moisture corrupted its sensors on the runway.",
+"An Israeli F-15 landed safely with only ONE wing after a mid-air collision during training. The pilot didn't realise the wing was missing until he landed.",
+"The Ka-50 Black Shark is the only production attack helicopter with an ejection seat — the rotor blades are blown off by explosive bolts first.",
+"The A-10 Warthog was literally built around its GAU-8 Avenger cannon. The gun was designed first, then the plane was built to carry it.",
+"The M1 Abrams uses a Honeywell AGT1500 gas turbine engine — essentially a jet engine. It can run on diesel, jet fuel, or even cooking oil.",
+"The Tu-95 Bear's contra-rotating propellers are so loud that submerged submarines can detect them through sonar from hundreds of miles away.",
+"The Challenger 2 has never had a crew member killed by enemy fire in combat. Its Chobham armour has proven nearly impenetrable.",
+"The Maus super-heavy tank weighed 188 tonnes and was so heavy it couldn't cross most bridges. Only two prototypes were ever built.",
+"The P-47 Thunderbolt earned the nickname 'Jug' and could absorb incredible punishment — pilots regularly returned with hundreds of bullet holes.",
+"The Tiger tank's 88mm gun was originally an anti-aircraft weapon repurposed for anti-tank use. It could knock out any Allied tank at over 2km.",
+"The T-34 was so revolutionary that German engineers couldn't believe its sloped armour design when they first encountered it in 1941.",
+"The F-14 Tomcat's variable-sweep wings could change angle from 20° to 68° in flight, allowing both high-speed interception and slow carrier landings.",
+"The Pe-8 could carry the FAB-5000 — a 5,000kg bomb — in 1941, making it one of the heaviest bomb loads of any WWII aircraft.",
+"The Panther tank's long 75mm KwK 42 gun had better penetration than the Tiger's 88mm at ranges under 1,000 metres.",
+"The KV-2's 152mm howitzer was so powerful that the turret couldn't rotate if the tank wasn't on level ground due to the massive weight.",
+"The Spitfire's distinctive elliptical wing was chosen for aerodynamic efficiency, but it was extremely difficult and expensive to manufacture.",
+"The IS-3's pike nose armour design was so influential that Western nations redesigned their anti-tank ammunition after seeing it at the Berlin Victory Parade in 1945.",
+"The Me 262 was the world's first operational jet fighter. Hitler initially insisted it be used as a bomber, delaying its deployment as a fighter.",
+"The BMP-2M's Kornet ATGMs have a penetration of 1,200mm — the highest of any vehicle-mounted ATGM in War Thunder."
+];
+const GAMETIPS=[
+"Side-climb in Air RB. Arriving at altitude 2 minutes late is better than arriving at sea level on time — energy advantage wins dogfights.",
+"To notch a radar missile, turn 90° perpendicular to the launching aircraft. This puts you in the Doppler notch where pulse-Doppler radar loses track.",
+"Against IR missiles, pop flares and simultaneously cut afterburner and turn. The flare is hotter than your cold engines, drawing the missile away.",
+"In ground RB, always bring one SPAA vehicle. CAS revenge kills are the #1 way matches are lost — deny enemy air superiority.",
+"Volumetric armour means shells can partially hit multiple plates. Aim dead centre on flat surfaces, not edges or joins between plates.",
+"Spawn point tip: Your first spawn only costs SP for the vehicle. Die fast and you can't respawn. Stay alive, get kills, earn more SP for backups.",
+"Use the rangefinder (default key: not bound — bind it!) before every long-range shot. Guessing drop is the #1 reason people miss at distance.",
+"Bomber altitude guide: fly at 5,000m+ for safety. Most fighters won't climb to intercept you if there are easier targets at lower altitude.",
+"Helicopter tactics: pop up from behind terrain, fire ATGMs, then drop back behind cover. Never hover in the open — you will be shot down by SPAA.",
+"APHE is king for post-pen damage. If you have APHE available, use it as your primary round. Only switch to APFSDS for heavily armoured targets.",
+"In a downtier, play aggressively. Your armour and gun are better than everything you face. In an uptier, play support and aim for side shots.",
+"Binoculars (default: B key) let you scout without exposing your tank. Use them before peeking any corner to check if enemies are watching.",
+"Flank early, flank often. Most players drive straight to the centre. Taking a wide route to hit their spawn side catches entire teams off guard.",
+"Track your enemy's reload. If they just shot, you have a window — between 5 to 25 seconds depending on vehicle. Push when they're reloading.",
+"When being chased by a missile, fly toward the ground. Multipathing causes radar missiles to lose track below ~60m altitude."
+];
+function showFact(){
+const el=document.getElementById("wtFact");
+el.style.opacity=0;
+setTimeout(()=>{el.textContent="💡 "+FACTS[Math.floor(Math.random()*FACTS.length)];el.style.opacity=1},300);
+}
+function showGameTip(){
+const el=document.getElementById("wtGameTip");
+el.style.opacity=0;
+setTimeout(()=>{el.textContent="🎯 "+GAMETIPS[Math.floor(Math.random()*GAMETIPS.length)];el.style.opacity=1},300);
+}
+document.getElementById("wtTipText").textContent="💡 "+GAMETIPS[Math.floor(Math.random()*GAMETIPS.length)];
+showFact();showGameTip();
+setInterval(showFact,10000);
+setInterval(showGameTip,15000);
+
+// First-time tutorial
+if(!localStorage.getItem("wt_tutorial_done")){
+localStorage.setItem("wt_tutorial_done","1");
+setTimeout(()=>{
+const t=document.createElement("div");
+t.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:20000;display:flex;align-items:center;justify-content:center";
+t.innerHTML=`<div style="background:var(--bg2);border:2px solid var(--accent);border-radius:12px;padding:24px;max-width:400px;width:90%;text-align:center">
+<div style="font-size:1.8rem;margin-bottom:8px">☭</div>
+<div style="font-size:1.1rem;font-weight:700;color:var(--accent2);margin-bottom:12px">Welcome to WT Tools!</div>
+<div style="font-size:.82rem;color:var(--text2);line-height:1.6;margin-bottom:16px;text-align:left">
+<b>🏳️ Theme Switcher</b> — Click the flag in the navbar to change nation theme<br><br>
+<b>⚙ Settings</b> — Gear icon for beginner mode, colorblind mode, tool visibility<br><br>
+<b>⭐ Favourites</b> — Star any vehicle in dropdowns to save it<br><br>
+<b>🔗 Share</b> — Select a vehicle and copy the URL to share with friends<br><br>
+<b>📋 Clipboard</b> — Click any stat value to copy it
+</div>
+<div onclick="this.parentElement.parentElement.remove()" style="background:var(--accent);color:#fff;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:700;font-size:.85rem">GOT IT, COMRADE ★</div>
+</div>`;
+document.body.appendChild(t);
+},800);
+}
+</script>
 <script src="shared.js"></script>
 </body>
 </html>
