@@ -330,19 +330,32 @@ footer a:hover{text-decoration:underline}
 </a>
 <div class="divider">MORE TOOLS COMING SOON</div>
 
-<div id="wtTip" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:20px;text-align:center">
-<div style="font-size:.65rem;color:var(--text3);letter-spacing:.1em;margin-bottom:6px">★ WAR THUNDER TIP</div>
-<div id="wtTipText" style="font-size:.82rem;color:var(--text2);line-height:1.5"></div>
+<div style="display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:20px">
+
+<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+<div style="padding:8px 14px;font-size:.65rem;color:var(--text3);letter-spacing:.1em;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+<span>★ DID YOU KNOW?</span>
+<span><span onclick="cycleFact(-1)" style="cursor:pointer;padding:2px 6px;opacity:.5">◀</span><span onclick="cycleFact(1)" style="cursor:pointer;padding:2px 6px;opacity:.5">▶</span></span>
+</div>
+<div id="wtFact" style="padding:12px 14px;font-size:.8rem;color:var(--text2);line-height:1.6;min-height:48px;transition:opacity .3s"></div>
 </div>
 
-<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px">
-<div style="padding:10px 14px;font-size:.7rem;color:var(--text3);letter-spacing:.1em;border-bottom:1px solid var(--border)">★ DID YOU KNOW?</div>
-<div id="wtFact" style="padding:14px;font-size:.82rem;color:var(--text2);line-height:1.6;min-height:50px;transition:opacity .3s"></div>
+<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+<div style="padding:8px 14px;font-size:.65rem;color:var(--text3);letter-spacing:.1em;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+<span>★ GAMEPLAY TIP</span>
+<span><span onclick="cycleGameTip(-1)" style="cursor:pointer;padding:2px 6px;opacity:.5">◀</span><span onclick="cycleGameTip(1)" style="cursor:pointer;padding:2px 6px;opacity:.5">▶</span></span>
+</div>
+<div id="wtGameTip" style="padding:12px 14px;font-size:.8rem;color:var(--text2);line-height:1.6;min-height:48px;transition:opacity .3s"></div>
 </div>
 
-<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px">
-<div style="padding:10px 14px;font-size:.7rem;color:var(--text3);letter-spacing:.1em;border-bottom:1px solid var(--border)">★ GAMEPLAY TIP</div>
-<div id="wtGameTip" style="padding:14px;font-size:.82rem;color:var(--text2);line-height:1.6;min-height:50px;transition:opacity .3s"></div>
+<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+<div style="padding:8px 14px;font-size:.65rem;color:var(--text3);letter-spacing:.1em;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+<span>★ VEHICLE FUN FACTS</span>
+<span><span onclick="cycleVehFact(-1)" style="cursor:pointer;padding:2px 6px;opacity:.5">◀</span><span onclick="cycleVehFact(1)" style="cursor:pointer;padding:2px 6px;opacity:.5">▶</span></span>
+</div>
+<div id="wtVehFact" style="padding:12px 14px;font-size:.8rem;color:var(--text2);line-height:1.6;min-height:48px;transition:opacity .3s"></div>
+</div>
+
 </div>
 
 <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px">
@@ -360,58 +373,79 @@ footer a:hover{text-decoration:underline}
 <footer>★ WT TOOLS v1.5 ★ Built for the community ★ <a href="https://github.com/Mffnpffn/wt-tools">GitHub</a> ★</footer>
 <script>
 const FACTS=[
-"The SR-71 Blackbird had over 4,000 missiles fired at it during its service and none ever hit.",
-"The B-2 Spirit costs $2.1 billion per aircraft. One was destroyed in 2008 when moisture corrupted its sensors on the runway.",
-"An Israeli F-15 landed safely with only ONE wing after a mid-air collision during training. The pilot didn't realise the wing was missing until he landed.",
-"The Ka-50 Black Shark is the only production attack helicopter with an ejection seat — the rotor blades are blown off by explosive bolts first.",
-"The A-10 Warthog was literally built around its GAU-8 Avenger cannon. The gun was designed first, then the plane was built to carry it.",
-"The M1 Abrams uses a Honeywell AGT1500 gas turbine engine — essentially a jet engine. It can run on diesel, jet fuel, or even cooking oil.",
-"The Tu-95 Bear's contra-rotating propellers are so loud that submerged submarines can detect them through sonar from hundreds of miles away.",
-"The Challenger 2 has never had a crew member killed by enemy fire in combat. Its Chobham armour has proven nearly impenetrable.",
-"The Maus super-heavy tank weighed 188 tonnes and was so heavy it couldn't cross most bridges. Only two prototypes were ever built.",
-"The P-47 Thunderbolt earned the nickname 'Jug' and could absorb incredible punishment — pilots regularly returned with hundreds of bullet holes.",
-"The Tiger tank's 88mm gun was originally an anti-aircraft weapon repurposed for anti-tank use. It could knock out any Allied tank at over 2km.",
-"The T-34 was so revolutionary that German engineers couldn't believe its sloped armour design when they first encountered it in 1941.",
-"The F-14 Tomcat's variable-sweep wings could change angle from 20° to 68° in flight, allowing both high-speed interception and slow carrier landings.",
-"The Pe-8 could carry the FAB-5000 — a 5,000kg bomb — in 1941, making it one of the heaviest bomb loads of any WWII aircraft.",
-"The Panther tank's long 75mm KwK 42 gun had better penetration than the Tiger's 88mm at ranges under 1,000 metres.",
-"The KV-2's 152mm howitzer was so powerful that the turret couldn't rotate if the tank wasn't on level ground due to the massive weight.",
-"The Spitfire's distinctive elliptical wing was chosen for aerodynamic efficiency, but it was extremely difficult and expensive to manufacture.",
-"The IS-3's pike nose armour design was so influential that Western nations redesigned their anti-tank ammunition after seeing it at the Berlin Victory Parade in 1945.",
-"The Me 262 was the world's first operational jet fighter. Hitler initially insisted it be used as a bomber, delaying its deployment as a fighter.",
-"The BMP-2M's Kornet ATGMs have a penetration of 1,200mm — the highest of any vehicle-mounted ATGM in War Thunder."
+"The SR-71 Blackbird had over 4,000 missiles fired at it and none ever hit.",
+"The B-2 Spirit costs $2.1 billion. One was destroyed when moisture corrupted its runway sensors.",
+"An Israeli F-15 landed safely with ONE wing — the pilot didn't know it was missing until he stopped.",
+"The Ka-50 is the only production helicopter with an ejection seat — rotor blades blow off first.",
+"The A-10 was built around its GAU-8 cannon. The gun was designed first, then the plane around it.",
+"The M1 Abrams runs a jet turbine — it can burn diesel, jet fuel, kerosene, or even vodka.",
+"The Tu-95 is so loud that submerged submarines can detect it through sonar hundreds of miles away.",
+"The Challenger 2 has never had a crew member killed by enemy fire in combat.",
+"The T-34 commander kicked the driver to give left/right turning directions in early models.",
+"The T-72's turret flies ~30 metres when its ammo cooks off — earning the nickname 'Jack-in-the-Box'.",
+"The Bf 109 crashed on landing more than any other WWII fighter due to its narrow landing gear.",
+"The Il-2 Sturmovik was produced in greater numbers than any combat aircraft — 36,000+ built.",
+"The Maus was so heavy it had to drive along river bottoms to cross — bridges couldn't support 188 tonnes.",
+"The F-4 Phantom had no gun because designers thought missiles made guns obsolete. Vietnam proved them wrong.",
+"The Su-27 can perform Pugachev's Cobra — pitching the nose straight up while barely losing speed.",
+"The Hurricane shot down more enemy aircraft than the Spitfire during the Battle of Britain.",
+"The F-16's sidestick barely moves — it senses force from the pilot's hand, not physical deflection.",
+"The Harrier can fly backwards using thrust vectoring nozzles.",
+"The B-52 has been in service since 1955 and is planned to fly until 2050 — nearly a century of service.",
+"The F-22 costs $350 million each and only 187 were ever built before production ended."
 ];
 const GAMETIPS=[
-"Side-climb in Air RB. Arriving at altitude 2 minutes late is better than arriving at sea level on time — energy advantage wins dogfights.",
-"To notch a radar missile, turn 90° perpendicular to the launching aircraft. This puts you in the Doppler notch where pulse-Doppler radar loses track.",
-"Against IR missiles, pop flares and simultaneously cut afterburner and turn. The flare is hotter than your cold engines, drawing the missile away.",
-"In ground RB, always bring one SPAA vehicle. CAS revenge kills are the #1 way matches are lost — deny enemy air superiority.",
-"Volumetric armour means shells can partially hit multiple plates. Aim dead centre on flat surfaces, not edges or joins between plates.",
-"Spawn point tip: Your first spawn only costs SP for the vehicle. Die fast and you can't respawn. Stay alive, get kills, earn more SP for backups.",
-"Use the rangefinder (default key: not bound — bind it!) before every long-range shot. Guessing drop is the #1 reason people miss at distance.",
-"Bomber altitude guide: fly at 5,000m+ for safety. Most fighters won't climb to intercept you if there are easier targets at lower altitude.",
-"Helicopter tactics: pop up from behind terrain, fire ATGMs, then drop back behind cover. Never hover in the open — you will be shot down by SPAA.",
-"APHE is king for post-pen damage. If you have APHE available, use it as your primary round. Only switch to APFSDS for heavily armoured targets.",
-"In a downtier, play aggressively. Your armour and gun are better than everything you face. In an uptier, play support and aim for side shots.",
-"Binoculars (default: B key) let you scout without exposing your tank. Use them before peeking any corner to check if enemies are watching.",
-"Flank early, flank often. Most players drive straight to the centre. Taking a wide route to hit their spawn side catches entire teams off guard.",
-"Track your enemy's reload. If they just shot, you have a window — between 5 to 25 seconds depending on vehicle. Push when they're reloading.",
-"When being chased by a missile, fly toward the ground. Multipathing causes radar missiles to lose track below ~60m altitude."
+"Side-climb in Air RB. Arriving at altitude late is better than arriving at sea level on time.",
+"To notch a radar missile, turn 90° perpendicular to the launcher — Doppler radar loses track.",
+"Against IR missiles, pop flares AND cut afterburner simultaneously. Flares alone aren't enough at close range.",
+"Always bring SPAA. CAS revenge kills are the #1 way ground RB matches are lost.",
+"Volumetric shells can hit multiple plates at edges. Aim dead centre on flat armour, not joins.",
+"First spawn is cheap. Die fast = no respawn. Stay alive, get kills, earn SP for backups.",
+"Bind your rangefinder key! Guessing shell drop is the #1 reason people miss at range.",
+"Bombers: fly at 5,000m+. Most fighters won't climb for you if easier targets exist below.",
+"Helicopters: pop up, fire ATGMs, drop behind cover. Never hover in the open.",
+"APHE is king for post-pen damage. Only switch to APFSDS for heavy composite armour.",
+"In downtiers play aggressive. In uptiers play support and flank for side shots.",
+"Binoculars (B key) let you scout without exposing your turret. Use before every corner peek.",
+"Track enemy reloads — push during their 5-25 second window after they fire.",
+"Fly below 60m to exploit multipathing against radar missiles.",
+"When toss-bombing, pull up at 45° and release at the top of the arc for standoff distance."
 ];
-function showFact(){
-const el=document.getElementById("wtFact");
-el.style.opacity=0;
-setTimeout(()=>{el.textContent="💡 "+FACTS[Math.floor(Math.random()*FACTS.length)];el.style.opacity=1},300);
-}
-function showGameTip(){
-const el=document.getElementById("wtGameTip");
-el.style.opacity=0;
-setTimeout(()=>{el.textContent="🎯 "+GAMETIPS[Math.floor(Math.random()*GAMETIPS.length)];el.style.opacity=1},300);
-}
-document.getElementById("wtTipText").textContent="💡 "+GAMETIPS[Math.floor(Math.random()*GAMETIPS.length)];
-showFact();showGameTip();
-setInterval(showFact,10000);
-setInterval(showGameTip,15000);
+const VEHFACTS=[
+"The T-34 made every pre-war tank design obsolete overnight when it appeared in 1941.",
+"The Spitfire was designed in just 8 months by R.J. Mitchell.",
+"The Tiger tank was so heavy it broke most bridges it tried to cross.",
+"The P-51 Mustang was designed and built in only 117 days.",
+"The MiG-21 has been used by more air forces than any other jet fighter in history.",
+"The Leopard 2 can fire accurately while moving at 70 km/h thanks to its stabiliser.",
+"The ZSU-23-4 Shilka forced NATO to completely change its low-altitude air doctrine.",
+"The F-35 has more lines of code than Windows 10.",
+"The F-14 could track 24 targets and fire at 6 simultaneously with its AWG-9 radar.",
+"The Merkava has a rear door for crew escape — unique among modern MBTs.",
+"The BMP-1's own ammunition could penetrate its own armour if stored externally.",
+"The Lancaster could carry the 22,000lb Grand Slam earthquake bomb.",
+"The IS-2's 122mm gun could penetrate a Tiger I from over 2,500 metres.",
+"The Me 262 was delayed as a fighter because Hitler insisted it be used as a bomber.",
+"The IS-3's pike nose shocked Western observers at the 1945 Berlin Victory Parade.",
+"In War Thunder, Apache rotor blades are destroyed by touching a single leaf — unlike real life.",
+"The KV-2's turret couldn't rotate unless the tank was on perfectly level ground.",
+"The Panther's 75mm gun had better penetration than the Tiger's 88mm under 1,000m.",
+"The Pe-8 could carry a 5,000kg bomb in 1941 — heavier than most WWII bombers could manage."
+];
+let factIdx=0,tipIdx=0,vehIdx=0;
+function showEl(el,arr,idx,icon){el.style.opacity=0;setTimeout(()=>{el.textContent=icon+" "+arr[idx];el.style.opacity=1},250)}
+function cycleFact(d){factIdx=(factIdx+d+FACTS.length)%FACTS.length;showEl(document.getElementById("wtFact"),FACTS,factIdx,"💡")}
+function cycleGameTip(d){tipIdx=(tipIdx+d+GAMETIPS.length)%GAMETIPS.length;showEl(document.getElementById("wtGameTip"),GAMETIPS,tipIdx,"🎯")}
+function cycleVehFact(d){vehIdx=(vehIdx+d+VEHFACTS.length)%VEHFACTS.length;showEl(document.getElementById("wtVehFact"),VEHFACTS,vehIdx,"🔧")}
+factIdx=Math.floor(Math.random()*FACTS.length);
+tipIdx=Math.floor(Math.random()*GAMETIPS.length);
+vehIdx=Math.floor(Math.random()*VEHFACTS.length);
+showEl(document.getElementById("wtFact"),FACTS,factIdx,"💡");
+showEl(document.getElementById("wtGameTip"),GAMETIPS,tipIdx,"🎯");
+showEl(document.getElementById("wtVehFact"),VEHFACTS,vehIdx,"🔧");
+setInterval(()=>cycleFact(1),10000);
+setInterval(()=>cycleGameTip(1),15000);
+setInterval(()=>cycleVehFact(1),12000);
 
 // First-time tutorial
 if(!localStorage.getItem("wt_tutorial_done")){

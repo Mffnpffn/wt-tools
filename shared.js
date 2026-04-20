@@ -672,4 +672,116 @@ wtSetupCountUp();
 wtEnhanceAll();
 setInterval(wtEnhanceAll,2000);
 
+// ===== SHELL PARTICLE BACKGROUND =====
+(function(){
+const cv=document.createElement("canvas");
+cv.className="wt-shell-canvas";
+document.body.prepend(cv);
+const ctx=cv.getContext("2d");
+let W,H;
+function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}
+window.addEventListener("resize",resize);resize();
+const shells=[];
+const SHELL_TYPES=[
+{name:"APFSDS",w:4,h:18,color:"#b0b0b0",stroke:"#888"},// long thin silver
+{name:"APHE",w:6,h:14,color:"#c4a44a",stroke:"#a08030",rx:3},// brass rounded
+{name:"HE",w:8,h:12,color:"#d4a017",stroke:"#b08010",rx:4}// gold fat
+];
+for(let i=0;i<18;i++){
+const t=SHELL_TYPES[i%3];
+shells.push({
+x:Math.random()*W,y:Math.random()*H,
+vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.3,
+rot:Math.random()*Math.PI*2,rotV:(Math.random()-0.5)*0.008,
+type:t
+});
+}
+function drawShell(s){
+ctx.save();
+ctx.translate(s.x,s.y);ctx.rotate(s.rot);
+const t=s.type;
+if(t.rx){
+ctx.beginPath();
+ctx.roundRect(-t.w/2,-t.h/2,t.w,t.h,t.rx);
+ctx.fillStyle=t.color;ctx.fill();
+ctx.strokeStyle=t.stroke;ctx.lineWidth=0.8;ctx.stroke();
+}else{
+ctx.fillStyle=t.color;
+ctx.fillRect(-t.w/2,-t.h/2,t.w,t.h);
+// Pointed tip for APFSDS
+ctx.beginPath();
+ctx.moveTo(-t.w/2,-t.h/2);ctx.lineTo(0,-t.h/2-4);ctx.lineTo(t.w/2,-t.h/2);
+ctx.fillStyle=t.stroke;ctx.fill();
+ctx.strokeStyle=t.stroke;ctx.lineWidth=0.6;
+ctx.strokeRect(-t.w/2,-t.h/2,t.w,t.h);
+}
+ctx.restore();
+}
+function tick(){
+ctx.clearRect(0,0,W,H);
+shells.forEach(s=>{
+s.x+=s.vx;s.y+=s.vy;s.rot+=s.rotV;
+if(s.x<-30)s.x=W+20;if(s.x>W+30)s.x=-20;
+if(s.y<-30)s.y=H+20;if(s.y>H+30)s.y=-20;
+drawShell(s);
+});
+requestAnimationFrame(tick);
+}
+tick();
+})();
+
+// ===== KEYBOARD SHORTCUTS =====
+const kbOverlay=document.createElement("div");
+kbOverlay.className="wt-kb-overlay";
+kbOverlay.id="wtKBOverlay";
+kbOverlay.onclick=e=>{if(e.target===kbOverlay)kbOverlay.classList.remove("open")};
+kbOverlay.innerHTML=`<div class="wt-kb-box">
+<div class="wt-kb-title"><span>⌨ Keyboard Shortcuts</span><span class="wt-kb-close" onclick="document.getElementById('wtKBOverlay').classList.remove('open')">✕</span></div>
+<div class="wt-kb-row"><span class="wt-kb-key">?</span><span class="wt-kb-desc">Show this shortcuts panel</span></div>
+<div class="wt-kb-row"><span class="wt-kb-key">S</span><span class="wt-kb-desc">Focus search / vehicle input</span></div>
+<div class="wt-kb-row"><span class="wt-kb-key">Esc</span><span class="wt-kb-desc">Close popups, clear search</span></div>
+<div class="wt-kb-row"><span class="wt-kb-key">↑ ↓</span><span class="wt-kb-desc">Navigate dropdown results</span></div>
+<div class="wt-kb-row"><span class="wt-kb-key">Enter</span><span class="wt-kb-desc">Select highlighted vehicle</span></div>
+<div class="wt-kb-row"><span class="wt-kb-key">T</span><span class="wt-kb-desc">Toggle nation theme picker</span></div>
+<div class="wt-kb-row"><span class="wt-kb-key">G</span><span class="wt-kb-desc">Open settings panel</span></div>
+<div class="wt-kb-row"><span class="wt-kb-key">H</span><span class="wt-kb-desc">Go to home page</span></div>
+</div>`;
+document.body.appendChild(kbOverlay);
+
+document.addEventListener("keydown",e=>{
+if(e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA"||e.target.tagName==="SELECT")return;
+if(e.key==="?"||e.key==="/"){e.preventDefault();kbOverlay.classList.toggle("open")}
+if(e.key==="s"||e.key==="S"){
+e.preventDefault();
+const inp=document.querySelector("#searchInput,#vehSearch,[id*='search'],[id*='Search']");
+if(inp){inp.focus();inp.select()}
+}
+if(e.key==="Escape"){
+kbOverlay.classList.remove("open");
+document.getElementById("wtSettingsOverlay")?.classList.remove("open");
+document.querySelectorAll(".dd,.dropdown").forEach(d=>d.classList.remove("open"));
+const inp=document.querySelector("#searchInput,#vehSearch");
+if(inp&&document.activeElement===inp){inp.value="";inp.blur()}
+}
+if(e.key==="t"||e.key==="T"){
+e.preventDefault();
+document.querySelector(".wt-theme-dd")?.classList.toggle("open");
+}
+if(e.key==="g"||e.key==="G"){e.preventDefault();wtOpenSettings?.()}
+if(e.key==="h"||e.key==="H"){e.preventDefault();location.href="home.html"}
+});
+
+// ===== GLOBAL ERROR HANDLER =====
+window.onerror=function(msg,src,line){
+const el=document.createElement("div");
+el.className="wt-error";
+el.innerHTML=`⚠ Something went wrong — try refreshing the page <span class="dismiss" onclick="this.parentElement.remove()">✕ dismiss</span>`;
+document.body.appendChild(el);
+setTimeout(()=>el.remove(),8000);
+return true;// suppress console
+};
+window.addEventListener("unhandledrejection",e=>{
+e.preventDefault();
+});
+
 })();
