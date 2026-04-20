@@ -24,16 +24,16 @@ const TOOLS=[
 ];
 
 const NATIONS=[
-{id:"USSR",flag:"🇷🇺",label:"USSR",header:"СОВЕТСКИЕ ИНСТРУМЕНТЫ",tagline:"Soviet Engineering"},
-{id:"USA",flag:"🇺🇸",label:"USA",header:"WT TOOLS",tagline:"American Firepower"},
-{id:"Germany",flag:"🇩🇪",label:"Germany",header:"KRIEGSWERKZEUGE",tagline:"German Precision"},
-{id:"Britain",flag:"🇬🇧",label:"Britain",header:"WT TOOLS",tagline:"British Reliability"},
-{id:"Japan",flag:"🇯🇵",label:"Japan",header:"戦争ツール",tagline:"Japanese Craftsmanship"},
-{id:"France",flag:"🇫🇷",label:"France",header:"WT TOOLS",tagline:"French Ingenuity"},
-{id:"Italy",flag:"🇮🇹",label:"Italy",header:"WT TOOLS",tagline:"Italian Artistry"},
-{id:"Sweden",flag:"🇸🇪",label:"Sweden",header:"WT TOOLS",tagline:"Swedish Innovation"},
-{id:"Israel",flag:"🇮🇱",label:"Israel",header:"WT TOOLS",tagline:"Israeli Technology"},
-{id:"China",flag:"🇨🇳",label:"China",header:"战争雷霆工具",tagline:"Chinese Industry"}
+{id:"USSR",flag:"flags/ru.png",emoji:"🇷🇺",label:"USSR",header:"СОВЕТСКИЕ ИНСТРУМЕНТЫ",sub:"SOVIET ORDNANCE TOOLS",tagline:"Soviet Engineering"},
+{id:"USA",flag:"flags/us.png",emoji:"🇺🇸",label:"USA",header:"WT TOOLS",sub:"AMERICAN ORDNANCE SUITE",tagline:"American Firepower"},
+{id:"Germany",flag:"flags/de.png",emoji:"🇩🇪",label:"Germany",header:"KRIEGSWERKZEUGE",sub:"DEUTSCHE PRÄZISIONSWERKZEUGE",tagline:"German Precision"},
+{id:"Britain",flag:"flags/gb.png",emoji:"🇬🇧",label:"Britain",header:"WT TOOLS",sub:"BRITISH ENGINEERING TOOLKIT",tagline:"British Reliability"},
+{id:"Japan",flag:"flags/jp.png",emoji:"🇯🇵",label:"Japan",header:"戦争ツール",sub:"日本の精密ツール",tagline:"Japanese Craftsmanship"},
+{id:"France",flag:"flags/fr.png",emoji:"🇫🇷",label:"France",header:"WT TOOLS",sub:"OUTILS DE GUERRE FRANÇAIS",tagline:"French Ingenuity"},
+{id:"Italy",flag:"flags/it.png",emoji:"🇮🇹",label:"Italy",header:"WT TOOLS",sub:"STRUMENTI DI GUERRA ITALIANI",tagline:"Italian Artistry"},
+{id:"Sweden",flag:"flags/se.png",emoji:"🇸🇪",label:"Sweden",header:"WT TOOLS",sub:"SVENSKA KRIGSVERKTYG",tagline:"Swedish Innovation"},
+{id:"Israel",flag:"flags/il.png",emoji:"🇮🇱",label:"Israel",header:"WT TOOLS",sub:"כלי מלחמה ישראליים",tagline:"Israeli Technology"},
+{id:"China",flag:"flags/cn.png",emoji:"🇨🇳",label:"China",header:"战争雷霆工具",sub:"中国战争工具套件",tagline:"Chinese Industry"}
 ];
 
 const currentPage=location.pathname.split("/").pop()||"home.html";
@@ -46,13 +46,13 @@ const active=currentPage===t.href?" active":"";
 return`<a class="wt-nav-link${active}" href="${t.href}">${t.label}</a>`;
 }).join("");
 const themeOpts=NATIONS.map(n=>
-`<div class="wt-theme-opt" data-nation="${n.id}" onclick="wtSetNation('${n.id}')"><span class="tf">${n.flag}</span>${n.label}</div>`
+`<div class="wt-theme-opt" data-nation="${n.id}" onclick="wtSetNation('${n.id}')"><img src="${n.flag}" alt="${n.label}" loading="lazy">${n.label}</div>`
 ).join("");
 nav.innerHTML=`<div class="wt-nav-inner">
-<a class="wt-nav-brand" href="home.html">☭ <span>WT TOOLS</span></a>
+<a class="wt-nav-brand" href="home.html"><img src="flags/ru.png" alt="" id="wtBrandFlag"> <span>WT TOOLS</span></a>
 <div class="wt-nav-scroll">${links}</div>
 <div class="wt-nav-theme">
-<button class="wt-theme-btn" onclick="document.querySelector('.wt-theme-dd').classList.toggle('open')" title="Nation Theme">🏳️</button>
+<button class="wt-theme-btn" onclick="document.querySelector('.wt-theme-dd').classList.toggle('open')" title="Nation Theme"><img src="flags/ru.png" alt="" id="wtThemeFlag"></button>
 <div class="wt-theme-dd" id="wtThemeDD">${themeOpts}</div>
 </div>
 </div>`;
@@ -66,10 +66,11 @@ if(dd)dd.classList.remove("open");
 }
 });
 
-// ===== FLAG BACKGROUND =====
+// ===== FLAG BACKGROUND (image) =====
 const flagBg=document.createElement("div");
 flagBg.className="wt-flag-bg";
 flagBg.id="wtFlagBg";
+flagBg.style.backgroundImage="url(flags/ru.png)";
 document.body.prepend(flagBg);
 
 // ===== SCROLL TO TOP =====
@@ -89,32 +90,42 @@ if(!nation)return;
 document.documentElement.setAttribute("data-nation",nationId);
 localStorage.setItem("wt_nation_theme",nationId);
 
-// Update flag background
+// Update flag background image
 const fb=document.getElementById("wtFlagBg");
-if(fb)fb.textContent=nation.flag;
+if(fb)fb.style.backgroundImage="url("+nation.flag+")";
 
-// Update navbar brand
-const brand=document.querySelector(".wt-nav-brand");
-if(brand){
-const isHome=currentPage==="home.html";
-brand.innerHTML=nation.flag+' <span>'+nation.header+'</span>';
-}
+// Update navbar brand flag + text
+const brandFlag=document.getElementById("wtBrandFlag");
+if(brandFlag)brandFlag.src=nation.flag;
+const brandText=document.querySelector(".wt-nav-brand span");
+if(brandText)brandText.textContent=nation.header;
 
-// Update theme button
-const btn=document.querySelector(".wt-theme-btn");
-if(btn)btn.textContent=nation.flag;
+// Update theme picker flag
+const themeFlag=document.getElementById("wtThemeFlag");
+if(themeFlag)themeFlag.src=nation.flag;
 
-// Update header if exists
+// Update ALL header text on every page
 const h1=document.querySelector("header h1");
 const headerP=document.querySelector("header p");
-if(h1&&currentPage==="home.html"){
+const headerStars=document.querySelector("header .stars, header .star");
+if(h1){
+// Store original text on first call
+if(!h1.dataset.orig)h1.dataset.orig=h1.textContent;
+if(currentPage==="home.html"){
 h1.textContent=nation.header;
+}else{
+// On tool pages, show nation-localised tool name
+const origText=h1.dataset.orig;
+h1.textContent=origText; // keep tool name but colours change via CSS
 }
-if(headerP&&currentPage==="home.html"){
-const originalSub=headerP.getAttribute("data-original");
-if(!originalSub)headerP.setAttribute("data-original",headerP.textContent);
-// Only change tagline on home
+}
+if(headerP){
+if(!headerP.dataset.orig)headerP.dataset.orig=headerP.textContent;
+if(currentPage==="home.html"){
 headerP.textContent=nation.tagline.toUpperCase();
+}else{
+headerP.textContent=nation.sub||nation.tagline.toUpperCase();
+}
 }
 
 // Highlight active theme option
@@ -602,6 +613,41 @@ wtSetURLParam("vehicle",name);
 }
 },true);
 
+// ===== COUNT-UP ANIMATION =====
+const wtCountObserver=new IntersectionObserver(entries=>{
+entries.forEach(e=>{
+if(!e.isIntersecting)return;
+const el=e.target;
+if(el.dataset.wtCounted)return;
+const text=el.textContent.trim();
+const num=parseFloat(text.replace(/[^0-9.\-]/g,""));
+if(isNaN(num)||num===0||num>9999999)return;
+el.dataset.wtCounted="1";
+const suffix=text.replace(/[0-9,.\-\s]/g,"").trim();
+const prefix=text.match(/^[^0-9\-]*/)?.[0]||"";
+const isInt=!text.includes(".")|| text.indexOf(".")===-1;
+const duration=400;const start=performance.now();
+const from=0;
+function tick(now){
+const t=Math.min((now-start)/duration,1);
+const ease=1-Math.pow(1-t,3);
+const cur=from+(num-from)*ease;
+el.textContent=prefix+(isInt?Math.round(cur).toLocaleString():cur.toFixed(text.split(".")[1]?.match(/\d+/)?.[0]?.length||1))+suffix;
+if(t<1)requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+wtCountObserver.unobserve(el);
+});
+},{threshold:0.3});
+
+function wtSetupCountUp(){
+document.querySelectorAll(".sg .val,.dc .val,.rcard .val,.stat-val,.rg .val,.sp-pool-val,.match-card .num,.time-card .days,.rating-score,.goal-val").forEach(el=>{
+if(el.dataset.wtCountReady)return;
+el.dataset.wtCountReady="1";
+wtCountObserver.observe(el);
+});
+}
+
 // ===== BEGINNER MODE — MARK ADVANCED ELEMENTS =====
 function wtMarkAdvanced(){
 // Mark complex stats as advanced-only
@@ -618,6 +664,7 @@ wtSetupTooltips();
 wtMarkWishlisted();
 wtMarkAdvanced();
 wtApplyToolVisibility();
+wtSetupCountUp();
 }
 wtEnhanceAll();
 setInterval(wtEnhanceAll,2000);
