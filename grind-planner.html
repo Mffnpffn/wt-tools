@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>WT Grind Planner</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0e10;--bg2:#1a1c20;--bg3:#222528;--border:#2a2c30;--red:#cc0000;--red2:#ff2222;--red-glow:rgba(204,0,0,.3);--gold:#d4a017;--text:#e0ddd8;--text2:#888;--text3:#555;--green:#4caf50;--amber:#ff9800;--blue:#4a9eff}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{text-align:center;padding:20px 16px 12px;border-bottom:2px solid var(--red);background:linear-gradient(180deg,rgba(204,0,0,.08),transparent)}
+header h1{font-size:1.6rem;color:var(--red2);text-shadow:0 0 20px var(--red-glow);letter-spacing:.05em}
+header .star{color:var(--gold);font-size:1.2rem}
+header p{color:var(--text2);font-size:.78rem;margin-top:4px;letter-spacing:.08em}
+.container{max-width:850px;margin:0 auto;padding:16px}
+.ctrl{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px}
+.ctrl-title{font-size:.65rem;color:var(--text3);letter-spacing:.1em;margin-bottom:10px}
+.ctrl-row{display:flex;gap:8px;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:3px;flex:1;min-width:110px}
+.field label{font-size:.58rem;color:var(--text2);letter-spacing:.06em}
+.field select,.field input{padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.82rem;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.field input{background-image:none}
+.field select:focus,.field input:focus{border-color:var(--red)}
+.dash{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:6px;margin-bottom:14px}
+.dc{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:9px;text-align:center}
+.dc .lbl{font-size:.5rem;color:var(--text3);letter-spacing:.06em;margin-bottom:2px}
+.dc .val{font-size:1.1rem;font-weight:700}
+.dc .sub{font-size:.52rem;color:var(--text3);margin-top:2px}
+.time-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin-bottom:14px}
+.time-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center}
+.time-card .freq{font-size:.55rem;color:var(--text3);letter-spacing:.06em;margin-bottom:3px}
+.time-card .days{font-size:1.2rem;font-weight:700}
+.time-card .weeks{font-size:.6rem;color:var(--text3);margin-top:2px}
+.section-title{font-size:.75rem;color:var(--red2);letter-spacing:.08em;margin:12px 0 6px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.section-title .badge{font-size:.6rem;color:var(--text3);background:var(--bg3);padding:2px 7px;border-radius:10px}
+.rank-group{margin-bottom:12px}
+.rank-header{display:flex;align-items:center;gap:8px;padding:6px 0;margin-bottom:4px}
+.rank-num{font-size:.9rem;font-weight:700;color:var(--red2);min-width:50px}
+.rank-bar{flex:1;height:4px;background:var(--bg);border-radius:2px;overflow:hidden}
+.rank-fill{height:100%;border-radius:2px;transition:width .4s}
+.rank-pct{font-size:.6rem;color:var(--text3);min-width:36px;text-align:right}
+.tree-list{display:flex;flex-direction:column;gap:3px}
+.tv{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;transition:border-color .15s}
+.tv.unlocked{border-color:rgba(76,175,80,.25)}.tv.progress{border-color:rgba(255,152,0,.25)}.tv.locked{}.tv.wishlist{box-shadow:0 0 0 1px var(--gold) inset}
+.tv-top{display:flex;align-items:center;gap:7px;padding:7px 10px}
+.tv-status{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.tv-status.unlocked{background:var(--green)}.tv-status.progress{background:var(--amber)}.tv-status.locked{background:var(--text3)}
+.tv-info{flex:1;min-width:0}
+.tv-name{font-size:.78rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:4px}
+.tv-name .wl-star{color:var(--gold);font-size:.65rem}
+.tv-detail{font-size:.55rem;color:var(--text3);margin-top:1px}
+.tv-br{color:var(--gold);font-weight:700;font-size:.72rem;flex-shrink:0}
+.tv-rp{font-size:.65rem;color:var(--text2);flex-shrink:0;min-width:60px;text-align:right}
+.tv-matches{font-size:.6rem;color:var(--blue);flex-shrink:0;min-width:50px;text-align:right}
+.tv-bottom{padding:3px 10px 7px}
+.tv-pbar{display:flex;align-items:center;gap:5px}
+.tv-pbar .track{flex:1;height:4px;background:var(--bg);border-radius:2px;overflow:hidden}
+.tv-pbar .fill{height:100%;border-radius:2px;transition:width .3s}
+.tv-pbar .pct{font-size:.55rem;color:var(--text3);min-width:28px;text-align:right}
+.tv-input{display:flex;align-items:center;gap:4px;margin-top:3px}
+.tv-input label{font-size:.5rem;color:var(--text3);flex-shrink:0}
+.tv-input input{width:70px;padding:3px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:.7rem;outline:none;text-align:right}
+.tv-input input:focus{border-color:var(--red)}
+.optimal-path{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px}
+.op-title{font-size:.7rem;color:var(--gold);letter-spacing:.06em;margin-bottom:8px}
+.op-list{display:flex;flex-direction:column;gap:3px}
+.op-item{display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--bg);border-radius:4px;font-size:.72rem}
+.op-num{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:700;flex-shrink:0}
+.op-num.next{background:rgba(255,34,34,.12);color:var(--red2);border:1px solid rgba(255,34,34,.2)}
+.op-num.soon{background:rgba(255,152,0,.08);color:var(--amber);border:1px solid rgba(255,152,0,.15)}
+.op-num.later{background:rgba(136,136,136,.08);color:var(--text3);border:1px solid var(--border)}
+.op-name{flex:1;font-weight:600}
+.op-rp{color:var(--gold);font-weight:700;font-size:.68rem;flex-shrink:0}
+.op-matches{color:var(--blue);font-size:.65rem;flex-shrink:0}
+.btn-row{display:flex;gap:6px;margin-bottom:14px}
+.btn{padding:7px 12px;border-radius:6px;font-size:.68rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text2);transition:all .15s}
+.btn:hover{border-color:var(--red);color:var(--red2)}
+.hammer{opacity:.04;position:fixed;bottom:-40px;right:-40px;font-size:18rem;pointer-events:none;z-index:0}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:10px 20px;border-radius:6px;font-size:.82rem;font-weight:600;z-index:100;animation:toastIn .3s ease,toastOut .3s ease 1.7s forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(-50%) translateY(10px)}}
+footer{text-align:center;padding:20px;color:var(--text2);font-size:.68rem;border-top:1px solid var(--border);margin-top:24px;letter-spacing:.06em}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--red);border-radius:3px}
+@media(max-width:600px){.ctrl-row{flex-direction:column}.dash{grid-template-columns:repeat(3,1fr)}.container{padding:10px}}
+</style>
+</head>
+<body>
+<div class="hammer">☭</div>
+<header>
+<div><span class="star">★</span> <span class="star">★</span> <span class="star">★</span></div>
+<h1>WT GRIND PLANNER</h1>
+<p>RESEARCH TREE PROGRESSION TRACKER</p>
+</header>
+<div class="container">
+<div class="ctrl">
+<div class="ctrl-title">★ TREE SELECTION</div>
+<div class="ctrl-row">
+<div class="field"><label>NATION</label><select id="nationSel" onchange="buildTree()"><option>USSR</option><option>USA</option><option>Germany</option><option>Britain</option><option>Japan</option><option>France</option><option>Italy</option><option>Sweden</option><option>Israel</option><option>China</option></select></div>
+<div class="field"><label>BRANCH</label><select id="branchSel" onchange="buildTree()"><option value="ground">Ground</option><option value="air">Air</option><option value="heli">Helicopter</option></select></div>
+<div class="field"><label>AVG RP / MATCH</label><input type="number" id="avgRP" value="3000" min="100" step="500" onchange="saveProgress();renderAll()"></div>
+</div>
+</div>
+<div class="dash" id="dashboard"></div>
+<div class="time-grid" id="timeGrid"></div>
+<div class="btn-row">
+<div class="btn" onclick="unlockAll()">✓ Mark All Researched</div>
+<div class="btn" onclick="resetAll()">↻ Reset Progress</div>
+</div>
+<div class="optimal-path" id="optimalPath"></div>
+<div class="section-title"><span>★ RESEARCH TREE</span><span class="badge" id="treeBadge">0 vehicles</span></div>
+<div id="treeContainer"></div>
+</div>
+<footer>★ PROGRESS SAVED PER NATION/BRANCH ★ INTEGRATES WITH WISHLIST ★</footer>
+<script>
+const FLAGS={USA:"🇺🇸",Germany:"🇩🇪",USSR:"🇷🇺",Britain:"🇬🇧",Japan:"🇯🇵",France:"🇫🇷",Italy:"🇮🇹",Sweden:"🇸🇪",Israel:"🇮🇱",China:"🇨🇳"};
+// Trees: [name, BR, type_code, rank(1-8)]
+const TREES={
+USSR:{ground:[
+["T-26",1.0,"LT",1],["BT-5",1.3,"LT",1],["BT-7",1.3,"LT",1],["T-70",2.0,"LT",1],["T-50",2.3,"LT",1],
+["T-34 1941",3.3,"MT",2],["T-34 1942",3.7,"MT",2],["KV-1 L-11",3.7,"HT",2],["KV-1E",4.0,"HT",2],["ZSU-37",3.3,"AA",2],
+["T-34-57",4.0,"MT",3],["KV-1 ZiS-5",4.3,"HT",3],["KV-85",4.7,"HT",3],["KV-2",4.0,"HT",3],["SU-85",4.3,"TD",3],["ISU-152",4.3,"TD",3],
+["T-34-85 D-5T",5.0,"MT",4],["T-34-85",5.3,"MT",4],["IS-1",5.3,"HT",4],["IS-2",5.7,"HT",4],["SU-85M",5.0,"TD",4],["ISU-122S",5.3,"TD",4],["PT-76B",5.0,"LT",4],
+["T-44",6.3,"MT",5],["T-44-100",6.7,"MT",5],["IS-2 1944",6.3,"HT",5],["IS-3",7.0,"HT",5],["SU-100",6.0,"TD",5],["ZSU-57-2",7.0,"AA",5],
+["T-54 1947",7.3,"MT",6],["T-54 1949",7.7,"MT",6],["IS-4M",7.3,"HT",6],["IS-6",7.0,"HT",6],["SU-122-54",7.0,"TD",6],["BMP-1",7.3,"LT",6],["ZSU-23-4 Shilka",8.0,"AA",6],["T-10M",8.0,"HT",6],
+["T-55A",8.0,"MT",7],["T-62",8.0,"MT",7],["T-62M-1",8.7,"MT",7],["T-64A",9.0,"MT",7],["T-64B",9.7,"MT",7],["T-72A",9.3,"MT",7],["T-72B",9.7,"MT",7],["BMP-2",8.3,"LT",7],["BMP-2M",9.3,"LT",7],["Object 279",8.3,"HT",7],
+["T-72B3",10.7,"MT",8],["T-80B",9.7,"MT",8],["T-80U",10.7,"MT",8],["T-80BVM",11.7,"MT",8],["T-90A",10.7,"MT",8],["T-90M",11.7,"MT",8],["Tunguska",10.7,"AA",8],["Pantsir-S1",12.0,"AA",8]
+],air:[
+["I-15bis",1.0,"F",1],["I-16 type 10",1.7,"F",1],["I-16 type 24",2.3,"F",1],["I-16 type 28",2.7,"F",1],
+["LaGG-3-8",2.3,"F",2],["LaGG-3-35",3.0,"F",2],["Yak-1",2.3,"F",2],["Yak-1B",3.0,"F",2],["Il-2 1941",2.0,"A",2],["Pe-2-31",2.7,"B",2],
+["La-5",3.3,"F",3],["La-5FN",4.0,"F",3],["Yak-3",4.0,"F",3],["Yak-9T",3.7,"F",3],["Il-2M 1943",4.0,"A",3],["Pe-8",4.7,"B",3],["Tu-2S",4.7,"B",3],
+["La-7",4.3,"F",4],["La-9",5.7,"F",4],["Yak-3P",5.0,"F",4],["Yak-9U",4.7,"F",4],["Yak-9P",5.3,"F",4],["Il-10 1946",5.7,"A",4],
+["Yak-15",6.0,"F",5],["Yak-23",7.3,"F",5],["MiG-9",7.0,"F",5],["MiG-9 Late",7.3,"F",5],["Il-28",7.7,"B",5],["Tu-4",7.7,"B",5],
+["MiG-15",8.0,"F",6],["MiG-15bis",8.3,"F",6],["MiG-17",8.7,"F",6],["MiG-19PT",9.3,"F",6],["Su-25",10.3,"A",6],
+["MiG-21F-13",9.3,"F",7],["MiG-21SMT",10.3,"F",7],["MiG-21bis",10.7,"F",7],["MiG-23M",11.0,"F",7],["MiG-23MLD",11.3,"F",7],["Su-25T",11.3,"A",7],["Su-39",11.3,"A",7],
+["MiG-29",12.3,"F",8],["MiG-29SMT",13.0,"F",8],["Su-27",12.0,"F",8],["Su-33",12.3,"F",8],["Su-30MK2",13.3,"F",8],["Su-34",13.0,"A",8]
+],heli:[
+["Mi-4AV",8.0,"H",5],["Mi-24A",9.3,"H",6],["Mi-24V",10.0,"H",7],["Mi-24P",10.0,"H",7],["Ka-50",11.0,"H",7],["Mi-28N",11.0,"H",8],["Ka-52",11.3,"H",8]
+]},
+USA:{ground:[
+["M2A4",1.0,"LT",1],["M3 Stuart",1.3,"LT",1],["M5A1 Stuart",2.0,"LT",1],["M22 Locust",1.7,"LT",1],
+["M3 Lee",2.3,"MT",2],["M4A1 Sherman",3.3,"MT",2],["M24 Chaffee",3.0,"LT",2],["M16 MGMC",2.7,"AA",2],
+["M4 Sherman",3.7,"MT",3],["M4A2 76 Sherman",5.0,"MT",3],["M4A3E2 Jumbo",5.3,"HT",3],["M10 Wolverine",3.3,"TD",3],["M19A1",4.0,"AA",3],
+["M4A3 76 Sherman",5.3,"MT",4],["M4A3E2 76 Jumbo",6.3,"HT",4],["M26 Pershing",6.3,"MT",4],["M18 Hellcat",5.3,"TD",4],["M36 Jackson",5.3,"TD",4],["M41A1 Walker Bulldog",6.0,"LT",4],
+["M46 Patton",7.0,"MT",5],["M47 Patton II",7.0,"MT",5],["M48A1 Patton III",7.3,"MT",5],["T29",6.7,"HT",5],["T32",7.3,"HT",5],["T95",7.0,"TD",5],["M56 Scorpion",6.3,"TD",5],
+["M60",8.0,"MT",6],["M60A1 RISE",8.7,"MT",6],["M60A3 TTS",9.0,"MT",6],["M551 Sheridan",8.0,"LT",6],["M163 VADS",8.3,"AA",6],
+["M1 Abrams",10.3,"MT",7],["IPM1 Abrams",10.7,"MT",7],["M1A1 Abrams",11.0,"MT",7],["M247 Sgt York",9.3,"AA",7],
+["M1A1 HC Abrams",11.3,"MT",8],["M1A2 Abrams",11.7,"MT",8],["M1A2 SEP Abrams",11.7,"MT",8],["M1A2 SEP V2",12.3,"MT",8]
+],air:[
+["P-26A-34 Peashooter",1.0,"F",1],["F2A-1 Buffalo",1.7,"F",1],["P-36G Hawk",2.3,"F",1],
+["P-39N Airacobra",2.7,"F",2],["P-40E Warhawk",2.7,"F",2],["F4U-1A Corsair",3.0,"F",2],["P-38G Lightning",3.3,"F",2],["B-17E Flying Fortress",4.0,"B",2],
+["P-47D-25 Thunderbolt",3.7,"F",3],["P-47D-28 Thunderbolt",4.3,"F",3],["P-51D-5 Mustang",4.0,"F",3],["F6F-5 Hellcat",3.7,"F",3],["B-17G Flying Fortress",5.0,"B",3],["B-24D Liberator",4.3,"B",3],
+["P-51D-30 Mustang",4.7,"F",4],["P-51H-5 Mustang",6.3,"F",4],["F4U-4B Corsair",5.7,"F",4],["F8F-1B Bearcat",5.7,"F",4],["B-29A Superfortress",7.7,"B",4],
+["F-80A Shooting Star",7.0,"F",5],["F-84B Thunderjet",7.0,"F",5],["B-57A Canberra",7.7,"B",5],["B-57B Canberra",8.0,"B",5],
+["F-86A-5 Sabre",8.3,"F",6],["F-86F-25 Sabre",8.7,"F",6],["F-86F-2 Sabre",9.0,"F",6],["F-100D Super Sabre",9.3,"F",6],["F-104A Starfighter",9.3,"F",6],
+["F-4C Phantom II",10.3,"F",7],["F-4E Phantom II",11.0,"F",7],["F-5E Tiger II",10.7,"F",7],["A-10A Thunderbolt II",10.0,"A",7],["A-10A Late",10.3,"A",7],["B-52H Stratofortress",10.0,"B",7],
+["F-14A Tomcat",11.3,"F",8],["F-14B Tomcat",12.0,"F",8],["F-15A Eagle",12.0,"F",8],["F-15C Eagle",12.7,"F",8],["F-16A Fighting Falcon",12.0,"F",8],["F-16C Fighting Falcon",13.0,"F",8],["F/A-18E Super Hornet",13.3,"F",8]
+],heli:[
+["UH-1B",8.0,"H",5],["AH-1G Cobra",8.3,"H",6],["AH-64A Apache",10.7,"H",7],["AH-1Z Viper",11.3,"H",7],["AH-64D Apache",11.3,"H",8]
+]},
+Germany:{ground:[
+["Pz.II C",1.3,"LT",1],["Pz.III B",1.3,"LT",1],["Pz.III F",2.0,"MT",1],
+["Pz.IV F1",2.3,"MT",2],["Pz.IV F2",3.3,"MT",2],["Pz.IV G",3.7,"MT",2],["Wirbelwind",3.7,"AA",2],
+["Pz.IV H",4.0,"MT",3],["Panther D",5.3,"MT",3],["Tiger H1",5.3,"HT",3],["StuG III F",3.3,"TD",3],["Nashorn",4.3,"TD",3],["Ostwind",4.7,"AA",3],
+["Panther A",5.7,"MT",4],["Panther G",5.7,"MT",4],["Tiger E",5.7,"HT",4],["Tiger II P",6.3,"HT",4],["Jagdpanzer IV/70",5.3,"TD",4],["Ferdinand",6.3,"TD",4],
+["Tiger II H",6.7,"HT",5],["Panther II",6.7,"MT",5],["Jagdpanther",6.0,"TD",5],["Jagdtiger",6.7,"TD",5],["Kugelblitz",6.7,"AA",5],
+["Leopard I",7.3,"MT",6],["Maus",7.7,"HT",6],["Leopard A1A1",8.3,"MT",6],["Gepard",8.3,"AA",6],
+["Leopard A1A1 L/44",8.7,"MT",7],["Leopard 2K",9.7,"MT",7],["Leopard 2A4",10.3,"MT",7],["FlakRakPz 1",9.7,"AA",7],
+["Leopard 2A5",11.0,"MT",8],["Leopard 2A6",11.3,"MT",8],["Leopard 2A7V",12.0,"MT",8],["Leopard 2A7HU",12.3,"MT",8]
+],air:[
+["Bf 109 E-1",2.0,"F",1],["Bf 109 E-3",2.3,"F",1],["Ju 87 B-2 Stuka",1.7,"B",1],
+["Bf 109 F-1",2.7,"F",2],["Bf 109 F-4",3.7,"F",2],["Fw 190 A-1",3.7,"F",2],["Ju 88 A-4",3.0,"B",2],
+["Bf 109 G-2",4.0,"F",3],["Bf 109 G-6",4.7,"F",3],["Fw 190 A-5",4.3,"F",3],["Fw 190 A-8",5.3,"F",3],["Do 217 E-2",3.7,"B",3],["Me 264",4.3,"B",3],
+["Bf 109 K-4",5.7,"F",4],["Fw 190 D-9",5.3,"F",4],["Fw 190 D-12",5.7,"F",4],["Ta 152 H-1",6.0,"F",4],
+["Me 262 A-1a",7.0,"F",5],["Ho 229 V3",7.0,"F",5],["He 162 A-2",6.3,"F",5],["Ar 234 B-2",7.0,"B",5],
+["Me 163 B",8.0,"F",6],["CL-13A Sabre",8.7,"F",6],["CL-13B Sabre",9.0,"F",6],["F-104G Starfighter",9.7,"F",6],
+["MiG-21MF",10.3,"F",7],["F-4F Phantom II",10.7,"F",7],["Tornado IDS",11.3,"F",7],
+["MiG-29",12.3,"F",8],["Eurofighter Typhoon",13.0,"F",8]
+],heli:[
+["UH-1D",8.3,"H",5],["Bo 105 PAH-1",9.0,"H",6],["Mi-24P",10.0,"H",7],["Eurocopter Tiger UHT",11.0,"H",8]
+]},
+Britain:{ground:[
+["Cromwell I",3.3,"MT",2],["Cromwell V",3.7,"MT",2],["Churchill Mk III",3.7,"HT",2],["Crusader AA Mk II",3.0,"AA",2],
+["Sherman Firefly",4.7,"MT",3],["Churchill Mk VII",4.7,"HT",3],["Charioteer Mk VII",6.0,"TD",3],
+["Comet I",5.3,"MT",4],["Centurion Mk 1",6.0,"MT",4],["Black Prince",5.7,"HT",4],["FV4005",6.3,"TD",4],
+["Centurion Mk 3",6.7,"MT",5],["Centurion Mk 10",7.3,"MT",5],["Conqueror",7.3,"HT",5],["Tortoise",6.7,"TD",5],["Falcon",7.7,"AA",5],
+["FV4202",7.0,"MT",6],["Vickers Mk.1",7.3,"MT",6],["Chieftain Mk 3",8.3,"MT",6],["Marksman",8.0,"AA",6],
+["Chieftain Mk 5",8.7,"MT",7],["Chieftain Mk 10",9.0,"MT",7],["Challenger Mk.2",9.7,"MT",7],["Challenger Mk.3",10.0,"MT",7],
+["Challenger 2",10.7,"MT",8],["Challenger 2 TES",11.0,"MT",8],["Challenger 2 OES",11.3,"MT",8],["Challenger 3 TD",12.0,"MT",8]
+],air:[
+["Hurricane Mk I",2.0,"F",1],["Hurricane Mk II",2.7,"F",1],["Spitfire Mk Ia",3.0,"F",2],["Spitfire Mk IIb",3.7,"F",2],["Stirling B Mk III",3.3,"B",2],
+["Spitfire Mk Vb",4.0,"F",3],["Spitfire F Mk IX",4.7,"F",3],["Typhoon Mk Ib",3.7,"F",3],["Lancaster B Mk III",4.3,"B",3],
+["Spitfire LF Mk IX",5.3,"F",4],["Spitfire F Mk XIVe",5.7,"F",4],["Tempest Mk V",5.3,"F",4],["Tempest Mk II",5.7,"F",4],
+["Spitfire F Mk 22",6.3,"F",5],["Spitfire F Mk 24",6.7,"F",5],["Sea Fury FB 11",5.7,"F",5],["Meteor F Mk 3",7.0,"F",5],
+["Meteor F Mk 8",8.0,"F",6],["Vampire FB 5",7.3,"F",6],["Venom FB.4",8.3,"F",6],["Canberra B Mk 2",8.0,"B",6],
+["Hunter F.6",9.0,"F",7],["Lightning F.6",9.3,"F",7],["Phantom FGR.2",11.0,"F",7],["Harrier GR.1",9.7,"A",7],
+["Tornado F.3",11.7,"F",8],["Typhoon FGR4",13.0,"F",8],["Gripen",13.0,"F",8]
+],heli:[["Lynx AH.1",9.7,"H",6],["Apache AH Mk.1",11.0,"H",8]]},
+Japan:{ground:[
+["Chi-Ha",1.3,"MT",1],["Chi-He",2.3,"MT",2],["Chi-Nu",3.0,"MT",2],["Chi-Nu II",3.7,"MT",3],["Chi-To",4.3,"MT",3],["Chi-To Late",4.7,"MT",4],["Chi-Ri II",4.7,"MT",4],
+["Ho-Ri Production",6.3,"TD",5],["Type 61",6.7,"MT",5],["STB-1",7.7,"MT",6],["Type 74",8.3,"MT",7],["Type 90",10.7,"MT",8],["Type 10",11.3,"MT",8],["TKX",11.7,"MT",8]
+],air:[
+["Ki-43-II Hayabusa",2.7,"F",1],["A6M2 Zero",3.0,"F",2],["Ki-61-I Hien",3.3,"F",2],["A6M3 Zero",4.0,"F",3],["A6M5 Zero",4.7,"F",3],["Ki-84 Hayate",5.3,"F",4],
+["N1K2-J Shiden-Kai",5.7,"F",4],["J2M3 Raiden",5.0,"F",4],["R2Y2 KAI V1",7.0,"F",5],["Ki-200",8.0,"F",6],
+["F-86F-40 Sabre",9.0,"F",6],["F-104J Starfighter",10.0,"F",7],["F-4EJ Phantom II",11.0,"F",7],["F-16AJ",12.7,"F",8],["F-2A",13.0,"F",8],["F-15J",13.0,"F",8]
+],heli:[["AH-1S",10.3,"H",7]]},
+France:{ground:[
+["AMX-13",6.0,"LT",4],["ARL-44",5.3,"HT",4],["AMX-13-90",7.3,"LT",5],["Somua SM",7.3,"HT",5],["AMX-50 Foch",7.0,"TD",5],
+["AMX-30",7.7,"MT",6],["AMX-30B2",8.3,"MT",6],["AMX-30B2 BRENUS",8.7,"MT",7],["AMX-32",9.0,"MT",7],["AMX-40",9.3,"MT",7],
+["Leclerc",11.0,"MT",8],["Leclerc S2",11.3,"MT",8],["Leclerc SXXI",11.7,"MT",8]
+],air:[
+["D.520",2.3,"F",1],["M.B.157",4.0,"F",3],["VB.10-02",4.3,"F",3],["Mystere IVA",8.7,"F",6],["Super Mystere B2",9.0,"F",6],
+["Mirage IIIC",10.3,"F",7],["Mirage 2000C-S5",12.0,"F",8],["Mirage 4000",13.0,"F",8],["Rafale C",13.3,"F",8]
+],heli:[["SA.342M Gazelle",9.7,"H",6],["Tiger HAD",11.0,"H",8]]},
+Italy:{ground:[
+["M13/40",1.3,"MT",1],["P40",3.3,"HT",2],["R3 T20 FA-HS",4.0,"AA",3],["M26A1 Pershing",6.3,"MT",4],
+["OF-40",8.0,"MT",6],["OF-40 Mk.2A",8.7,"MT",6],["Centauro I 105",8.3,"TD",6],["Centauro I 120",9.3,"TD",7],
+["Ariete",10.3,"MT",7],["Ariete PSO",10.7,"MT",8],["Ariete AMV",11.3,"MT",8]
+],air:[
+["C.202 Folgore",3.0,"F",2],["C.205 Veltro",4.3,"F",3],["G.55 Centauro",4.7,"F",3],["Re.2005 Sagittario",5.7,"F",4],
+["F-104S Starfighter",10.3,"F",7],["Tornado ADV",11.7,"F",8],["Eurofighter Typhoon",13.0,"F",8]
+],heli:[["A129CBT Mangusta",10.0,"H",7]]},
+Sweden:{ground:[
+["Strv m/42 EH",3.0,"MT",2],["Strv 74",5.0,"MT",4],["Lvkv 42",4.3,"AA",3],["Strv 81",6.7,"MT",5],["Strv 103-0",7.0,"TD",5],
+["Strv 101",7.7,"MT",6],["Strv 103A",7.3,"TD",6],["Strv 103C",8.0,"TD",6],["Strv 104",8.3,"MT",6],["VEAK 40",8.0,"AA",6],
+["CV 90105",9.7,"LT",7],["CV 90120",10.3,"LT",7],["Strv 121",10.0,"MT",7],["Strv 122",11.3,"MT",8],["Strv 122B+",12.0,"MT",8]
+],air:[
+["J21A-1",2.7,"F",1],["J22-B",2.7,"F",1],["J26 Mustang",4.0,"F",3],["J29F Tunnan",8.3,"F",5],["J32B Lansen",9.0,"F",6],
+["J35D Draken",10.3,"F",7],["JA37C Viggen",11.3,"F",7],["JAS39A Gripen",12.0,"F",8],["JAS39C Gripen",13.3,"F",8]
+],heli:[]},
+Israel:{ground:[
+["Sho't Kal Dalet",8.0,"MT",5],["Magach 3",7.7,"MT",5],["Magach 5",8.0,"MT",6],["Magach 6B",8.3,"MT",6],["Magach 7C",9.0,"MT",7],
+["Merkava Mk.1",8.7,"MT",6],["Merkava Mk.2B",9.0,"MT",7],["Merkava Mk.3D",10.3,"MT",7],["Merkava Mk.4",11.0,"MT",8],["Merkava Mk.4M",11.7,"MT",8]
+],air:[
+["Kfir C.2",10.0,"F",6],["Kfir C.7",10.7,"F",7],["F-4E Phantom II Kurnass",11.0,"F",7],["F-15A Baz",12.3,"F",8],["F-16D Barak II",12.7,"F",8]
+],heli:[["AH-1S Tzefa",9.7,"H",6],["AH-64A Peten",10.7,"H",8]]},
+China:{ground:[
+["T-34-85 No.215",5.3,"MT",4],["IS-2 No.402",6.3,"HT",4],["Type 59",8.0,"MT",6],["Type 69",8.3,"MT",6],["ZTZ59D1",8.3,"MT",6],
+["ZTZ96",9.3,"MT",7],["ZTZ96A",9.7,"MT",7],["PTZ89",8.0,"TD",6],["PGZ04A",9.3,"AA",7],
+["ZTZ99",10.7,"MT",8],["ZTZ99A",11.3,"MT",8],["VT4A1",11.7,"MT",8],["ZTZ99A-III",12.0,"MT",8],["PGZ09",10.0,"AA",8]
+],air:[
+["J-2",8.0,"F",5],["J-4",8.3,"F",6],["Q-5A",9.3,"A",6],["J-7II",10.0,"F",7],["J-8B",11.0,"F",7],["J-11",12.7,"F",8],["J-11A",13.0,"F",8]
+],heli:[["Z-9W",9.3,"H",6],["Z-19",10.0,"H",7],["Z-10",10.3,"H",7]]}
+};
+const TN={F:"Fighter",B:"Bomber",A:"Attacker",H:"Helicopter",LT:"Light Tank",MT:"Medium Tank",HT:"Heavy Tank",TD:"Tank Destroyer",AA:"SPAA"};
+function getResRP(br){
+if(br<=1.5)return 2000;if(br<=2.5)return 5000;if(br<=3.5)return 9000;if(br<=4.5)return 18000;
+if(br<=5.5)return 32000;if(br<=6.5)return 55000;if(br<=7.5)return 80000;if(br<=8.5)return 120000;
+if(br<=9.5)return 180000;if(br<=10.5)return 250000;if(br<=11.5)return 340000;if(br<=12.5)return 400000;return 450000;
+}
+function fmt(n){return n.toLocaleString()}
+function getKey(){return"wt_grind_"+document.getElementById("nationSel").value+"_"+document.getElementById("branchSel").value}
+function getWishlist(){try{return JSON.parse(localStorage.getItem("wt_wishlist_vehicles")||"[]")}catch(e){return[]}}
+
+let progress={};
+function loadProgress(){try{progress=JSON.parse(localStorage.getItem(getKey()))||{}}catch(e){progress={}}}
+function saveProgress(){localStorage.setItem(getKey(),JSON.stringify(progress));localStorage.setItem("wt_grind_avgRP",document.getElementById("avgRP").value)}
+
+function getTree(){
+const n=document.getElementById("nationSel").value;
+const b=document.getElementById("branchSel").value;
+return(TREES[n]&&TREES[n][b])||[];
+}
+
+function buildTree(){loadProgress();renderAll()}
+
+function renderAll(){
+const tree=getTree();const avgRP=parseInt(document.getElementById("avgRP").value)||3000;
+const wl=getWishlist();
+const items=tree.map(v=>{
+const resRP=getResRP(v[1]);
+const curRP=progress[v[0]]||0;
+const status=curRP>=resRP?"unlocked":curRP>0?"progress":"locked";
+const pct=Math.min(100,Math.round((curRP/resRP)*100));
+const remaining=Math.max(0,resRP-curRP);
+const matches=Math.ceil(remaining/avgRP);
+const isWL=wl.includes(v[0]);
+return{name:v[0],br:v[1],tc:v[2],rank:v[3],resRP,curRP,status,pct,remaining,matches,isWL,type:TN[v[2]]||v[2]};
+});
+
+document.getElementById("treeBadge").textContent=items.length+" vehicles";
+const unlocked=items.filter(i=>i.status==="unlocked").length;
+const inProg=items.filter(i=>i.status==="progress").length;
+const totalRP=items.reduce((s,i)=>s+i.resRP,0);
+const earnedRP=items.reduce((s,i)=>s+Math.min(i.curRP,i.resRP),0);
+const remainRP=totalRP-earnedRP;
+const totalPct=totalRP>0?Math.round((earnedRP/totalRP)*100):0;
+const totalMatches=Math.ceil(remainRP/avgRP);
+
+document.getElementById("dashboard").innerHTML=`
+<div class="dc"><div class="lbl">TOTAL</div><div class="val">${items.length}</div></div>
+<div class="dc"><div class="lbl">UNLOCKED</div><div class="val" style="color:var(--green)">${unlocked}</div></div>
+<div class="dc"><div class="lbl">IN PROGRESS</div><div class="val" style="color:var(--amber)">${inProg}</div></div>
+<div class="dc"><div class="lbl">LOCKED</div><div class="val" style="color:var(--red2)">${items.length-unlocked-inProg}</div></div>
+<div class="dc"><div class="lbl">PROGRESS</div><div class="val" style="color:var(--gold)">${totalPct}%</div></div>
+<div class="dc"><div class="lbl">REMAINING RP</div><div class="val" style="color:var(--amber)">${remainRP>999999?(remainRP/1e6).toFixed(1)+"M":fmt(remainRP)}</div></div>`;
+
+const freqs=[{l:"5/DAY",n:5},{l:"10/DAY",n:10},{l:"15/DAY",n:15},{l:"20/DAY",n:20}];
+document.getElementById("timeGrid").innerHTML=freqs.map(f=>{
+const days=Math.ceil(totalMatches/f.n);
+const col=days<=7?"var(--green)":days<=30?"var(--amber)":days<=90?"var(--blue)":"var(--red2)";
+const wk=days>=7?Math.round(days/7)+" weeks":days+" days";
+return`<div class="time-card"><div class="freq">${f.l}</div><div class="days" style="color:${col}">${days}</div><div class="weeks">${wk} (${fmt(totalMatches)} matches)</div></div>`}).join("");
+
+// Optimal path: next vehicles to research in order
+const locked=items.filter(i=>i.status!=="unlocked").sort((a,b)=>a.rank-b.rank||a.br-b.br);
+const op=document.getElementById("optimalPath");
+if(locked.length){
+const shown=locked.slice(0,8);
+op.innerHTML=`<div class="op-title">★ OPTIMAL RESEARCH ORDER</div><div class="op-list">${shown.map((v,i)=>{
+const cls=i===0?"next":i<3?"soon":"later";
+return`<div class="op-item"><div class="op-num ${cls}">${i+1}</div><span class="op-name">${v.isWL?"⭐ ":""}${v.name}</span><span class="op-rp">${fmt(v.remaining)} RP</span><span class="op-matches">${v.matches} matches</span></div>`}).join("")}</div>`;
+}else{op.innerHTML=`<div class="op-title">★ ALL VEHICLES UNLOCKED</div>`}
+
+// Render tree by rank
+const ranks={};items.forEach(v=>{if(!ranks[v.rank])ranks[v.rank]=[];ranks[v.rank].push(v)});
+const container=document.getElementById("treeContainer");
+container.innerHTML=Object.entries(ranks).sort((a,b)=>a[0]-b[0]).map(([rank,vehs])=>{
+const rUnlocked=vehs.filter(v=>v.status==="unlocked").length;
+const rPct=Math.round((rUnlocked/vehs.length)*100);
+const rCol=rPct>=100?"var(--green)":rPct>0?"var(--amber)":"var(--red2)";
+return`<div class="rank-group">
+<div class="rank-header"><span class="rank-num">Rank ${rank}</span><div class="rank-bar"><div class="rank-fill" style="width:${rPct}%;background:${rCol}"></div></div><span class="rank-pct" style="color:${rCol}">${rPct}%</span></div>
+<div class="tree-list">${vehs.map(v=>{
+const col=v.status==="unlocked"?"var(--green)":v.status==="progress"?"var(--amber)":"var(--red2)";
+return`<div class="tv ${v.status}${v.isWL?" wishlist":""}">
+<div class="tv-top">
+<div class="tv-status ${v.status}"></div>
+<div class="tv-info"><div class="tv-name">${v.isWL?'<span class="wl-star">⭐</span>':""}${v.name}</div><div class="tv-detail">${v.type} • Rank ${v.rank}</div></div>
+<span class="tv-br">${v.br.toFixed(1)}</span>
+<span class="tv-rp">${fmt(v.resRP)} RP</span>
+<span class="tv-matches">${v.status==="unlocked"?"✓":v.matches+"m"}</span>
+</div>
+<div class="tv-bottom">
+<div class="tv-pbar"><div class="track"><div class="fill" style="width:${v.pct}%;background:${col}"></div></div><span class="pct" style="color:${col}">${v.pct}%</span></div>
+<div class="tv-input"><label>RP:</label><input type="number" value="${v.curRP}" min="0" max="${v.resRP}" step="1000" onchange="setRP('${v.name.replace(/'/g,"\\'")}',this.value)"></div>
+</div></div>`}).join("")}</div></div>`}).join("");
+}
+
+function setRP(name,val){
+progress[name]=Math.max(0,parseInt(val)||0);
+saveProgress();renderAll();
+}
+function unlockAll(){
+getTree().forEach(v=>progress[v[0]]=getResRP(v[1]));
+saveProgress();renderAll();toast("★ All vehicles marked as researched");
+}
+function resetAll(){
+progress={};saveProgress();renderAll();toast("★ Progress reset");
+}
+function toast(msg){const old=document.querySelector(".toast");if(old)old.remove();const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2000)}
+
+// Load saved avg RP
+const savedAvg=localStorage.getItem("wt_grind_avgRP");
+if(savedAvg)document.getElementById("avgRP").value=savedAvg;
+buildTree();
+</script>
+</body>
+</html>
