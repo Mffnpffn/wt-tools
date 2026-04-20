@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>WT Stat Tracker</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0e10;--bg2:#1a1c20;--bg3:#222528;--border:#2a2c30;--red:#cc0000;--red2:#ff2222;--red-glow:rgba(204,0,0,.3);--gold:#d4a017;--text:#e0ddd8;--text2:#888;--text3:#555;--green:#4caf50;--amber:#ff9800;--blue:#4a9eff}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{text-align:center;padding:20px 16px 12px;border-bottom:2px solid var(--red);background:linear-gradient(180deg,rgba(204,0,0,.08),transparent)}
+header h1{font-size:1.6rem;color:var(--red2);text-shadow:0 0 20px var(--red-glow);letter-spacing:.05em}
+header .star{color:var(--gold);font-size:1.2rem}
+header p{color:var(--text2);font-size:.78rem;margin-top:4px;letter-spacing:.08em}
+.container{max-width:800px;margin:0 auto;padding:16px}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px}
+.panel-title{font-size:.68rem;color:var(--text3);letter-spacing:.1em;margin-bottom:10px}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-size:.58rem;color:var(--text2);letter-spacing:.06em}
+.field input,.field select{padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.82rem;outline:none}
+.field input:focus,.field select:focus{border-color:var(--red)}
+.btn{padding:8px 14px;border-radius:6px;font-size:.72rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text2);transition:all .15s}
+.btn:hover{border-color:var(--red);color:var(--red2)}
+.btn.primary{background:linear-gradient(180deg,#dd0000,#990000);border-color:var(--red2);color:#fff}
+.btn.primary:hover{box-shadow:0 0 12px var(--red-glow)}
+.btn-row{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:6px;margin-bottom:14px}
+.sg{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center}
+.sg .lbl{font-size:.5rem;color:var(--text3);letter-spacing:.06em;margin-bottom:2px}
+.sg .val{font-size:1.2rem;font-weight:700}
+.sg .trend{font-size:.6rem;margin-top:3px;font-weight:600}
+.sg .trend.up{color:var(--green)}.sg .trend.down{color:var(--red2)}.sg .trend.flat{color:var(--text3)}
+.section-title{font-size:.75rem;color:var(--red2);letter-spacing:.08em;margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.section-title .badge{font-size:.6rem;color:var(--text3);background:var(--bg3);padding:2px 7px;border-radius:10px}
+.chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px}
+.chart-wrap canvas{width:100%;display:block}
+.chart-tabs{display:flex;border-bottom:1px solid var(--border)}
+.chart-tab{flex:1;padding:8px;text-align:center;font-size:.7rem;font-weight:600;color:var(--text3);cursor:pointer;transition:all .15s}
+.chart-tab.active{color:var(--red2);background:rgba(204,0,0,.06)}
+.nation-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;margin-bottom:14px}
+.nation-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px;display:flex;align-items:center;gap:8px}
+.nation-card.best{border-color:rgba(76,175,80,.3);background:rgba(76,175,80,.04)}
+.nation-card.worst{border-color:rgba(255,34,34,.2);background:rgba(255,34,34,.03)}
+.nc-flag{font-size:1.2rem;flex-shrink:0}
+.nc-info{flex:1;min-width:0}
+.nc-name{font-size:.72rem;font-weight:600}
+.nc-stat{font-size:.6rem;color:var(--text3);margin-top:1px}
+.nc-kd{font-size:.85rem;font-weight:700;flex-shrink:0}
+.nc-tag{font-size:.5rem;padding:1px 5px;border-radius:3px;font-weight:600;flex-shrink:0}
+.nc-tag.best{background:rgba(76,175,80,.15);color:var(--green)}.nc-tag.worst{background:rgba(255,34,34,.1);color:var(--red2)}
+.veh-list{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+.veh-item{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;display:flex;align-items:center;gap:8px;font-size:.78rem}
+.veh-item.top{border-color:rgba(212,160,23,.3);background:rgba(212,160,23,.04)}
+.vi-name{flex:1;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vi-stat{font-size:.65rem;color:var(--text3);flex-shrink:0}
+.vi-kd{font-weight:700;flex-shrink:0;min-width:40px;text-align:right}
+.vi-del{width:18px;height:18px;display:flex;align-items:center;justify-content:center;color:var(--text3);cursor:pointer;font-size:.6rem;flex-shrink:0}
+.vi-del:hover{color:var(--red2)}
+.goal-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:8px}
+.goal-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.goal-name{font-size:.82rem;font-weight:600;flex:1}
+.goal-val{font-size:.9rem;font-weight:700;flex-shrink:0}
+.goal-bar{height:8px;background:var(--bg);border-radius:4px;overflow:hidden;margin-bottom:4px}
+.goal-fill{height:100%;border-radius:4px;transition:width .4s}
+.goal-sub{font-size:.6rem;color:var(--text3);display:flex;justify-content:space-between}
+.snapshot-list{display:flex;flex-direction:column;gap:3px;margin-bottom:14px;max-height:200px;overflow-y:auto}
+.snap-item{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;font-size:.7rem}
+.snap-date{color:var(--text3);min-width:75px;flex-shrink:0}
+.snap-stat{flex:1;display:flex;gap:8px;flex-wrap:wrap}
+.snap-stat span{color:var(--text2)}
+.snap-stat b{color:var(--text)}
+.snap-del{color:var(--text3);cursor:pointer;font-size:.6rem;flex-shrink:0}
+.snap-del:hover{color:var(--red2)}
+.export-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center}
+.export-overlay.show{display:flex}
+.export-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:20px;max-width:500px;width:90%}
+.export-box textarea{width:100%;height:200px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:monospace;font-size:.72rem;padding:10px;resize:none;outline:none;margin:10px 0}
+.export-box .btns{display:flex;gap:8px}
+.export-box .ebtn{flex:1;padding:10px;border-radius:6px;font-weight:700;font-size:.8rem;cursor:pointer;border:1px solid var(--border);text-align:center}
+.export-box .ebtn.copy{background:var(--green);border-color:var(--green);color:#fff}
+.export-box .ebtn.close{background:var(--bg3);color:var(--text2)}
+.hammer{opacity:.04;position:fixed;bottom:-40px;right:-40px;font-size:18rem;pointer-events:none;z-index:0}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:10px 20px;border-radius:6px;font-size:.82rem;font-weight:600;z-index:300;animation:toastIn .3s ease,toastOut .3s ease 1.7s forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(-50%) translateY(10px)}}
+footer{text-align:center;padding:20px;color:var(--text2);font-size:.68rem;border-top:1px solid var(--border);margin-top:24px;letter-spacing:.06em}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--red);border-radius:3px}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr 1fr}.stats-grid{grid-template-columns:repeat(3,1fr)}.nation-grid{grid-template-columns:1fr 1fr}.container{padding:10px}}
+</style>
+</head>
+<body>
+<div class="hammer">☭</div>
+<header>
+<div><span class="star">★</span> <span class="star">★</span> <span class="star">★</span></div>
+<h1>WT STAT TRACKER</h1>
+<p>PERSONAL PERFORMANCE ANALYTICS</p>
+</header>
+<div class="container">
+<div class="panel">
+<div class="panel-title">★ OVERALL STATS</div>
+<div class="form-grid">
+<div class="field"><label>TOTAL BATTLES</label><input type="number" id="sBattles" value="0" min="0" onchange="calc()"></div>
+<div class="field"><label>WINS</label><input type="number" id="sWins" value="0" min="0" onchange="calc()"></div>
+<div class="field"><label>LOSSES</label><input type="number" id="sLosses" value="0" min="0" onchange="calc()"></div>
+<div class="field"><label>TOTAL KILLS</label><input type="number" id="sKills" value="0" min="0" onchange="calc()"></div>
+<div class="field"><label>TOTAL DEATHS</label><input type="number" id="sDeaths" value="0" min="0" onchange="calc()"></div>
+<div class="field"><label>PLAYTIME (HOURS)</label><input type="number" id="sHours" value="0" min="0" step="1" onchange="calc()"></div>
+</div>
+<div class="btn-row">
+<div class="btn primary" onclick="saveSnapshot()">★ Save Weekly Snapshot</div>
+<div class="btn" onclick="saveData()">💾 Save Stats</div>
+<div class="btn" onclick="showExport()">📋 Export</div>
+</div>
+</div>
+
+<div class="stats-grid" id="statsGrid"></div>
+
+<div class="section-title"><span>★ PERFORMANCE TRENDS</span><span class="badge" id="snapCount">0 snapshots</span></div>
+<div class="chart-wrap">
+<div class="chart-tabs">
+<div class="chart-tab active" onclick="setChart('kd',this)">K/D Ratio</div>
+<div class="chart-tab" onclick="setChart('wl',this)">Win Rate %</div>
+<div class="chart-tab" onclick="setChart('kpm',this)">Kills/Match</div>
+</div>
+<canvas id="chart" width="760" height="220"></canvas>
+</div>
+
+<div class="section-title"><span>★ NATION PERFORMANCE</span></div>
+<div class="panel">
+<div class="panel-title">ADD NATION STATS (K/D per nation)</div>
+<div class="form-grid">
+<div class="field"><label>NATION</label><select id="nNation"><option>USSR</option><option>USA</option><option>Germany</option><option>Britain</option><option>Japan</option><option>France</option><option>Italy</option><option>Sweden</option><option>Israel</option><option>China</option></select></div>
+<div class="field"><label>KILLS</label><input type="number" id="nKills" value="0" min="0"></div>
+<div class="field"><label>DEATHS</label><input type="number" id="nDeaths" value="0" min="0"></div>
+<div class="field"><label>BATTLES</label><input type="number" id="nBattles" value="0" min="0"></div>
+<div class="field"><label>WINS</label><input type="number" id="nWins" value="0" min="0"></div>
+</div>
+<div class="btn-row"><div class="btn primary" onclick="addNation()">Add / Update Nation</div></div>
+</div>
+<div class="nation-grid" id="nationGrid"></div>
+
+<div class="section-title"><span>★ BEST VEHICLES</span></div>
+<div class="panel">
+<div class="panel-title">ADD VEHICLE STATS</div>
+<div class="form-grid">
+<div class="field"><label>VEHICLE NAME</label><input type="text" id="vName" placeholder="e.g. T-80BVM"></div>
+<div class="field"><label>KILLS</label><input type="number" id="vKills" value="0" min="0"></div>
+<div class="field"><label>DEATHS</label><input type="number" id="vDeaths" value="0" min="0"></div>
+<div class="field"><label>BATTLES</label><input type="number" id="vBattles" value="0" min="0"></div>
+</div>
+<div class="btn-row"><div class="btn primary" onclick="addVehicle()">Add Vehicle</div></div>
+</div>
+<div class="veh-list" id="vehList"></div>
+
+<div class="section-title"><span>★ GOALS</span></div>
+<div class="panel">
+<div class="panel-title">SET TARGET GOALS</div>
+<div class="form-grid">
+<div class="field"><label>TARGET K/D</label><input type="number" id="gKD" value="1.5" min="0" step="0.1" onchange="saveData();renderGoals()"></div>
+<div class="field"><label>TARGET WIN RATE %</label><input type="number" id="gWL" value="55" min="0" max="100" step="1" onchange="saveData();renderGoals()"></div>
+<div class="field"><label>TARGET TOTAL KILLS</label><input type="number" id="gTK" value="10000" min="0" step="100" onchange="saveData();renderGoals()"></div>
+</div>
+</div>
+<div id="goalsContainer"></div>
+
+<div class="section-title"><span>★ SNAPSHOT HISTORY</span><span class="badge" id="snapCount2">0</span></div>
+<div class="snapshot-list" id="snapList"></div>
+</div>
+
+<div class="export-overlay" id="exportOverlay" onclick="hideExport()">
+<div class="export-box" onclick="event.stopPropagation()">
+<div style="font-size:.85rem;font-weight:700;color:var(--red2)">★ Export Stats</div>
+<textarea id="exportText" readonly></textarea>
+<div class="btns"><div class="ebtn copy" onclick="copyExport()">Copy to Clipboard</div><div class="ebtn close" onclick="hideExport()">Close</div></div>
+</div>
+</div>
+
+<footer>★ STATS SAVED TO LOCAL STORAGE ★ SNAPSHOT WEEKLY FOR TREND TRACKING ★</footer>
+<script>
+const FLAGS={USA:"🇺🇸",Germany:"🇩🇪",USSR:"🇷🇺",Britain:"🇬🇧",Japan:"🇯🇵",France:"🇫🇷",Italy:"🇮🇹",Sweden:"🇸🇪",Israel:"🇮🇱",China:"🇨🇳"};
+let data={battles:0,wins:0,losses:0,kills:0,deaths:0,hours:0,nations:{},vehicles:[],snapshots:[],goals:{kd:1.5,wl:55,tk:10000}};
+let chartMode="kd";
+
+function load(){
+try{const s=JSON.parse(localStorage.getItem("wt_stats"));if(s){data=s;
+document.getElementById("sBattles").value=data.battles;document.getElementById("sWins").value=data.wins;
+document.getElementById("sLosses").value=data.losses;document.getElementById("sKills").value=data.kills;
+document.getElementById("sDeaths").value=data.deaths;document.getElementById("sHours").value=data.hours;
+document.getElementById("gKD").value=data.goals?.kd||1.5;document.getElementById("gWL").value=data.goals?.wl||55;
+document.getElementById("gTK").value=data.goals?.tk||10000;
+}}catch(e){}}
+
+function readForm(){
+data.battles=parseInt(document.getElementById("sBattles").value)||0;
+data.wins=parseInt(document.getElementById("sWins").value)||0;
+data.losses=parseInt(document.getElementById("sLosses").value)||0;
+data.kills=parseInt(document.getElementById("sKills").value)||0;
+data.deaths=parseInt(document.getElementById("sDeaths").value)||0;
+data.hours=parseInt(document.getElementById("sHours").value)||0;
+data.goals={kd:parseFloat(document.getElementById("gKD").value)||1.5,wl:parseInt(document.getElementById("gWL").value)||55,tk:parseInt(document.getElementById("gTK").value)||10000};
+}
+function saveData(){readForm();localStorage.setItem("wt_stats",JSON.stringify(data));toast("★ Stats saved")}
+function fmt(n){return n.toLocaleString()}
+
+function calc(){
+readForm();
+const kd=data.deaths>0?(data.kills/data.deaths).toFixed(2):(data.kills>0?data.kills.toFixed(2):"0.00");
+const wl=data.battles>0?((data.wins/data.battles)*100).toFixed(1):"0.0";
+const kpm=data.battles>0?(data.kills/data.battles).toFixed(1):"0.0";
+const bph=data.hours>0?(data.battles/data.hours).toFixed(1):"0";
+
+// Compare with last snapshot
+const prev=data.snapshots.length?data.snapshots[data.snapshots.length-1]:null;
+function trend(cur,prevVal){
+if(!prev)return'<span class="trend flat">—</span>';
+const diff=cur-prevVal;
+if(Math.abs(diff)<0.01)return'<span class="trend flat">= no change</span>';
+return diff>0?`<span class="trend up">▲ +${diff.toFixed(2)}</span>`:`<span class="trend down">▼ ${diff.toFixed(2)}</span>`;
+}
+const prevKD=prev?(prev.kills/(prev.deaths||1)):0;
+const prevWL=prev?(prev.wins/(prev.battles||1)*100):0;
+const prevKPM=prev?(prev.kills/(prev.battles||1)):0;
+
+document.getElementById("statsGrid").innerHTML=`
+<div class="sg"><div class="lbl">BATTLES</div><div class="val">${fmt(data.battles)}</div>${prev?trend(data.battles,prev.battles):''}</div>
+<div class="sg"><div class="lbl">K/D RATIO</div><div class="val" style="color:${parseFloat(kd)>=1?"var(--green)":"var(--red2)"}">${kd}</div>${trend(parseFloat(kd),prevKD)}</div>
+<div class="sg"><div class="lbl">WIN RATE</div><div class="val" style="color:${parseFloat(wl)>=50?"var(--green)":"var(--red2)"}">${wl}%</div>${trend(parseFloat(wl),prevWL)}</div>
+<div class="sg"><div class="lbl">KILLS / MATCH</div><div class="val" style="color:var(--gold)">${kpm}</div>${trend(parseFloat(kpm),prevKPM)}</div>
+<div class="sg"><div class="lbl">TOTAL KILLS</div><div class="val">${fmt(data.kills)}</div></div>
+<div class="sg"><div class="lbl">TOTAL DEATHS</div><div class="val">${fmt(data.deaths)}</div></div>
+<div class="sg"><div class="lbl">PLAYTIME</div><div class="val">${fmt(data.hours)}h</div></div>
+<div class="sg"><div class="lbl">BATTLES/HR</div><div class="val">${bph}</div></div>`;
+
+renderNations();renderVehicles();renderGoals();renderSnapshots();drawChart();
+}
+
+function saveSnapshot(){
+readForm();
+const d=new Date();
+const label=d.getFullYear()+"-"+(d.getMonth()+1).toString().padStart(2,"0")+"-"+d.getDate().toString().padStart(2,"0");
+// Don't duplicate same day
+if(data.snapshots.some(s=>s.date===label)){toast("Snapshot already exists for today");return}
+data.snapshots.push({date:label,battles:data.battles,wins:data.wins,losses:data.losses,kills:data.kills,deaths:data.deaths,hours:data.hours});
+localStorage.setItem("wt_stats",JSON.stringify(data));
+toast("★ Snapshot saved for "+label);calc();
+}
+function deleteSnap(i){data.snapshots.splice(i,1);localStorage.setItem("wt_stats",JSON.stringify(data));calc()}
+
+function renderSnapshots(){
+const el=document.getElementById("snapList");
+document.getElementById("snapCount").textContent=data.snapshots.length+" snapshots";
+document.getElementById("snapCount2").textContent=data.snapshots.length;
+if(!data.snapshots.length){el.innerHTML='<div style="text-align:center;padding:12px;color:var(--text3);font-size:.75rem">No snapshots yet — save one weekly to track trends</div>';return}
+el.innerHTML=[...data.snapshots].reverse().map((s,ri)=>{
+const i=data.snapshots.length-1-ri;
+const kd=(s.kills/(s.deaths||1)).toFixed(2);
+const wl=(s.wins/(s.battles||1)*100).toFixed(1);
+return`<div class="snap-item"><span class="snap-date">${s.date}</span><div class="snap-stat"><span>K/D: <b>${kd}</b></span><span>WR: <b>${wl}%</b></span><span>Battles: <b>${s.battles}</b></span><span>Kills: <b>${s.kills}</b></span></div><span class="snap-del" onclick="deleteSnap(${i})">✕</span></div>`}).join("");
+}
+
+// Nations
+function addNation(){
+const n=document.getElementById("nNation").value;
+const k=parseInt(document.getElementById("nKills").value)||0;
+const d=parseInt(document.getElementById("nDeaths").value)||0;
+const b=parseInt(document.getElementById("nBattles").value)||0;
+const w=parseInt(document.getElementById("nWins").value)||0;
+data.nations[n]={kills:k,deaths:d,battles:b,wins:w};
+saveData();calc();toast("★ "+n+" stats updated");
+}
+function renderNations(){
+const el=document.getElementById("nationGrid");
+const entries=Object.entries(data.nations);
+if(!entries.length){el.innerHTML="";return}
+const sorted=entries.map(([n,s])=>({name:n,flag:FLAGS[n]||"",kd:s.deaths>0?(s.kills/s.deaths):s.kills,...s})).sort((a,b)=>b.kd-a.kd);
+const bestN=sorted[0]?.name;const worstN=sorted[sorted.length-1]?.name;
+el.innerHTML=sorted.map(n=>{
+const cls=n.name===bestN&&sorted.length>1?"best":n.name===worstN&&sorted.length>1?"worst":"";
+const tag=n.name===bestN&&sorted.length>1?'<span class="nc-tag best">BEST</span>':n.name===worstN&&sorted.length>1?'<span class="nc-tag worst">WORST</span>':"";
+return`<div class="nation-card ${cls}"><span class="nc-flag">${n.flag}</span><div class="nc-info"><div class="nc-name">${n.name}</div><div class="nc-stat">${n.kills}K ${n.deaths}D • ${n.battles}B</div></div><span class="nc-kd" style="color:${n.kd>=1?"var(--green)":"var(--red2)"}">${n.kd.toFixed(2)}</span>${tag}</div>`}).join("");
+}
+
+// Vehicles
+function addVehicle(){
+const name=document.getElementById("vName").value.trim();if(!name){toast("Enter vehicle name");return}
+const k=parseInt(document.getElementById("vKills").value)||0;
+const d=parseInt(document.getElementById("vDeaths").value)||0;
+const b=parseInt(document.getElementById("vBattles").value)||0;
+const existing=data.vehicles.findIndex(v=>v.name.toLowerCase()===name.toLowerCase());
+if(existing>=0)data.vehicles[existing]={name,kills:k,deaths:d,battles:b};
+else data.vehicles.push({name,kills:k,deaths:d,battles:b});
+document.getElementById("vName").value="";
+saveData();calc();toast("★ "+name+" added");
+}
+function removeVeh(i){data.vehicles.splice(i,1);saveData();calc()}
+function renderVehicles(){
+const el=document.getElementById("vehList");
+if(!data.vehicles.length){el.innerHTML="";return}
+const sorted=[...data.vehicles].map((v,i)=>({...v,idx:i,kd:v.deaths>0?(v.kills/v.deaths):v.kills})).sort((a,b)=>b.kd-a.kd);
+el.innerHTML=sorted.map((v,i)=>{
+const cls=i===0?"top":"";
+return`<div class="veh-item ${cls}"><span style="color:var(--gold);font-size:.65rem">${i===0?"★ ":""}</span><span class="vi-name">${v.name}</span><span class="vi-stat">${v.kills}K ${v.deaths}D • ${v.battles}B</span><span class="vi-kd" style="color:${v.kd>=1?"var(--green)":"var(--red2)"}">${v.kd.toFixed(2)}</span><span class="vi-del" onclick="removeVeh(${v.idx})">✕</span></div>`}).join("");
+}
+
+// Goals
+function renderGoals(){
+const el=document.getElementById("goalsContainer");
+const kd=data.deaths>0?(data.kills/data.deaths):data.kills;
+const wl=data.battles>0?((data.wins/data.battles)*100):0;
+const goals=[
+{name:"K/D Ratio",current:kd,target:data.goals.kd,fmt:v=>v.toFixed(2)},
+{name:"Win Rate",current:wl,target:data.goals.wl,fmt:v=>v.toFixed(1)+"%"},
+{name:"Total Kills",current:data.kills,target:data.goals.tk,fmt:v=>fmt(Math.round(v))}
+];
+el.innerHTML=goals.map(g=>{
+const pct=g.target>0?Math.min(100,Math.round((g.current/g.target)*100)):0;
+const col=pct>=100?"var(--green)":pct>=60?"var(--amber)":"var(--red2)";
+const done=pct>=100;
+return`<div class="goal-card"><div class="goal-header"><span class="goal-name">${done?"✓ ":""}${g.name}</span><span class="goal-val" style="color:${col}">${g.fmt(g.current)} / ${g.fmt(g.target)}</span></div><div class="goal-bar"><div class="goal-fill" style="width:${pct}%;background:${col}"></div></div><div class="goal-sub"><span>${pct}% complete</span><span>${done?"Goal reached!":g.name==="Total Kills"?fmt(Math.round(g.target-g.current))+" kills to go":(g.target-g.current).toFixed(2)+" to go"}</span></div></div>`}).join("");
+}
+
+// Charts
+function setChart(mode,el){
+chartMode=mode;
+document.querySelectorAll(".chart-tab").forEach(t=>t.classList.remove("active"));
+el.classList.add("active");drawChart();
+}
+function drawChart(){
+const cv=document.getElementById("chart"),ctx=cv.getContext("2d");
+const w=cv.width,h=cv.height,pad=40;
+ctx.clearRect(0,0,w,h);
+// Grid
+ctx.strokeStyle="rgba(255,255,255,.03)";ctx.lineWidth=1;
+for(let x=pad;x<w-10;x+=50){ctx.beginPath();ctx.moveTo(x,10);ctx.lineTo(x,h-pad);ctx.stroke()}
+for(let y=10;y<h-pad;y+=30){ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-10,y);ctx.stroke()}
+
+const snaps=data.snapshots;
+if(snaps.length<2){
+ctx.fillStyle="rgba(255,255,255,.15)";ctx.font="12px sans-serif";ctx.textAlign="center";
+ctx.fillText("Save 2+ weekly snapshots to see trends",w/2,h/2);return;
+}
+// Get data series
+let series,label,color;
+if(chartMode==="kd"){
+series=snaps.map(s=>s.kills/(s.deaths||1));label="K/D Ratio";color="rgba(76,175,80,1)";
+}else if(chartMode==="wl"){
+series=snaps.map(s=>s.wins/(s.battles||1)*100);label="Win Rate %";color="rgba(74,158,255,1)";
+}else{
+series=snaps.map(s=>s.kills/(s.battles||1));label="Kills/Match";color="rgba(212,160,23,1)";
+}
+const n=series.length;
+const max=Math.max(...series)*1.15||1;const min=Math.min(...series)*0.85;
+const range=max-min||1;
+// Draw line
+ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.5;
+const pts=[];
+series.forEach((v,i)=>{
+const x=pad+(i/(n-1))*(w-pad-10);
+const y=(h-pad)-(((v-min)/range)*(h-pad-20));
+pts.push({x,y,v});
+i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+});
+ctx.stroke();
+// Fill area
+ctx.lineTo(pts[pts.length-1].x,h-pad);ctx.lineTo(pts[0].x,h-pad);ctx.closePath();
+ctx.fillStyle=color.replace(",1)",",0.06)");ctx.fill();
+// Dots + values
+pts.forEach((p,i)=>{
+ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
+ctx.fillStyle="rgba(255,255,255,.5)";ctx.font="9px sans-serif";ctx.textAlign="center";
+ctx.fillText(chartMode==="wl"?p.v.toFixed(1)+"%":p.v.toFixed(2),p.x,p.y-10);
+});
+// X labels
+ctx.fillStyle="rgba(255,255,255,.25)";ctx.font="8px sans-serif";ctx.textAlign="center";
+snaps.forEach((s,i)=>{
+if(n<=12||i%(Math.ceil(n/10))===0){
+const x=pad+(i/(n-1))*(w-pad-10);
+ctx.fillText(s.date.slice(5),x,h-pad+12);
+}});
+// Y axis
+ctx.textAlign="right";
+for(let i=0;i<=4;i++){
+const v=min+range*(i/4);
+const y=(h-pad)-(i/4)*(h-pad-20);
+ctx.fillText(chartMode==="wl"?v.toFixed(0)+"%":v.toFixed(1),pad-4,y+3);
+}
+// Label
+ctx.textAlign="left";ctx.fillStyle=color;ctx.font="bold 10px sans-serif";ctx.fillText(label,pad+4,18);
+}
+
+// Export
+function showExport(){
+readForm();
+const kd=data.deaths>0?(data.kills/data.deaths).toFixed(2):data.kills.toFixed(2);
+const wl=data.battles>0?((data.wins/data.battles)*100).toFixed(1):"0.0";
+let txt="```\n★ WAR THUNDER STATS ★\n";
+txt+="═══════════════════════════\n";
+txt+=`Battles:     ${fmt(data.battles)}\n`;
+txt+=`Win Rate:    ${wl}% (${data.wins}W / ${data.losses}L)\n`;
+txt+=`K/D Ratio:   ${kd} (${fmt(data.kills)}K / ${fmt(data.deaths)}D)\n`;
+txt+=`Playtime:    ${fmt(data.hours)} hours\n`;
+txt+=`Kills/Match: ${data.battles>0?(data.kills/data.battles).toFixed(1):"0"}\n`;
+if(Object.keys(data.nations).length){
+txt+="═══════════════════════════\nNation K/D:\n";
+Object.entries(data.nations).sort((a,b)=>(b[1].kills/(b[1].deaths||1))-(a[1].kills/(a[1].deaths||1))).forEach(([n,s])=>{
+txt+=`${FLAGS[n]||""} ${n}: ${(s.kills/(s.deaths||1)).toFixed(2)} (${s.kills}K/${s.deaths}D)\n`;
+});
+}
+if(data.vehicles.length){
+txt+="═══════════════════════════\nTop Vehicles:\n";
+[...data.vehicles].sort((a,b)=>(b.kills/(b.deaths||1))-(a.kills/(a.deaths||1))).slice(0,5).forEach(v=>{
+txt+=`${v.name}: ${(v.kills/(v.deaths||1)).toFixed(2)} K/D (${v.kills}K/${v.deaths}D)\n`;
+});
+}
+txt+="```";
+document.getElementById("exportText").value=txt;
+document.getElementById("exportOverlay").classList.add("show");
+}
+function hideExport(){document.getElementById("exportOverlay").classList.remove("show")}
+function copyExport(){navigator.clipboard.writeText(document.getElementById("exportText").value);toast("★ Copied to clipboard!")}
+
+function toast(msg){const old=document.querySelector(".toast");if(old)old.remove();const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2000)}
+
+load();calc();
+</script>
+</body>
+</html>
