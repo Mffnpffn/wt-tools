@@ -56,8 +56,8 @@ body{animation:wtPageIn .35s ease both}
 /* Push body below BIGGER navbar */
 body{padding-top:54px!important}
 
-/* ===== FLAG BACKGROUND — PNG image at 8% ===== */
-.wt-flag-bg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(70vw,600px);height:auto;aspect-ratio:3/2;pointer-events:none;z-index:0;opacity:.08;background-size:contain;background-repeat:no-repeat;background-position:center;transition:background-image .5s,opacity .5s}
+/* ===== FLAG BACKGROUND — SVG at 18% ===== */
+.wt-flag-bg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(80vw,700px);height:auto;aspect-ratio:3/2;pointer-events:none;z-index:0;opacity:.18;background-size:contain;background-repeat:no-repeat;background-position:center;transition:background-image .5s,opacity .5s}
 
 /* ===== HOVER GLOW on interactive elements ===== */
 .tool-card:hover{box-shadow:0 8px 32px var(--accent-glow,rgba(204,0,0,.15)),0 0 0 1px var(--accent,#cc0000)!important}
