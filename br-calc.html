@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>WT BR Calculator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0e10;--bg2:#1a1c20;--bg3:#222528;--border:#2a2c30;--red:#cc0000;--red2:#ff2222;--red-glow:rgba(204,0,0,.3);--gold:#d4a017;--text:#e0ddd8;--text2:#888;--text3:#555;--green:#4caf50;--blue:#4a9eff;--uptier:#ff4444;--downtier:#44bb44;--same:#d4a017}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+h1,h2,h3{font-weight:700}
+header{text-align:center;padding:20px 16px 12px;border-bottom:2px solid var(--red);background:linear-gradient(180deg,rgba(204,0,0,.08),transparent)}
+header h1{font-size:1.6rem;color:var(--red2);text-shadow:0 0 20px var(--red-glow);letter-spacing:.05em}
+header .star{color:var(--gold);font-size:1.2rem}
+header p{color:var(--text2);font-size:.78rem;margin-top:4px;letter-spacing:.08em}
+.container{max-width:800px;margin:0 auto;padding:16px}
+.search-box{position:relative;margin-bottom:16px}
+.search-box input{width:100%;padding:12px 16px 12px 38px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;outline:none}
+.search-box input:focus{border-color:var(--red)}
+.search-box input::placeholder{color:var(--text3)}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:1rem}
+.dropdown{position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:0 0 8px 8px;max-height:320px;overflow-y:auto;z-index:100;display:none}
+.dropdown.open{display:block}
+.dd-item{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.03);font-size:.82rem}
+.dd-item:hover,.dd-item.hl{background:rgba(204,0,0,.12)}
+.dd-flag{font-size:1.1rem;flex-shrink:0;width:24px;text-align:center}
+.dd-name{flex:1;color:var(--text)}
+.dd-meta{display:flex;gap:8px;flex-shrink:0;align-items:center}
+.dd-type{font-size:.65rem;color:var(--text3);background:var(--bg3);padding:1px 6px;border-radius:3px}
+.dd-br{font-size:.8rem;color:var(--gold);font-weight:700;min-width:28px;text-align:right}
+.dd-empty{padding:16px;text-align:center;color:var(--text3);font-size:.82rem}
+.selected-vehicle{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;display:none}
+.selected-vehicle.show{display:block}
+.sv-header{background:linear-gradient(90deg,var(--red),#880000);padding:12px 16px;display:flex;align-items:center;gap:12px}
+.sv-flag{font-size:1.6rem}
+.sv-info{flex:1}
+.sv-name{font-size:1.1rem;font-weight:700;color:#fff}
+.sv-detail{font-size:.75rem;color:rgba(255,255,255,.7);margin-top:2px}
+.sv-br-badge{background:rgba(0,0,0,.3);color:var(--gold);font-size:1.4rem;font-weight:700;padding:4px 14px;border-radius:6px}
+.br-spread{padding:16px}
+.br-bar{position:relative;height:40px;background:var(--bg);border-radius:6px;overflow:hidden;margin:8px 0 12px;display:flex}
+.br-zone{height:100%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;transition:width .3s}
+.br-zone.downtier{background:rgba(68,187,68,.15);color:var(--downtier);border-right:1px solid rgba(68,187,68,.3)}
+.br-zone.same{background:rgba(212,160,23,.15);color:var(--same)}
+.br-zone.uptier{background:rgba(255,68,68,.15);color:var(--uptier);border-left:1px solid rgba(255,68,68,.3)}
+.br-labels{display:flex;justify-content:space-between;font-size:.72rem;color:var(--text2);margin-bottom:4px}
+.br-spread-title{font-size:.75rem;color:var(--text2);letter-spacing:.08em;margin-bottom:8px}
+.br-range-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.br-range-card{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center}
+.br-range-card.downtier{border-color:rgba(68,187,68,.3)}
+.br-range-card.same{border-color:rgba(212,160,23,.3)}
+.br-range-card.uptier{border-color:rgba(255,68,68,.3)}
+.brc-label{font-size:.6rem;color:var(--text3);letter-spacing:.1em;margin-bottom:4px}
+.brc-range{font-size:1rem;font-weight:700}
+.br-range-card.downtier .brc-range{color:var(--downtier)}
+.br-range-card.same .brc-range{color:var(--same)}
+.br-range-card.uptier .brc-range{color:var(--uptier)}
+.notable-section{margin-top:16px}
+.notable-title{font-size:.85rem;color:var(--red2);letter-spacing:.08em;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.notable-title .count{color:var(--text3);font-weight:400;font-size:.75rem}
+.nation-group{margin-bottom:12px}
+.nation-header{display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;user-select:none}
+.nation-flag{font-size:1.1rem}
+.nation-name{font-size:.8rem;font-weight:600;color:var(--text);flex:1}
+.nation-count{font-size:.68rem;color:var(--text3);background:var(--bg3);padding:1px 8px;border-radius:10px}
+.nation-vehicles{display:grid;grid-template-columns:1fr;gap:4px;padding:4px 0 4px 32px}
+.nv{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg2);border-radius:6px;font-size:.78rem;border-left:3px solid transparent}
+.nv.uptier{border-left-color:var(--uptier)}
+.nv.downtier{border-left-color:var(--downtier)}
+.nv.same-br{border-left-color:var(--same)}
+.nv-name{flex:1}
+.nv-type{font-size:.62rem;color:var(--text3);background:var(--bg);padding:1px 5px;border-radius:3px}
+.nv-br{font-weight:700;font-size:.78rem;min-width:28px;text-align:right}
+.nv.uptier .nv-br{color:var(--uptier)}
+.nv.downtier .nv-br{color:var(--downtier)}
+.nv.same-br .nv-br{color:var(--same)}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.filter-btn{padding:5px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;color:var(--text2);font-size:.7rem;cursor:pointer;transition:all .2s}
+.filter-btn.active{background:rgba(204,0,0,.15);border-color:var(--red);color:var(--red2)}
+.hammer{opacity:.04;position:fixed;bottom:-40px;right:-40px;font-size:18rem;pointer-events:none;z-index:0}
+.scroll-top{position:fixed;bottom:16px;right:16px;width:40px;height:40px;background:var(--red);color:#fff;border:none;border-radius:50%;font-size:1.2rem;cursor:pointer;display:none;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,.5)}
+footer{text-align:center;padding:20px;color:var(--text2);font-size:.68rem;border-top:1px solid var(--border);margin-top:24px;letter-spacing:.06em}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--red);border-radius:3px}
+@media(max-width:600px){.br-range-cards{grid-template-columns:1fr}.container{padding:10px}}
+</style>
+</head>
+<body>
+<div class="hammer">☭</div>
+<header>
+<div><span class="star">★</span> <span class="star">★</span> <span class="star">★</span></div>
+<h1>WT BR CALCULATOR</h1>
+<p>BATTLE RATING MATCHMAKING ANALYSIS</p>
+</header>
+<div class="container">
+<div class="search-box">
+<span class="search-icon">⌕</span>
+<input type="text" id="searchInput" placeholder="Search vehicle name, nation, or type..." autocomplete="off">
+<div class="dropdown" id="dropdown"></div>
+</div>
+<div class="selected-vehicle" id="selectedVehicle">
+<div class="sv-header">
+<span class="sv-flag" id="svFlag"></span>
+<div class="sv-info"><div class="sv-name" id="svName"></div><div class="sv-detail" id="svDetail"></div></div>
+<div class="sv-br-badge" id="svBR"></div>
+</div>
+<div class="br-spread">
+<div class="br-spread-title">MATCHMAKING BR SPREAD</div>
+<div class="br-labels"><span id="brMin"></span><span id="brCenter"></span><span id="brMax"></span></div>
+<div class="br-bar"><div class="br-zone downtier" id="zDown">DOWNTIER</div><div class="br-zone same" id="zSame">YOUR BR</div><div class="br-zone uptier" id="zUp">UPTIER</div></div>
+<div class="br-range-cards">
+<div class="br-range-card downtier"><div class="brc-label">DOWNTIER RANGE</div><div class="brc-range" id="downRange"></div></div>
+<div class="br-range-card same"><div class="brc-label">YOUR BR</div><div class="brc-range" id="sameRange"></div></div>
+<div class="br-range-card uptier"><div class="brc-label">UPTIER RANGE</div><div class="brc-range" id="upRange"></div></div>
+</div>
+</div>
+</div>
+<div id="notableSection" style="display:none">
+<div class="filter-row" id="filterRow"></div>
+<div class="notable-title">★ VEHICLES IN BR RANGE <span class="count" id="matchCount"></span></div>
+<div id="nationGroups"></div>
+</div>
+</div>
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer>★ DATA BASED ON WAR THUNDER REALISTIC BATTLES ★ FOR REFERENCE ONLY ★</footer>
+<script>
+const FLAGS={USA:"🇺🇸",Germany:"🇩🇪",USSR:"🇷🇺",Britain:"🇬🇧",Japan:"🇯🇵",France:"🇫🇷",Italy:"🇮🇹",Sweden:"🇸🇪",Israel:"🇮🇱",China:"🇨🇳"};
+const T={F:"Fighter",B:"Bomber",A:"Attacker",H:"Helicopter",LT:"Light Tank",MT:"Medium Tank",HT:"Heavy Tank",TD:"Tank Destroyer",AA:"SPAA",I:"Interceptor"};
+// [name, nation, BR, type]
+const DB=[
+// USA Aircraft
+["P-26A-34 Peashooter","USA",1.0,"F"],["F2A-1 Buffalo","USA",1.7,"F"],["P-36G Hawk","USA",2.3,"F"],["P-39N Airacobra","USA",2.7,"F"],
+["P-40E Warhawk","USA",2.7,"F"],["F4F-4 Wildcat","USA",2.7,"F"],["P-38G Lightning","USA",3.3,"F"],["F4U-1A Corsair","USA",3.0,"F"],
+["P-47D-25 Thunderbolt","USA",3.7,"F"],["P-47D-28 Thunderbolt","USA",4.3,"F"],["F4U-4B Corsair","USA",5.7,"F"],
+["P-51D-5 Mustang","USA",4.0,"F"],["P-51D-30 Mustang","USA",4.7,"F"],["P-51H-5 Mustang","USA",6.3,"F"],
+["F6F-5 Hellcat","USA",3.7,"F"],["F8F-1B Bearcat","USA",5.7,"F"],["P-63A-10 Kingcobra","USA",3.7,"F"],
+["F-80A Shooting Star","USA",7.0,"F"],["F-84B Thunderjet","USA",7.0,"F"],["F-86A-5 Sabre","USA",8.3,"F"],
+["F-86F-25 Sabre","USA",8.7,"F"],["F-86F-2 Sabre","USA",9.0,"F"],["F-100D Super Sabre","USA",9.3,"F"],
+["F-104A Starfighter","USA",9.3,"F"],["F-4C Phantom II","USA",10.3,"F"],["F-4E Phantom II","USA",11.0,"F"],
+["F-5E Tiger II","USA",10.7,"F"],["F-14A Tomcat","USA",11.3,"F"],["F-14B Tomcat","USA",12.0,"F"],
+["F-15A Eagle","USA",12.0,"F"],["F-15C Eagle","USA",12.7,"F"],["F-16A Fighting Falcon","USA",12.0,"F"],["F-16C Fighting Falcon","USA",13.0,"F"],
+["F/A-18C Early Hornet","USA",12.7,"F"],["F/A-18C Late Hornet","USA",13.0,"F"],["F/A-18E Super Hornet","USA",13.3,"F"],
+["A-10A Thunderbolt II","USA",10.0,"A"],["A-10A Late","USA",10.3,"A"],["F-117A Nighthawk","USA",10.3,"A"],
+["F-4S Phantom II","USA",11.0,"F"],["F-4J Phantom II","USA",10.7,"F"],
+["B-17E Flying Fortress","USA",4.0,"B"],["B-17G Flying Fortress","USA",5.0,"B"],["B-24D Liberator","USA",4.3,"B"],
+["B-29A Superfortress","USA",7.7,"B"],["B-52H Stratofortress","USA",10.0,"B"],["B-57A Canberra","USA",7.7,"B"],["B-57B Canberra","USA",8.0,"B"],
+["AH-1G Cobra","USA",8.3,"H"],["AH-1Z Viper","USA",11.3,"H"],["AH-64A Apache","USA",10.7,"H"],
+["AH-64A GR Apache","USA",10.7,"H"],["AH-64D Apache","USA",11.3,"H"],["UH-1B","USA",8.0,"H"],
+// USA Tanks
+["M2A4","USA",1.0,"LT"],["M3 Stuart","USA",1.3,"LT"],["M5A1 Stuart","USA",2.0,"LT"],["M22 Locust","USA",1.7,"LT"],
+["M24 Chaffee","USA",3.0,"LT"],["M41A1 Walker Bulldog","USA",6.0,"LT"],["M551 Sheridan","USA",8.0,"LT"],
+["M3 Lee","USA",2.3,"MT"],["M4 Sherman","USA",3.7,"MT"],["M4A1 Sherman","USA",3.3,"MT"],
+["M4A2 76 Sherman","USA",5.0,"MT"],["M4A3 76 Sherman","USA",5.3,"MT"],["M4A3E2 Jumbo","USA",5.3,"HT"],
+["M4A3E2 76 Jumbo","USA",6.3,"HT"],["M26 Pershing","USA",6.3,"MT"],["M46 Patton","USA",7.0,"MT"],
+["M47 Patton II","USA",7.0,"MT"],["M48A1 Patton III","USA",7.3,"MT"],["M60","USA",8.0,"MT"],
+["M60A1 RISE","USA",8.7,"MT"],["M60A3 TTS","USA",9.0,"MT"],["M1 Abrams","USA",10.3,"MT"],
+["IPM1 Abrams","USA",10.7,"MT"],["M1A1 Abrams","USA",11.0,"MT"],["M1A1 HC Abrams","USA",11.3,"MT"],
+["M1A2 Abrams","USA",11.7,"MT"],["M1A2 SEP Abrams","USA",11.7,"MT"],["M1A2 SEP V2","USA",12.3,"MT"],
+["T14","USA",4.7,"HT"],["T26E5","USA",6.7,"HT"],["T29","USA",6.7,"HT"],["T32","USA",7.3,"HT"],["T34","USA",6.7,"HT"],
+["M10 Wolverine","USA",3.3,"TD"],["M18 Hellcat","USA",5.3,"TD"],["M36 Jackson","USA",5.3,"TD"],
+["T95","USA",7.0,"TD"],["M56 Scorpion","USA",6.3,"TD"],
+["M16 MGMC","USA",2.7,"AA"],["M19A1","USA",4.0,"AA"],["M163 VADS","USA",8.3,"AA"],["M247 Sgt York","USA",9.3,"AA"],
+// Germany Aircraft
+["Bf 109 E-1","Germany",2.0,"F"],["Bf 109 E-3","Germany",2.3,"F"],["Bf 109 F-1","Germany",2.7,"F"],
+["Bf 109 F-4","Germany",3.7,"F"],["Bf 109 G-2","Germany",4.0,"F"],["Bf 109 G-6","Germany",4.7,"F"],
+["Bf 109 G-10","Germany",5.3,"F"],["Bf 109 G-14","Germany",5.0,"F"],["Bf 109 K-4","Germany",5.7,"F"],
+["Fw 190 A-1","Germany",3.7,"F"],["Fw 190 A-4","Germany",4.0,"F"],["Fw 190 A-5","Germany",4.3,"F"],
+["Fw 190 A-8","Germany",5.3,"F"],["Fw 190 D-9","Germany",5.3,"F"],["Fw 190 D-12","Germany",5.7,"F"],
+["Fw 190 D-13","Germany",5.7,"F"],["Ta 152 H-1","Germany",6.0,"F"],["Ta 152 C-3","Germany",6.0,"F"],
+["He 162 A-2","Germany",6.3,"F"],["Me 262 A-1a","Germany",7.0,"F"],["Me 163 B","Germany",8.0,"F"],
+["Ho 229 V3","Germany",7.0,"F"],["CL-13A Sabre","Germany",8.7,"F"],["CL-13B Sabre","Germany",9.0,"F"],
+["MiG-21MF","Germany",10.3,"F"],["F-104G Starfighter","Germany",9.7,"F"],["MiG-29","Germany",12.3,"F"],
+["F-4F Phantom II","Germany",10.7,"F"],["Tornado IDS","Germany",11.3,"F"],["Eurofighter Typhoon","Germany",13.0,"F"],
+["Ju 87 B-2 Stuka","Germany",1.7,"B"],["Ju 87 D-5 Stuka","Germany",3.3,"A"],["Ju 88 A-4","Germany",3.0,"B"],
+["He 111 H-6","Germany",2.7,"B"],["Do 217 E-2","Germany",3.7,"B"],["Ar 234 B-2","Germany",7.0,"B"],
+["Me 264","Germany",4.3,"B"],
+["Bo 105 PAH-1","Germany",9.0,"H"],["UH-1D","Germany",8.3,"H"],["Mi-24P","Germany",10.0,"H"],
+["Eurocopter Tiger UHT","Germany",11.0,"H"],
+// Germany Tanks
+["Pz.II C","Germany",1.3,"LT"],["Pz.II F","Germany",1.7,"LT"],["Pz.III B","Germany",1.3,"LT"],
+["Pz.III F","Germany",2.0,"MT"],["Pz.III J","Germany",2.7,"MT"],["Pz.III J1","Germany",3.0,"MT"],
+["Pz.III L","Germany",3.0,"MT"],["Pz.III M","Germany",3.0,"MT"],["Pz.III N","Germany",3.0,"MT"],
+["Pz.IV F1","Germany",2.3,"MT"],["Pz.IV F2","Germany",3.3,"MT"],["Pz.IV G","Germany",3.7,"MT"],
+["Pz.IV H","Germany",4.0,"MT"],["Pz.IV J","Germany",4.0,"MT"],
+["Panther D","Germany",5.3,"MT"],["Panther A","Germany",5.7,"MT"],["Panther G","Germany",5.7,"MT"],
+["Panther F","Germany",6.0,"MT"],["Panther II","Germany",6.7,"MT"],
+["Tiger H1","Germany",5.3,"HT"],["Tiger E","Germany",5.7,"HT"],["Tiger II P","Germany",6.3,"HT"],
+["Tiger II H","Germany",6.7,"HT"],["Tiger II H Sla.16","Germany",6.7,"HT"],
+["Maus","Germany",7.7,"HT"],["E-100","Germany",7.7,"HT"],
+["Leopard I","Germany",7.3,"MT"],["Leopard A1A1","Germany",8.3,"MT"],["Leopard A1A1 L/44","Germany",8.7,"MT"],
+["Leopard 2K","Germany",9.7,"MT"],["Leopard 2A4","Germany",10.3,"MT"],["Leopard 2A5","Germany",11.0,"MT"],
+["Leopard 2A6","Germany",11.3,"MT"],["Leopard 2A7","Germany",12.0,"MT"],["Leopard 2A7V","Germany",12.0,"MT"],["Leopard 2A7HU","Germany",12.3,"MT"],
+["StuG III F","Germany",3.3,"TD"],["StuG III G","Germany",4.0,"TD"],["Jagdpanzer IV","Germany",4.3,"TD"],
+["Jagdpanzer IV/70","Germany",5.3,"TD"],["Jagdpanther","Germany",6.0,"TD"],["Jagdtiger","Germany",6.7,"TD"],
+["Ferdinand","Germany",6.3,"TD"],["Nashorn","Germany",4.3,"TD"],
+["Wirbelwind","Germany",3.7,"AA"],["Ostwind","Germany",4.7,"AA"],["Kugelblitz","Germany",6.7,"AA"],
+["Gepard","Germany",8.3,"AA"],["FlakRakPz 1","Germany",9.7,"AA"],
+// USSR Aircraft
+["I-15bis","USSR",1.0,"F"],["I-16 type 10","USSR",1.7,"F"],["I-16 type 24","USSR",2.3,"F"],
+["I-16 type 28","USSR",2.7,"F"],["LaGG-3-8","USSR",2.3,"F"],["LaGG-3-35","USSR",3.0,"F"],
+["La-5","USSR",3.3,"F"],["La-5FN","USSR",4.0,"F"],["La-7","USSR",4.3,"F"],["La-9","USSR",5.7,"F"],
+["Yak-1","USSR",2.3,"F"],["Yak-1B","USSR",3.0,"F"],["Yak-3","USSR",4.0,"F"],["Yak-3P","USSR",5.0,"F"],
+["Yak-7B","USSR",2.7,"F"],["Yak-9","USSR",3.0,"F"],["Yak-9T","USSR",3.7,"F"],["Yak-9U","USSR",4.7,"F"],
+["Yak-9P","USSR",5.3,"F"],["Yak-15","USSR",6.0,"F"],["Yak-23","USSR",7.3,"F"],
+["MiG-3-15","USSR",2.3,"F"],["MiG-3-34","USSR",3.0,"F"],["MiG-9","USSR",7.0,"F"],
+["MiG-9 Late","USSR",7.3,"F"],["MiG-15","USSR",8.0,"F"],["MiG-15bis","USSR",8.3,"F"],
+["MiG-17","USSR",8.7,"F"],["MiG-19PT","USSR",9.3,"F"],["MiG-21F-13","USSR",9.3,"F"],
+["MiG-21SMT","USSR",10.3,"F"],["MiG-21bis","USSR",10.7,"F"],["MiG-23M","USSR",11.0,"F"],
+["MiG-23MLD","USSR",11.3,"F"],["MiG-29","USSR",12.3,"F"],["MiG-29SMT","USSR",13.0,"F"],
+["Su-27","USSR",12.0,"F"],["Su-30MK2","USSR",13.3,"F"],["Su-33","USSR",12.3,"F"],["MiG-29G","USSR",12.0,"F"],["Su-25","USSR",10.3,"A"],["Su-25T","USSR",11.3,"A"],["Su-34","USSR",13.0,"A"],["Su-39","USSR",11.3,"A"],
+["Il-2 1941","USSR",2.0,"A"],["Il-2 1942","USSR",2.7,"A"],["Il-2M 1943","USSR",4.0,"A"],
+["Il-10 1946","USSR",5.7,"A"],["Su-6","USSR",3.3,"A"],
+["Pe-2-31","USSR",2.7,"B"],["Pe-8","USSR",4.7,"B"],["Tu-2S","USSR",4.7,"B"],["Tu-4","USSR",7.7,"B"],["Tu-95M","USSR",9.0,"B"],["Il-28","USSR",7.7,"B"],
+["Mi-4AV","USSR",8.0,"H"],["Mi-24A","USSR",9.3,"H"],["Mi-24V","USSR",10.0,"H"],["Mi-24P","USSR",10.0,"H"],
+["Mi-28N","USSR",11.0,"H"],["Ka-50","USSR",11.0,"H"],["Ka-52","USSR",11.3,"H"],
+// USSR Tanks
+["T-26","USSR",1.0,"LT"],["BT-5","USSR",1.3,"LT"],["BT-7","USSR",1.3,"LT"],
+["T-50","USSR",2.3,"LT"],["T-70","USSR",2.0,"LT"],["T-80","USSR",2.3,"LT"],
+["PT-76B","USSR",5.0,"LT"],["BMP-1","USSR",7.3,"LT"],["BMP-2","USSR",8.3,"LT"],["BMP-2M","USSR",9.3,"LT"],
+["T-34 1941","USSR",3.3,"MT"],["T-34 1942","USSR",3.7,"MT"],["T-34-57","USSR",4.0,"MT"],
+["T-34-85 D-5T","USSR",5.0,"MT"],["T-34-85","USSR",5.3,"MT"],
+["T-44","USSR",6.3,"MT"],["T-44-100","USSR",6.7,"MT"],
+["T-54 1947","USSR",7.3,"MT"],["T-54 1949","USSR",7.7,"MT"],["T-54 1951","USSR",7.7,"MT"],
+["T-55A","USSR",8.0,"MT"],["T-62","USSR",8.0,"MT"],["T-62M-1","USSR",8.7,"MT"],
+["T-64A","USSR",9.0,"MT"],["T-64B","USSR",9.7,"MT"],["T-72A","USSR",9.3,"MT"],
+["T-72B","USSR",9.7,"MT"],["T-72B3","USSR",10.7,"MT"],["T-80B","USSR",9.7,"MT"],
+["T-80U","USSR",10.7,"MT"],["T-80BVM","USSR",11.7,"MT"],["T-80UM2","USSR",11.7,"MT"],
+["T-90A","USSR",10.7,"MT"],["T-90M","USSR",11.7,"MT"],
+["KV-1 L-11","USSR",3.7,"HT"],["KV-1 ZiS-5","USSR",4.3,"HT"],["KV-1E","USSR",4.0,"HT"],
+["KV-85","USSR",4.7,"HT"],["KV-2","USSR",4.0,"HT"],
+["IS-1","USSR",5.3,"HT"],["IS-2","USSR",5.7,"HT"],["IS-2 1944","USSR",6.3,"HT"],
+["IS-3","USSR",7.0,"HT"],["IS-4M","USSR",7.3,"HT"],["IS-6","USSR",7.0,"HT"],
+["T-10M","USSR",8.0,"HT"],["Object 279","USSR",8.3,"HT"],
+["SU-76M","USSR",2.3,"TD"],["SU-85","USSR",4.3,"TD"],["SU-85M","USSR",5.0,"TD"],
+["SU-100","USSR",6.0,"TD"],["SU-122-54","USSR",7.0,"TD"],
+["ISU-122","USSR",5.0,"TD"],["ISU-122S","USSR",5.3,"TD"],["ISU-152","USSR",4.3,"TD"],
+["ZSU-37","USSR",3.3,"AA"],["ZSU-57-2","USSR",7.0,"AA"],["ZSU-23-4 Shilka","USSR",8.0,"AA"],
+["Tunguska","USSR",10.7,"AA"],["Pantsir-S1","USSR",12.0,"AA"],
+// Britain Aircraft
+["Hurricane Mk I","Britain",2.0,"F"],["Hurricane Mk II","Britain",2.7,"F"],["Hurricane Mk IV","Britain",3.0,"A"],
+["Spitfire Mk Ia","Britain",3.0,"F"],["Spitfire Mk IIb","Britain",3.7,"F"],["Spitfire Mk Vb","Britain",4.0,"F"],
+["Spitfire Mk Vc","Britain",4.3,"F"],["Spitfire F Mk IX","Britain",4.7,"F"],["Spitfire LF Mk IX","Britain",5.3,"F"],
+["Spitfire F Mk XIVe","Britain",5.7,"F"],["Spitfire F Mk 22","Britain",6.3,"F"],["Spitfire F Mk 24","Britain",6.7,"F"],
+["Typhoon Mk Ib","Britain",3.7,"F"],["Tempest Mk II","Britain",5.7,"F"],["Tempest Mk V","Britain",5.3,"F"],
+["Sea Fury FB 11","Britain",5.7,"F"],["Sea Hawk FGA.6","Britain",7.7,"F"],
+["Meteor F Mk 3","Britain",7.0,"F"],["Meteor F Mk 8","Britain",8.0,"F"],
+["Vampire FB 5","Britain",7.3,"F"],["Venom FB.4","Britain",8.3,"F"],["Hunter F.6","Britain",9.0,"F"],
+["Lightning F.6","Britain",9.3,"F"],["Phantom FGR.2","Britain",11.0,"F"],["Tornado F.3","Britain",11.7,"F"],
+["Harrier GR.1","Britain",9.7,"A"],["Sea Harrier FRS.1","Britain",10.0,"F"],
+["Typhoon FGR4","Britain",13.0,"F"],["Gripen","Britain",13.0,"F"],
+["Lancaster B Mk I","Britain",4.0,"B"],["Lancaster B Mk III","Britain",4.3,"B"],["Halifax B Mk IIIa","Britain",3.7,"B"],
+["Stirling B Mk III","Britain",3.3,"B"],["Canberra B Mk 2","Britain",8.0,"B"],
+["Avro Vulcan B.2","Britain",9.3,"B"],["Victor B.1","Britain",9.0,"B"],
+["Lynx AH.1","Britain",9.7,"H"],["Apache AH Mk.1","Britain",11.0,"H"],
+// Britain Tanks
+["Cromwell V","Britain",3.7,"MT"],["Cromwell I","Britain",3.3,"MT"],
+["Sherman Firefly","Britain",4.7,"MT"],["Comet I","Britain",5.3,"MT"],
+["Centurion Mk 1","Britain",6.0,"MT"],["Centurion Mk 3","Britain",6.7,"MT"],
+["Centurion Mk 10","Britain",7.3,"MT"],["Caernarvon","Britain",6.7,"HT"],
+["FV4202","Britain",7.0,"MT"],["Vickers Mk.1","Britain",7.3,"MT"],
+["Chieftain Mk 3","Britain",8.3,"MT"],["Chieftain Mk 5","Britain",8.7,"MT"],
+["Chieftain Mk 10","Britain",9.0,"MT"],
+["Challenger Mk.2","Britain",9.7,"MT"],["Challenger Mk.3","Britain",10.0,"MT"],
+["Challenger 2","Britain",10.7,"MT"],["Challenger 2 TES","Britain",11.0,"MT"],
+["Challenger 2 OES","Britain",11.3,"MT"],["Challenger 3 TD","Britain",12.0,"MT"],
+["Churchill Mk III","Britain",3.7,"HT"],["Churchill Mk VII","Britain",4.7,"HT"],
+["Black Prince","Britain",5.7,"HT"],["Conqueror","Britain",7.3,"HT"],
+["Tortoise","Britain",6.7,"TD"],["FV4005","Britain",6.3,"TD"],["Charioteer Mk VII","Britain",6.0,"TD"],
+["Crusader AA Mk II","Britain",3.0,"AA"],["Falcon","Britain",7.7,"AA"],["Marksman","Britain",8.0,"AA"],
+// Japan Aircraft
+["A6M2 Zero","Japan",3.0,"F"],["A6M3 Zero","Japan",4.0,"F"],["A6M5 Zero","Japan",4.7,"F"],
+["A6M5 Ko Zero","Japan",4.3,"F"],["Ki-43-II Hayabusa","Japan",2.7,"F"],["Ki-43-III Hayabusa","Japan",4.0,"F"],
+["Ki-44-II Shoki","Japan",2.7,"F"],["Ki-61-I Hien","Japan",3.3,"F"],["Ki-61-II Hien","Japan",5.3,"F"],
+["Ki-84 Hayate","Japan",5.3,"F"],["N1K2-J Shiden-Kai","Japan",5.7,"F"],["J2M3 Raiden","Japan",5.0,"F"],
+["Ki-200","Japan",8.0,"F"],["R2Y2 KAI V1","Japan",7.0,"F"],["F-86F-40 Sabre","Japan",9.0,"F"],
+["F-104J Starfighter","Japan",10.0,"F"],["F-4EJ Phantom II","Japan",11.0,"F"],["F-16AJ","Japan",12.7,"F"],
+["F-2A","Japan",13.0,"F"],["F-15J","Japan",13.0,"F"],
+["G4M1 Betty","Japan",3.7,"B"],["B7A2 Ryusei","Japan",4.0,"B"],
+["AH-1S","Japan",10.3,"H"],
+// Japan Tanks
+["Chi-Ha","Japan",1.3,"MT"],["Chi-He","Japan",2.3,"MT"],["Chi-Nu","Japan",3.0,"MT"],
+["Chi-Nu II","Japan",3.7,"MT"],["Chi-Ri II","Japan",4.7,"MT"],["Chi-To","Japan",4.3,"MT"],
+["Chi-To Late","Japan",4.7,"MT"],["Ho-Ri Production","Japan",6.3,"TD"],
+["Type 61","Japan",6.7,"MT"],["STB-1","Japan",7.7,"MT"],["Type 74","Japan",8.3,"MT"],
+["Type 90","Japan",10.7,"MT"],["Type 10","Japan",11.3,"MT"],["TKX","Japan",11.7,"MT"],
+// France Aircraft
+["D.520","France",2.3,"F"],["VB.10-02","France",4.3,"F"],
+["M.B.157","France",4.0,"F"],["Mirage IIIC","France",10.3,"F"],
+["Mirage 2000C-S5","France",12.0,"F"],["Mirage 4000","France",13.0,"F"],["Rafale C","France",13.3,"F"],
+["Mystere IVA","France",8.7,"F"],["Super Mystere B2","France",9.0,"F"],
+["Etendard IVM","France",9.0,"A"],["Jaguar A","France",10.3,"A"],
+["SA.342M Gazelle","France",9.7,"H"],["Tiger HAD","France",11.0,"H"],
+// France Tanks
+["AMX-13","France",6.0,"LT"],["AMX-13-90","France",7.3,"LT"],
+["AMX-30","France",7.7,"MT"],["AMX-30B2","France",8.3,"MT"],["AMX-30B2 BRENUS","France",8.7,"MT"],
+["AMX-32","France",9.0,"MT"],["AMX-40","France",9.3,"MT"],
+["Leclerc","France",11.0,"MT"],["Leclerc S2","France",11.3,"MT"],["Leclerc SXXI","France",11.7,"MT"],
+["Somua SM","France",7.3,"HT"],["AMX-50 Surbaisse","France",7.3,"HT"],
+["ARL-44","France",5.3,"HT"],["AMX-50 Foch","France",7.0,"TD"],
+// Italy Aircraft
+["C.202 Folgore","Italy",3.0,"F"],["C.205 Veltro","Italy",4.3,"F"],["G.55 Centauro","Italy",4.7,"F"],
+["Re.2005 Sagittario","Italy",5.7,"F"],["F-104S Starfighter","Italy",10.3,"F"],["Tornado ADV","Italy",11.7,"F"],
+["Eurofighter Typhoon","Italy",13.0,"F"],
+["A129CBT Mangusta","Italy",10.0,"H"],
+// Italy Tanks
+["M13/40","Italy",1.3,"MT"],["P40","Italy",3.3,"HT"],["M26A1 Pershing","Italy",6.3,"MT"],
+["OF-40","Italy",8.0,"MT"],["OF-40 Mk.2A","Italy",8.7,"MT"],
+["Ariete","Italy",10.3,"MT"],["Ariete PSO","Italy",10.7,"MT"],["Ariete AMV","Italy",11.3,"MT"],
+["R3 T20 FA-HS","Italy",4.0,"AA"],["SIDAM 25","Italy",8.0,"AA"],
+["Centauro I 105","Italy",8.3,"TD"],["Centauro I 120","Italy",9.3,"TD"],
+// Sweden Aircraft
+["J21A-1","Sweden",2.7,"F"],["J22-B","Sweden",2.7,"F"],
+["J26 Mustang","Sweden",4.0,"F"],["J29F Tunnan","Sweden",8.3,"F"],
+["J32B Lansen","Sweden",9.0,"F"],["J35D Draken","Sweden",10.3,"F"],
+["JA37C Viggen","Sweden",11.3,"F"],["JAS39A Gripen","Sweden",12.0,"F"],["JAS39C Gripen","Sweden",13.3,"F"],
+// Sweden Tanks
+["Strv m/42 EH","Sweden",3.0,"MT"],["Strv 74","Sweden",5.0,"MT"],
+["Strv 81","Sweden",6.7,"MT"],["Strv 101","Sweden",7.7,"MT"],
+["Strv 103A","Sweden",7.3,"TD"],["Strv 103-0","Sweden",7.0,"TD"],
+["Strv 103C","Sweden",8.0,"TD"],["Strv 104","Sweden",8.3,"MT"],
+["Strv 121","Sweden",10.0,"MT"],["Strv 122","Sweden",11.3,"MT"],["Strv 122B+","Sweden",12.0,"MT"],
+["CV 90105","Sweden",9.7,"LT"],["CV 90120","Sweden",10.3,"LT"],
+["Lvkv 42","Sweden",4.3,"AA"],["VEAK 40","Sweden",8.0,"AA"],
+// Israel Aircraft
+["Kfir C.7","Israel",10.7,"F"],["Kfir C.2","Israel",10.0,"F"],
+["F-4E Phantom II Kurnass","Israel",11.0,"F"],
+["F-15A Baz","Israel",12.3,"F"],["F-16D Barak II","Israel",12.7,"F"],
+["AH-64A Peten","Israel",10.7,"H"],["AH-1S Tzefa","Israel",9.7,"H"],
+// Israel Tanks
+["Magach 3","Israel",7.7,"MT"],["Magach 5","Israel",8.0,"MT"],["Magach 6B","Israel",8.3,"MT"],
+["Magach 7C","Israel",9.0,"MT"],["Merkava Mk.1","Israel",8.7,"MT"],["Merkava Mk.2B","Israel",9.0,"MT"],
+["Merkava Mk.3D","Israel",10.3,"MT"],["Merkava Mk.4","Israel",11.0,"MT"],["Merkava Mk.4M","Israel",11.7,"MT"],
+["Sho't Kal Dalet","Israel",8.0,"MT"],
+// China Aircraft
+["J-2","China",8.0,"F"],["J-4","China",8.3,"F"],["J-7II","China",10.0,"F"],
+["J-8B","China",11.0,"F"],["J-11","China",12.7,"F"],["J-11A","China",13.0,"F"],
+["Q-5A","China",9.3,"A"],
+["Z-9W","China",9.3,"H"],["Z-10","China",10.3,"H"],["Z-19","China",10.0,"H"],
+// China Tanks
+["T-34-85 No.215","China",5.3,"MT"],["IS-2 No.402","China",6.3,"HT"],
+["Type 59","China",8.0,"MT"],["Type 69","China",8.3,"MT"],
+["ZTZ59D1","China",8.3,"MT"],["ZTZ96","China",9.3,"MT"],
+["ZTZ96A","China",9.7,"MT"],["ZTZ99","China",10.7,"MT"],
+["ZTZ99A","China",11.3,"MT"],["VT4A1","China",11.7,"MT"],
+["ZTZ99A-III","China",12.0,"MT"],
+["PTZ89","China",8.0,"TD"],["AFT09","China",9.7,"TD"],
+["PGZ09","China",10.0,"AA"],["PGZ04A","China",9.3,"AA"]
+];
+
+const vehicles=DB.map(d=>({name:d[0],nation:d[1],br:d[2],type:T[d[3]]||d[3],typeCode:d[3]}));
+const input=document.getElementById("searchInput");
+const dd=document.getElementById("dropdown");
+let hlIdx=-1,filtered=[];
+
+function brStr(b){return b%1===0?b.toFixed(1):b.toFixed(1)}
+
+input.addEventListener("input",()=>{
+const q=input.value.toLowerCase().trim();
+if(!q){dd.classList.remove("open");return}
+filtered=vehicles.filter(v=>v.name.toLowerCase().includes(q)||v.nation.toLowerCase().includes(q)||v.type.toLowerCase().includes(q)).slice(0,50);
+hlIdx=-1;
+renderDD();
+});
+input.addEventListener("focus",()=>{if(input.value.trim())input.dispatchEvent(new Event("input"))});
+document.addEventListener("click",e=>{if(!e.target.closest(".search-box"))dd.classList.remove("open")});
+
+input.addEventListener("keydown",e=>{
+if(!dd.classList.contains("open"))return;
+if(e.key==="ArrowDown"){e.preventDefault();hlIdx=Math.min(hlIdx+1,filtered.length-1);renderDD()}
+else if(e.key==="ArrowUp"){e.preventDefault();hlIdx=Math.max(hlIdx-1,0);renderDD()}
+else if(e.key==="Enter"&&hlIdx>=0){e.preventDefault();selectVehicle(filtered[hlIdx])}
+});
+
+function renderDD(){
+if(!filtered.length){dd.innerHTML='<div class="dd-empty">No vehicles found</div>';dd.classList.add("open");return}
+dd.innerHTML=filtered.map((v,i)=>`<div class="dd-item${i===hlIdx?" hl":""}" data-i="${i}"><span class="dd-flag">${FLAGS[v.nation]||""}</span><span class="dd-name">${v.name}</span><span class="dd-meta"><span class="dd-type">${v.type}</span><span class="dd-br">${brStr(v.br)}</span></span></div>`).join("");
+dd.classList.add("open");
+dd.querySelectorAll(".dd-item").forEach(el=>el.addEventListener("click",()=>selectVehicle(filtered[+el.dataset.i])));
+const hlEl=dd.querySelector(".hl");if(hlEl)hlEl.scrollIntoView({block:"nearest"});
+}
+
+let activeFilters=new Set(["F","B","A","H","I","LT","MT","HT","TD","AA"]);
+let selectedV=null;
+
+function selectVehicle(v){
+selectedV=v;
+input.value=v.name;
+dd.classList.remove("open");
+document.getElementById("svFlag").textContent=FLAGS[v.nation]||"";
+document.getElementById("svName").textContent=v.name;
+document.getElementById("svDetail").textContent=`${v.nation} • ${v.type}`;
+document.getElementById("svBR").textContent=brStr(v.br);
+document.getElementById("selectedVehicle").classList.add("show");
+const minBR=Math.max(1.0,+(v.br-1.0).toFixed(1));
+const maxBR=+(v.br+1.0).toFixed(1);
+document.getElementById("brMin").textContent=brStr(minBR);
+document.getElementById("brCenter").textContent=brStr(v.br);
+document.getElementById("brMax").textContent=brStr(maxBR);
+document.getElementById("downRange").textContent=brStr(minBR)+" – "+brStr(+(v.br-0.3).toFixed(1));
+document.getElementById("sameRange").textContent=brStr(v.br);
+document.getElementById("upRange").textContent=brStr(+(v.br+0.3).toFixed(1))+" – "+brStr(maxBR);
+const total=maxBR-minBR;
+const downW=((v.br-minBR)/total*100);
+const upW=((maxBR-v.br)/total*100);
+document.getElementById("zDown").style.width=Math.max(downW,10)+"%";
+document.getElementById("zUp").style.width=Math.max(upW,10)+"%";
+document.getElementById("zSame").style.width=Math.max(100-downW-upW,10)+"%";
+renderFilters();
+renderNotable(v,minBR,maxBR);
+}
+
+function renderFilters(){
+const types=[["F","Fighter"],["B","Bomber"],["A","Attacker"],["I","Interceptor"],["H","Helicopter"],["LT","Light Tank"],["MT","Medium Tank"],["HT","Heavy Tank"],["TD","Tank Destroyer"],["AA","SPAA"]];
+document.getElementById("filterRow").innerHTML=types.map(([c,l])=>`<div class="filter-btn${activeFilters.has(c)?" active":""}" data-f="${c}">${l}</div>`).join("");
+document.querySelectorAll(".filter-btn").forEach(b=>b.addEventListener("click",()=>{
+const f=b.dataset.f;
+if(activeFilters.has(f))activeFilters.delete(f);else activeFilters.add(f);
+b.classList.toggle("active");
+if(selectedV){const mn=Math.max(1.0,+(selectedV.br-1.0).toFixed(1));renderNotable(selectedV,mn,+(selectedV.br+1.0).toFixed(1))}
+}));
+}
+
+function renderNotable(v,minBR,maxBR){
+const sec=document.getElementById("notableSection");sec.style.display="block";
+const matches=vehicles.filter(o=>o!==v&&o.br>=minBR&&o.br<=maxBR&&activeFilters.has(o.typeCode));
+document.getElementById("matchCount").textContent=`(${matches.length} vehicles)`;
+const byNation={};
+const nationOrder=["USSR","USA","Germany","Britain","Japan","France","Italy","Sweden","Israel","China"];
+matches.forEach(m=>{if(!byNation[m.nation])byNation[m.nation]=[];byNation[m.nation].push(m)});
+const container=document.getElementById("nationGroups");
+container.innerHTML=nationOrder.filter(n=>byNation[n]).map(n=>{
+const vs=byNation[n].sort((a,b)=>a.br-b.br);
+return`<div class="nation-group"><div class="nation-header"><span class="nation-flag">${FLAGS[n]}</span><span class="nation-name">${n}</span><span class="nation-count">${vs.length}</span></div><div class="nation-vehicles">${vs.map(m=>{
+let cls="same-br";
+if(m.br>v.br+0.3)cls="uptier";
+else if(m.br<v.br-0.3)cls="downtier";
+return`<div class="nv ${cls}"><span class="nv-name">${m.name}</span><span class="nv-type">${m.type}</span><span class="nv-br">${brStr(m.br)}</span></div>`;
+}).join("")}</div></div>`;
+}).join("");
+}
+
+window.addEventListener("scroll",()=>{document.getElementById("scrollTop").style.display=window.scrollY>300?"block":"none"});
+</script>
+</body>
+</html>

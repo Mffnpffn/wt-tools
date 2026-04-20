@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WT Bomb Calculator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0e10;--bg2:#1a1c20;--bg3:#222528;--border:#2a2c30;--red:#cc0000;--red2:#ff2222;--red-glow:rgba(204,0,0,.3);--gold:#d4a017;--text:#e0ddd8;--text2:#888;--green:#4caf50}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+h1,h2,h3{font-weight:700}
+header{text-align:center;padding:24px 16px 12px;border-bottom:2px solid var(--red);background:linear-gradient(180deg,rgba(204,0,0,.08),transparent)}
+header h1{font-size:1.8rem;color:var(--red2);text-shadow:0 0 20px var(--red-glow);letter-spacing:.05em}
+header .star{color:var(--gold);font-size:1.4rem}
+header p{color:var(--text2);font-size:.85rem;margin-top:4px;letter-spacing:.08em}
+.container{max-width:1100px;margin:0 auto;padding:16px}
+.panels{display:flex;gap:16px;flex-wrap:wrap}
+.panel{flex:1;min-width:300px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.panel-header{background:linear-gradient(90deg,var(--red),#880000);padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
+.panel-header h3{color:#fff;font-size:.9rem;letter-spacing:.1em}
+.panel-label{background:rgba(0,0,0,.3);color:var(--gold);font-size:.7rem;padding:2px 8px;border-radius:3px;font-weight:700}
+.panel-body{padding:16px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.75rem;color:var(--text2);margin-bottom:6px;letter-spacing:.06em}
+select{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.9rem;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+select:focus{outline:none;border-color:var(--red)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px}
+.stat-label{font-size:.65rem;color:var(--text2);letter-spacing:.08em;margin-bottom:2px}
+.stat-val{font-size:1.3rem;font-weight:700;color:var(--red2)}
+.stat-unit{font-size:.7rem;color:var(--text2);margin-left:2px}
+.stat.full{grid-column:1/-1}
+.stat.lethal .stat-val{color:var(--red2)}
+.stat.damage .stat-val{color:var(--gold)}
+.canvas-wrap{margin-top:16px;position:relative;background:var(--bg);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+canvas{width:100%;display:block}
+.legend{display:flex;gap:16px;justify-content:center;padding:8px;background:rgba(0,0,0,.3);border-top:1px solid var(--border)}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--text2)}
+.legend-dot{width:10px;height:10px;border-radius:50%;border:2px solid}
+.legend-dot.lethal{border-color:var(--red2);background:rgba(255,34,34,.2)}
+.legend-dot.damage{border-color:var(--gold);background:rgba(212,160,23,.15)}
+.compare-section{margin-top:20px}
+.compare-header{text-align:center;padding:12px;border-bottom:1px solid var(--border)}
+.compare-header h2{font-size:1rem;color:var(--red2);letter-spacing:.1em}
+.compare-canvas-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:12px}
+.compare-controls{display:flex;gap:12px;padding:12px;flex-wrap:wrap}
+.compare-controls .field{flex:1;min-width:200px;margin-bottom:0}
+.compare-bar{display:flex;gap:2px;padding:0 16px 16px}
+.bar-item{flex:1;text-align:center}
+.bar-label{font-size:.65rem;color:var(--text2);margin-bottom:4px;letter-spacing:.06em}
+.bar-track{height:8px;background:var(--bg);border-radius:4px;overflow:hidden;display:flex}
+.bar-fill-a{height:100%;background:var(--red2);border-radius:4px 0 0 4px;transition:width .4s}
+.bar-fill-b{height:100%;background:var(--gold);border-radius:0 4px 4px 0;transition:width .4s}
+.bar-vals{display:flex;justify-content:space-between;margin-top:3px;font-size:.68rem}
+.bar-vals .va{color:var(--red2)}.bar-vals .vb{color:var(--gold)}
+.hammer-sickle{opacity:.04;position:fixed;bottom:-40px;right:-40px;font-size:18rem;pointer-events:none;z-index:0}
+footer{text-align:center;padding:20px;color:var(--text2);font-size:.7rem;border-top:1px solid var(--border);margin-top:24px;letter-spacing:.06em}
+@media(max-width:700px){.panels{flex-direction:column}.compare-controls{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="hammer-sickle">☭</div>
+<header>
+<div><span class="star">★</span> <span class="star">★</span> <span class="star">★</span></div>
+<h1>WT BOMB CALCULATOR</h1>
+<p>SOVIET ORDNANCE DAMAGE ANALYSIS TOOL</p>
+</header>
+<div class="container">
+<div class="panels">
+<div class="panel">
+<div class="panel-header"><h3>BOMB SELECTION</h3><span class="panel-label">PRIMARY</span></div>
+<div class="panel-body">
+<div class="field">
+<label>SELECT ORDNANCE</label>
+<select id="bombA" onchange="update()"></select>
+</div>
+<div class="stats" id="statsA"></div>
+<div class="canvas-wrap">
+<canvas id="cvA" width="400" height="400"></canvas>
+<div class="legend">
+<div class="legend-item"><div class="legend-dot lethal"></div>Lethal Radius</div>
+<div class="legend-item"><div class="legend-dot damage"></div>Damage Radius</div>
+</div>
+</div>
+</div>
+</div>
+<div class="panel">
+<div class="panel-header"><h3>BOMB SELECTION</h3><span class="panel-label">SECONDARY</span></div>
+<div class="panel-body">
+<div class="field">
+<label>SELECT ORDNANCE</label>
+<select id="bombB" onchange="update()"></select>
+</div>
+<div class="stats" id="statsB"></div>
+<div class="canvas-wrap">
+<canvas id="cvB" width="400" height="400"></canvas>
+<div class="legend">
+<div class="legend-item"><div class="legend-dot lethal"></div>Lethal Radius</div>
+<div class="legend-item"><div class="legend-dot damage"></div>Damage Radius</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="compare-section">
+<div class="compare-canvas-wrap">
+<div class="compare-header"><h2>★ SIDE-BY-SIDE COMPARISON ★</h2></div>
+<canvas id="cvC" width="800" height="400"></canvas>
+<div class="legend" style="justify-content:center;gap:24px">
+<div class="legend-item"><div class="legend-dot" style="border-color:var(--red2);background:rgba(255,34,34,.2)"></div>Primary</div>
+<div class="legend-item"><div class="legend-dot" style="border-color:var(--gold);background:rgba(212,160,23,.15)"></div>Secondary</div>
+</div>
+<div id="compareBars" class="compare-bar"></div>
+</div>
+</div>
+</div>
+<footer>★ DATA BASED ON WAR THUNDER GAME VALUES ★ FOR REFERENCE ONLY ★</footer>
+<script>
+const BOMBS=[
+{name:"FAB-9000M-54",mass:9000,tnt:4297,lethal:79,damage:158,desc:"Heaviest Soviet bomb, devastating area denial"},
+{name:"FAB-5000M-54",mass:5000,tnt:2397,lethal:65,damage:131,desc:"Massive high-explosive bomb"},
+{name:"FAB-3000M-46",mass:3000,tnt:1400,lethal:55,damage:110,desc:"Heavy bomber ordnance"},
+{name:"FAB-1500M-46",mass:1500,tnt:700,lethal:43,damage:86,desc:"Standard heavy bomb"},
+{name:"FAB-500M-62",mass:500,tnt:213,lethal:28,damage:57,desc:"Medium general-purpose bomb"},
+{name:"FAB-250M-62",mass:250,tnt:107,lethal:21,damage:42,desc:"Light general-purpose bomb"},
+{name:"OFAB-250-270",mass:250,tnt:97,lethal:19,damage:39,desc:"Fragmentation variant, wider frag spread"},
+{name:"OFAB-100-120",mass:100,tnt:42,lethal:14,damage:28,desc:"Light fragmentation bomb"}
+];
+function populateSelects(){
+const sA=document.getElementById("bombA"),sB=document.getElementById("bombB");
+BOMBS.forEach((b,i)=>{sA.add(new Option(b.name,i));sB.add(new Option(b.name,i))});
+sB.selectedIndex=1;
+}
+function renderStats(id,b){
+document.getElementById(id).innerHTML=`
+<div class="stat full"><div class="stat-label">DESIGNATION</div><div class="stat-val" style="font-size:1rem;color:var(--text)">${b.desc}</div></div>
+<div class="stat"><div class="stat-label">MASS</div><div class="stat-val">${b.mass.toLocaleString()}<span class="stat-unit">kg</span></div></div>
+<div class="stat"><div class="stat-label">TNT EQUIVALENT</div><div class="stat-val">${b.tnt.toLocaleString()}<span class="stat-unit">kg</span></div></div>
+<div class="stat lethal"><div class="stat-label">LETHAL RADIUS</div><div class="stat-val">${b.lethal}<span class="stat-unit">m</span></div></div>
+<div class="stat damage"><div class="stat-label">DAMAGE RADIUS</div><div class="stat-val">${b.damage}<span class="stat-unit">m</span></div></div>`;
+}
+function drawBlast(canvasId,bomb,color1,color2){
+const cv=document.getElementById(canvasId),ctx=cv.getContext("2d");
+const w=cv.width,h=cv.height,cx=w/2,cy=h/2;
+ctx.clearRect(0,0,w,h);
+// grid
+ctx.strokeStyle="rgba(255,255,255,.04)";ctx.lineWidth=1;
+for(let i=0;i<w;i+=40){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,h);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(w,i);ctx.stroke()}
+// scale
+const maxR=BOMBS[0].damage;
+const scale=(Math.min(w,h)/2-30)/maxR;
+// range rings
+ctx.setLineDash([4,4]);ctx.strokeStyle="rgba(255,255,255,.08)";
+[25,50,75,100,125,150].forEach(r=>{if(r*scale<Math.min(w,h)/2-10){ctx.beginPath();ctx.arc(cx,cy,r*scale,0,Math.PI*2);ctx.stroke();ctx.fillStyle="rgba(255,255,255,.15)";ctx.font="9px sans-serif";ctx.fillText(r+"m",cx+r*scale-14,cy-4)}});
+ctx.setLineDash([]);
+// crosshair
+ctx.strokeStyle="rgba(255,255,255,.06)";ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,h);ctx.stroke();ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(w,cy);ctx.stroke();
+// damage radius
+const dr=bomb.damage*scale;
+const gd=ctx.createRadialGradient(cx,cy,0,cx,cy,dr);
+gd.addColorStop(0,color2.replace(")",",0.15)").replace("rgb","rgba"));
+gd.addColorStop(.7,color2.replace(")",",0.08)").replace("rgb","rgba"));
+gd.addColorStop(1,"transparent");
+ctx.fillStyle=gd;ctx.beginPath();ctx.arc(cx,cy,dr,0,Math.PI*2);ctx.fill();
+ctx.strokeStyle=color2;ctx.lineWidth=1.5;ctx.setLineDash([6,4]);ctx.beginPath();ctx.arc(cx,cy,dr,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+// lethal radius
+const lr=bomb.lethal*scale;
+const gl=ctx.createRadialGradient(cx,cy,0,cx,cy,lr);
+gl.addColorStop(0,color1.replace(")",",0.35)").replace("rgb","rgba"));
+gl.addColorStop(.6,color1.replace(")",",0.15)").replace("rgb","rgba"));
+gl.addColorStop(1,color1.replace(")",",0.05)").replace("rgb","rgba"));
+ctx.fillStyle=gl;ctx.beginPath();ctx.arc(cx,cy,lr,0,Math.PI*2);ctx.fill();
+ctx.strokeStyle=color1;ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,lr,0,Math.PI*2);ctx.stroke();
+// center
+ctx.fillStyle=color1;ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);ctx.fill();
+// label
+ctx.fillStyle="#fff";ctx.font="bold 13px sans-serif";ctx.textAlign="center";
+ctx.fillText(bomb.name,cx,30);
+}
+function drawCompare(a,b){
+const cv=document.getElementById("cvC"),ctx=cv.getContext("2d");
+const w=cv.width,h=cv.height;
+ctx.clearRect(0,0,w,h);
+const maxR=BOMBS[0].damage;
+const scale=(h/2-30)/maxR;
+const cxA=w*0.3,cxB=w*0.7,cy=h/2;
+// grid
+ctx.strokeStyle="rgba(255,255,255,.03)";
+for(let i=0;i<w;i+=40){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,h);ctx.stroke()}
+for(let i=0;i<h;i+=40){ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(w,i);ctx.stroke()}
+// divider
+ctx.strokeStyle="rgba(255,255,255,.08)";ctx.setLineDash([4,6]);ctx.beginPath();ctx.moveTo(w/2,0);ctx.lineTo(w/2,h);ctx.stroke();ctx.setLineDash([]);
+function drawBomb(bomb,cx,col1,col2){
+const dr=bomb.damage*scale,lr=bomb.lethal*scale;
+const gd=ctx.createRadialGradient(cx,cy,0,cx,cy,dr);
+gd.addColorStop(0,col2=="rgba(212,160,23"?`rgba(212,160,23,0.12)`:`rgba(255,34,34,0.12)`);
+gd.addColorStop(1,"transparent");
+ctx.fillStyle=gd;ctx.beginPath();ctx.arc(cx,cy,dr,0,Math.PI*2);ctx.fill();
+ctx.strokeStyle=col2;ctx.lineWidth=1.5;ctx.setLineDash([6,4]);ctx.beginPath();ctx.arc(cx,cy,dr,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+const gl=ctx.createRadialGradient(cx,cy,0,cx,cy,lr);
+gl.addColorStop(0,col2=="rgba(212,160,23"?`rgba(212,160,23,0.25)`:`rgba(255,34,34,0.3)`);
+gl.addColorStop(1,col2=="rgba(212,160,23"?`rgba(212,160,23,0.05)`:`rgba(255,34,34,0.05)`);
+ctx.fillStyle=gl;ctx.beginPath();ctx.arc(cx,cy,lr,0,Math.PI*2);ctx.fill();
+ctx.strokeStyle=col1;ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,lr,0,Math.PI*2);ctx.stroke();
+ctx.fillStyle=col1;ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);ctx.fill();
+ctx.fillStyle="#fff";ctx.font="bold 12px sans-serif";ctx.textAlign="center";ctx.fillText(bomb.name,cx,24);
+}
+drawBomb(a,cxA,"#ff2222","rgba(212,100,100");
+drawBomb(b,cxB,"#d4a017","rgba(212,160,23");
+// comparison bars
+const bars=document.getElementById("compareBars");
+const metrics=[
+{label:"MASS",va:a.mass,vb:b.mass,unit:"kg"},
+{label:"TNT EQUIV",va:a.tnt,vb:b.tnt,unit:"kg"},
+{label:"LETHAL",va:a.lethal,vb:b.lethal,unit:"m"},
+{label:"DAMAGE",va:a.damage,vb:b.damage,unit:"m"}
+];
+bars.innerHTML=metrics.map(m=>{
+const total=m.va+m.vb;
+const pa=(m.va/total*100).toFixed(1);
+const pb=(m.vb/total*100).toFixed(1);
+return`<div class="bar-item"><div class="bar-label">${m.label}</div><div class="bar-track"><div class="bar-fill-a" style="width:${pa}%"></div><div class="bar-fill-b" style="width:${pb}%"></div></div><div class="bar-vals"><span class="va">${m.va.toLocaleString()}${m.unit}</span><span class="vb">${m.vb.toLocaleString()}${m.unit}</span></div></div>`;
+}).join("");
+}
+function update(){
+const a=BOMBS[document.getElementById("bombA").value];
+const b=BOMBS[document.getElementById("bombB").value];
+renderStats("statsA",a);
+renderStats("statsB",b);
+drawBlast("cvA",a,"rgb(255,34,34)","rgb(212,160,23)");
+drawBlast("cvB",b,"rgb(255,34,34)","rgb(212,160,23)");
+drawCompare(a,b);
+}
+populateSelects();
+update();
+</script>
+</body>
+</html>

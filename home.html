@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0d0e10">
+<title>WT Tools</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0e10;--bg2:#1a1c20;--bg3:#222528;--border:#2a2c30;--red:#cc0000;--red2:#ff2222;--red-glow:rgba(204,0,0,.3);--gold:#d4a017;--text:#e0ddd8;--text2:#888;--text3:#555}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+header{text-align:center;padding:40px 16px 20px;border-bottom:2px solid var(--red);background:linear-gradient(180deg,rgba(204,0,0,.1),transparent)}
+.stars{color:var(--gold);font-size:1.4rem;letter-spacing:8px;margin-bottom:8px}
+header h1{font-size:2.4rem;color:var(--red2);text-shadow:0 0 30px var(--red-glow);letter-spacing:.08em}
+header p{color:var(--text2);font-size:.85rem;margin-top:8px;letter-spacing:.12em}
+.hammer{opacity:.03;position:fixed;bottom:-60px;right:-60px;font-size:22rem;pointer-events:none;z-index:0}
+.container{max-width:700px;margin:0 auto;padding:32px 16px;flex:1;position:relative;z-index:1}
+.tool-card{display:block;background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px;text-decoration:none;color:inherit;transition:transform .15s,border-color .2s,box-shadow .2s}
+.tool-card:hover{transform:translateY(-2px);border-color:var(--red);box-shadow:0 8px 32px rgba(204,0,0,.15)}
+.tool-card:active{transform:scale(.985)}
+.card-banner{height:6px;background:linear-gradient(90deg,var(--red),#880000,var(--red))}
+.card-body{padding:24px}
+.card-icon{font-size:2.4rem;margin-bottom:12px}
+.card-title{font-size:1.3rem;font-weight:700;color:var(--red2);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.card-title .arrow{color:var(--text3);font-size:1rem;margin-left:auto;transition:transform .2s,color .2s}
+.tool-card:hover .arrow{transform:translateX(4px);color:var(--red2)}
+.card-desc{font-size:.85rem;color:var(--text2);line-height:1.5;margin-bottom:14px}
+.card-tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:.68rem;padding:3px 10px;border-radius:12px;background:rgba(204,0,0,.1);border:1px solid rgba(204,0,0,.2);color:var(--red2);letter-spacing:.04em}
+.tag.gold{background:rgba(212,160,23,.1);border-color:rgba(212,160,23,.2);color:var(--gold)}
+.divider{display:flex;align-items:center;gap:12px;margin:28px 0;color:var(--text3);font-size:.7rem;letter-spacing:.15em}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.info-bar{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.info-item{font-size:.75rem;color:var(--text3);display:flex;align-items:center;gap:6px}
+.info-dot{width:6px;height:6px;border-radius:50%;background:var(--red)}
+footer{text-align:center;padding:20px;color:var(--text3);font-size:.68rem;border-top:1px solid var(--border);letter-spacing:.06em}
+footer a{color:var(--red2);text-decoration:none}
+footer a:hover{text-decoration:underline}
+@media(max-width:500px){header h1{font-size:1.8rem}.card-body{padding:18px}.container{padding:20px 12px}}
+</style>
+</head>
+<body>
+<div class="hammer">☭</div>
+<header>
+<div class="stars">★ ★ ★ ★ ★</div>
+<h1>WT TOOLS</h1>
+<p>WAR THUNDER UTILITIES &amp; CALCULATORS</p>
+<div class="info-bar">
+<div class="info-item"><span class="info-dot"></span>Soviet Engineering</div>
+<div class="info-item"><span class="info-dot"></span>No Tracking</div>
+<div class="info-item"><span class="info-dot"></span>Works Offline</div>
+</div>
+</header>
+<div class="container">
+<a class="tool-card" href="index.html">
+<div class="card-banner"></div>
+<div class="card-body">
+<div class="card-icon">💣</div>
+<div class="card-title">Bomb Damage Calculator <span class="arrow">→</span></div>
+<div class="card-desc">Visualise blast radii for Soviet FAB and OFAB series bombs. Compare lethal and damage radius side by side with canvas-rendered blast circles, TNT equivalents, and detailed ordnance stats.</div>
+<div class="card-tags">
+<span class="tag">FAB-9000</span>
+<span class="tag">FAB-5000</span>
+<span class="tag">FAB-3000</span>
+<span class="tag gold">Blast Radius</span>
+<span class="tag gold">Side-by-Side</span>
+</div>
+</div>
+</a>
+<a class="tool-card" href="br-calc.html">
+<div class="card-banner"></div>
+<div class="card-body">
+<div class="card-icon">⚔️</div>
+<div class="card-title">BR Calculator <span class="arrow">→</span></div>
+<div class="card-desc">Search 400+ vehicles across all 10 nations. See the full ±1.0 BR matchmaking spread, uptier and downtier ranges, and every notable vehicle you could face — grouped by nation and colour-coded by threat level.</div>
+<div class="card-tags">
+<span class="tag">All Nations</span>
+<span class="tag">Air &amp; Ground</span>
+<span class="tag">Helicopters</span>
+<span class="tag gold">Uptier Analysis</span>
+<span class="tag gold">Searchable</span>
+</div>
+</div>
+</a>
+<div class="divider">MORE TOOLS COMING SOON</div>
+</div>
+<footer>★ WT TOOLS ★ Built for the community ★ <a href="https://github.com/Mffnpffn/wt-tools">GitHub</a> ★</footer>
+</body>
+</html>
