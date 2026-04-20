@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>WT Nation Tier List</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0e10;--bg2:#1a1c20;--bg3:#222528;--border:#2a2c30;--red:#cc0000;--red2:#ff2222;--red-glow:rgba(204,0,0,.3);--gold:#d4a017;--text:#e0ddd8;--text2:#888;--text3:#555;--green:#4caf50;--amber:#ff9800;--blue:#4a9eff;--S:#ff2222;--A:#ff8c00;--B:#d4a017;--C:#4a9eff;--D:#888}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;user-select:none}
+header{text-align:center;padding:20px 16px 12px;border-bottom:2px solid var(--red);background:linear-gradient(180deg,rgba(204,0,0,.08),transparent)}
+header h1{font-size:1.6rem;color:var(--red2);text-shadow:0 0 20px var(--red-glow);letter-spacing:.05em}
+header .star{color:var(--gold);font-size:1.2rem}
+header p{color:var(--text2);font-size:.78rem;margin-top:4px;letter-spacing:.08em}
+.container{max-width:800px;margin:0 auto;padding:16px}
+.tab-row{display:flex;gap:4px;margin-bottom:14px;background:var(--bg2);border-radius:8px;padding:4px;border:1px solid var(--border)}
+.tab-btn{flex:1;padding:10px;text-align:center;border-radius:6px;font-size:.78rem;font-weight:600;color:var(--text3);cursor:pointer;transition:all .15s;letter-spacing:.04em}
+.tab-btn.active{background:rgba(204,0,0,.15);color:var(--red2)}
+.tab-btn .icon{display:block;font-size:1.1rem;margin-bottom:2px}
+.actions{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.act-btn{padding:7px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:.7rem;cursor:pointer;transition:all .15s}
+.act-btn:hover{border-color:var(--red);color:var(--red2)}
+.tier-container{display:flex;flex-direction:column;gap:4px;margin-bottom:16px}
+.tier-row{display:flex;gap:0;border-radius:8px;overflow:hidden;min-height:80px;border:1px solid var(--border)}
+.tier-label{width:50px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:700;flex-shrink:0;letter-spacing:.05em}
+.tier-label.S{background:rgba(255,34,34,.12);color:var(--S)}.tier-label.A{background:rgba(255,140,0,.1);color:var(--A)}
+.tier-label.B{background:rgba(212,160,23,.1);color:var(--B)}.tier-label.C{background:rgba(74,158,255,.08);color:var(--C)}
+.tier-label.D{background:rgba(136,136,136,.08);color:var(--D)}
+.tier-drop{flex:1;display:flex;flex-wrap:wrap;align-items:flex-start;align-content:flex-start;gap:6px;padding:8px;background:var(--bg2);min-height:76px;transition:background .15s}
+.tier-drop.over{background:rgba(204,0,0,.08)}
+.nation-card{width:90px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 6px;text-align:center;cursor:grab;transition:transform .1s,box-shadow .1s;position:relative}
+.nation-card:active{cursor:grabbing;transform:scale(1.05);box-shadow:0 4px 20px rgba(0,0,0,.5);z-index:10}
+.nation-card.dragging{opacity:.4}
+.nc-flag{font-size:1.6rem;margin-bottom:2px}
+.nc-name{font-size:.65rem;font-weight:600;letter-spacing:.04em}
+.nc-verdict{font-size:.55rem;color:var(--text3);margin-top:3px;line-height:1.2;min-height:22px}
+.nc-reason{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:.68rem;color:var(--text2);width:180px;z-index:50;text-align:left;line-height:1.4;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.6)}
+.nation-card:hover .nc-reason{display:block}
+.nc-reason::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--border)}
+.section-title{font-size:.78rem;color:var(--red2);letter-spacing:.08em;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:.68rem;color:var(--text2)}
+.legend-dot{width:12px;height:12px;border-radius:2px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:10px 20px;border-radius:6px;font-size:.82rem;font-weight:600;z-index:100;animation:toastIn .3s ease,toastOut .3s ease 1.7s forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(-50%) translateY(10px)}}
+.hammer{opacity:.04;position:fixed;bottom:-40px;right:-40px;font-size:18rem;pointer-events:none;z-index:0}
+footer{text-align:center;padding:20px;color:var(--text2);font-size:.68rem;border-top:1px solid var(--border);margin-top:24px;letter-spacing:.06em}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--red);border-radius:3px}
+@media(max-width:600px){.nation-card{width:72px}.nc-verdict{display:none}.nc-flag{font-size:1.3rem}.tier-label{width:36px;font-size:1.2rem}.container{padding:10px}.nc-reason{width:150px}}
+</style>
+</head>
+<body>
+<div class="hammer">☭</div>
+<header>
+<div><span class="star">★</span> <span class="star">★</span> <span class="star">★</span></div>
+<h1>WT NATION TIER LIST</h1>
+<p>TOP TIER NATION RANKINGS</p>
+</header>
+<div class="container">
+<div class="tab-row">
+<div class="tab-btn active" data-t="ground" onclick="setTab(this)"><span class="icon">🛡️</span>Ground</div>
+<div class="tab-btn" data-t="air" onclick="setTab(this)"><span class="icon">✈️</span>Air</div>
+<div class="tab-btn" data-t="heli" onclick="setTab(this)"><span class="icon">🚁</span>Helicopter</div>
+</div>
+<div class="legend">
+<div class="legend-item"><div class="legend-dot" style="background:var(--S)"></div>S — Meta Dominant</div>
+<div class="legend-item"><div class="legend-dot" style="background:var(--A)"></div>A — Very Strong</div>
+<div class="legend-item"><div class="legend-dot" style="background:var(--B)"></div>B — Solid</div>
+<div class="legend-item"><div class="legend-dot" style="background:var(--C)"></div>C — Average</div>
+<div class="legend-item"><div class="legend-dot" style="background:var(--D)"></div>D — Weak</div>
+</div>
+<div class="actions">
+<div class="act-btn" onclick="resetDefault()">🔄 Reset to Default</div>
+<div class="act-btn" onclick="shareTierList()">📋 Share as Text</div>
+</div>
+<div class="tier-container" id="tierContainer"></div>
+<div class="section-title">★ HOVER OVER A NATION FOR DETAILED REASONING</div>
+</div>
+<footer>★ RANKINGS BASED ON COMMUNITY CONSENSUS ★ DRAG NATIONS TO CUSTOMIZE ★</footer>
+<script>
+const NATIONS={
+USSR:{flag:"🇷🇺",name:"USSR"},USA:{flag:"🇺🇸",name:"USA"},Germany:{flag:"🇩🇪",name:"Germany"},
+Britain:{flag:"🇬🇧",name:"Britain"},Japan:{flag:"🇯🇵",name:"Japan"},France:{flag:"🇫🇷",name:"France"},
+Italy:{flag:"🇮🇹",name:"Italy"},Sweden:{flag:"🇸🇪",name:"Sweden"},Israel:{flag:"🇮🇱",name:"Israel"},China:{flag:"🇨🇳",name:"China"}
+};
+const TIERS=["S","A","B","C","D"];
+
+const DEFAULTS={
+ground:{
+S:["USSR","Germany"],
+A:["USA","Sweden"],
+B:["Britain","Israel","China"],
+C:["France","Japan"],
+D:["Italy"],
+data:{
+USSR:{verdict:"Best all-rounders with unmatched SPAA",reason:"T-80BVM and T-90M are extremely competitive with small profiles and autoloaded guns. Pantsir-S1 is the best SPAA in the game. Strong lineup depth from 9.3 to 12.0 with T-72s, T-80s, and BMP-2M."},
+Germany:{verdict:"Top tier MBTs with best armour in game",reason:"Leopard 2A7V has among the best turret armour and DM53 round. Excellent lineup depth with 2A6, 2A5, PUMA IFV. Strong at all ranges. FlakRakPz and other SPAA are decent."},
+USA:{verdict:"Strong MBTs with excellent survivability",reason:"M1A2 SEP V2 has great armour and blowout panels for crew survival. Deep lineup with multiple Abrams variants. Good helicopter support with AH-64D. Weakened by large profile."},
+Sweden:{verdict:"Strv 122s are mini-Leopards with better armour",reason:"Strv 122B+ has extra armour over the Leopard 2A5 base. CV90120 is a great light tank. Limited lineup depth compared to big three but quality over quantity."},
+Britain:{verdict:"Challenger 3 improved things but still slow",reason:"Challenger 3 TD is competitive but all Challengers are slow with poor reverse. Good APFSDS rounds but lack mobility meta. Limited helicopter options."},
+Israel:{verdict:"Merkava 4M is solid with good protection",reason:"Merkava Mk.4M has excellent turret armour and LAHAT ATGMs. Engine-in-front design protects crew but catches fire easily. Limited lineup beyond Merkavas."},
+China:{verdict:"Copies of Russian vehicles with slight tweaks",reason:"ZTZ99A and VT4A1 are competitive but not best in class. Limited SPAA options hurt badly. Essentially Russian vehicles without the Pantsir-S1."},
+France:{verdict:"Leclercs are fast but poorly armoured",reason:"Leclerc SXXI has great gun handling and speed but armour is below average. No stabiliser issues. Limited lineup depth and weak helicopter options."},
+Japan:{verdict:"Type 10 is mobile but fragile",reason:"Type 10 has excellent gun and mobility but paper-thin armour. Very limited lineup — essentially 3 MBTs and a Type 93 SPAA. No attack helicopters worth using."},
+Italy:{verdict:"Ariete AMV struggles against meta MBTs",reason:"Ariete variants have average armour and firepower. CL3143 round is good but platform is mediocre. Centauro wheeled vehicles are fun but not competitive at top tier."}
+}},
+air:{
+S:["USA","USSR"],
+A:["Britain","Sweden"],
+B:["Germany","France"],
+C:["Japan","Israel","China"],
+D:["Italy"],
+data:{
+USA:{verdict:"F-16C and F/A-18E dominate with best missiles",reason:"F/A-18E Super Hornet and F-16C have excellent radar missiles and dogfight capability. F-14B has Phoenix missiles for BVR. Deepest top tier fighter lineup in the game."},
+USSR:{verdict:"Su-27 and MiG-29SMT are deadly flankers",reason:"Su-27 has incredible flight performance and R-27ER missiles. Su-30MK2 adds multipathing resistance. MiG-29SMT is a strong all-rounder. Su-25T for ground attack."},
+Britain:{verdict:"Gripen and Typhoon give excellent options",reason:"Eurofighter Typhoon is extremely competitive with AMRAAM equivalents. Gripen is agile with great missiles. Tornado F.3 for longer-range engagements. Good variety."},
+Sweden:{verdict:"JAS39C Gripen is one of the best dogfighters",reason:"Gripen has incredible agility and good missile loadout. Limited to essentially one top tier airframe but it's an excellent one. Good for players who master one plane."},
+Germany:{verdict:"Eurofighter is strong but limited backup options",reason:"Eurofighter Typhoon is top tier competitive. MiG-29 provides a backup. Tornado IDS for ground attack. Less depth than USA or USSR."},
+France:{verdict:"Rafale C is competitive with good missiles",reason:"Rafale C is an excellent dogfighter with MICA missiles. Mirage 4000 provides backup. Jaguar for ground attack. Solid but not as deep as S-tier nations."},
+Japan:{verdict:"F-15J is capable but lineup is thin",reason:"F-15J and F-2A are both competitive fighters. Limited to two real options at top tier. No dedicated ground attacker. Quality is there but quantity isn't."},
+Israel:{verdict:"F-15A Baz and F-16D are solid but aging",reason:"Both fighters are competitive but facing newer airframes. Kfir C.7 is a decent backup. No domestic designs — all imported airframes."},
+China:{verdict:"J-11A is a Su-27 copy that gets the job done",reason:"J-11A matches Su-27 performance with similar missiles. J-8B at lower BR is unique. Limited options overall. Essentially flying Russian jets."},
+Italy:{verdict:"Eurofighter helps but historically weak air tree",reason:"Eurofighter Typhoon finally gives Italy a competitive top tier fighter. Before that, Tornado ADV was the best option. Very thin tree overall."}
+}},
+heli:{
+S:["USSR"],
+A:["USA"],
+B:["Britain","France","Germany"],
+C:["Israel","Italy","Japan","Sweden"],
+D:["China"],
+data:{
+USSR:{verdict:"Ka-52 and Mi-28N with Vikhrs are unmatched",reason:"Ka-52 has coaxial rotors making it incredibly agile. Vikhr ATGMs are fire-and-forget with proxy fuse for anti-air. Mi-28N has excellent armour. Best helicopter lineup by far."},
+USA:{verdict:"AH-64D Apache is strong with Hellfires",reason:"AH-64D has excellent optics and AGM-114K Hellfire IIs. AH-1Z Viper is a good backup. Solid two-helicopter lineup but Hellfires are slower than Vikhrs."},
+Britain:{verdict:"Apache AH Mk.1 is capable but alone",reason:"Apache AH Mk.1 is essentially the US Apache with Starstreak missiles as a bonus anti-air option. Lynx provides an early helicopter. Limited to two options."},
+France:{verdict:"Tiger HAD with Spikes is underrated",reason:"Tiger HAD has fire-and-forget Spike ATGMs which are excellent. SA.342M Gazelle with HOT missiles works at lower BR. Two solid options but nothing beyond that."},
+Germany:{verdict:"Eurocopter Tiger UHT has unique PARS 3",reason:"Tiger UHT has fire-and-forget PARS 3 missiles — very effective. Bo 105 and UH-1D provide lower BR options. Mi-24P is a strong backup. Decent lineup."},
+Israel:{verdict:"AH-64A Peten is good but it's just one heli",reason:"Essentially the US Apache. AH-1S Tzefa as backup. Very limited two-helicopter lineup with nothing special beyond the Apache."},
+Italy:{verdict:"A129 Mangusta is decent but outclassed",reason:"A129CBT has TOW-2 missiles which work but aren't top tier competitive. Only one real option at high BR. Needs more additions."},
+Japan:{verdict:"AH-1S is outdated at its BR",reason:"Single helicopter option that's essentially an early Cobra variant. Outclassed by dedicated attack helicopters from other nations. Badly needs additions."},
+Sweden:{verdict:"No dedicated attack helicopter yet",reason:"Sweden lacks a proper attack helicopter tree. Limited to a few options without competitive ATGMs. Major gap in the tech tree."},
+China:{verdict:"Z-10 and Z-19 are mediocre copies",reason:"Z-10 has HJ-10 ATGMs which are decent but the platform is fragile. Z-19 is a light scout. Z-9W is weak. Overall underwhelming compared to dedicated heli nations."}
+}}
+};
+
+let tab="ground";
+let state={};
+
+function loadState(){
+const saved=localStorage.getItem("wt_tierlist_"+tab);
+if(saved){try{state[tab]=JSON.parse(saved);return}catch(e){}}
+resetToDefault();
+}
+function saveState(){localStorage.setItem("wt_tierlist_"+tab,JSON.stringify(state[tab]))}
+function resetToDefault(){
+state[tab]={};
+TIERS.forEach(t=>state[tab][t]=[...(DEFAULTS[tab][t]||[])]);
+saveState();
+}
+
+function setTab(el){
+document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+el.classList.add("active");tab=el.dataset.t;loadState();renderTiers();
+}
+
+function renderTiers(){
+const c=document.getElementById("tierContainer");
+const data=DEFAULTS[tab].data;
+c.innerHTML=TIERS.map(t=>{
+const nations=state[tab][t]||[];
+return`<div class="tier-row">
+<div class="tier-label ${t}">${t}</div>
+<div class="tier-drop" data-tier="${t}" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragleave="onDragLeave(event)">
+${nations.map(n=>{
+const nd=NATIONS[n];const dd=data[n]||{};
+return`<div class="nation-card" draggable="true" data-nation="${n}" ondragstart="onDragStart(event)" ondragend="onDragEnd(event)" ontouchstart="onTouchStart(event)" ontouchmove="onTouchMove(event)" ontouchend="onTouchEnd(event)">
+<div class="nc-flag">${nd.flag}</div>
+<div class="nc-name">${nd.name}</div>
+<div class="nc-verdict">${dd.verdict||""}</div>
+<div class="nc-reason"><b style="color:var(--${t})">${nd.name} — Tier ${t}</b><br><br>${dd.reason||"No data available."}</div>
+</div>`}).join("")}
+</div></div>`}).join("");
+}
+
+let dragNation=null,dragFrom=null;
+
+function onDragStart(e){
+dragNation=e.target.dataset.nation;
+dragFrom=e.target.closest(".tier-drop").dataset.tier;
+e.target.classList.add("dragging");
+e.dataTransfer.effectAllowed="move";
+}
+function onDragEnd(e){e.target.classList.remove("dragging")}
+function onDragOver(e){e.preventDefault();e.currentTarget.classList.add("over")}
+function onDragLeave(e){e.currentTarget.classList.remove("over")}
+function onDrop(e){
+e.preventDefault();e.currentTarget.classList.remove("over");
+const toTier=e.currentTarget.dataset.tier;
+if(!dragNation||!dragFrom)return;
+if(dragFrom===toTier)return;
+state[tab][dragFrom]=state[tab][dragFrom].filter(n=>n!==dragNation);
+state[tab][toTier].push(dragNation);
+saveState();renderTiers();
+}
+
+// Touch drag support
+let touchEl=null,touchClone=null,touchNation=null,touchFrom=null;
+function onTouchStart(e){
+const card=e.target.closest(".nation-card");if(!card)return;
+touchNation=card.dataset.nation;
+touchFrom=card.closest(".tier-drop").dataset.tier;
+touchEl=card;
+touchClone=card.cloneNode(true);
+touchClone.style.position="fixed";touchClone.style.zIndex="1000";
+touchClone.style.opacity=".85";touchClone.style.pointerEvents="none";
+touchClone.style.width=card.offsetWidth+"px";
+document.body.appendChild(touchClone);
+card.classList.add("dragging");
+moveTouchClone(e.touches[0]);
+}
+function onTouchMove(e){
+e.preventDefault();
+if(!touchClone)return;
+moveTouchClone(e.touches[0]);
+document.querySelectorAll(".tier-drop").forEach(d=>d.classList.remove("over"));
+const el=document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY);
+if(el){const drop=el.closest(".tier-drop");if(drop)drop.classList.add("over")}
+}
+function onTouchEnd(e){
+if(!touchClone){return}
+document.querySelectorAll(".tier-drop").forEach(d=>d.classList.remove("over"));
+const touch=e.changedTouches[0];
+const el=document.elementFromPoint(touch.clientX,touch.clientY);
+if(el){
+const drop=el.closest(".tier-drop");
+if(drop&&touchNation&&touchFrom){
+const toTier=drop.dataset.tier;
+if(toTier!==touchFrom){
+state[tab][touchFrom]=state[tab][touchFrom].filter(n=>n!==touchNation);
+state[tab][toTier].push(touchNation);
+saveState();
+}
+}
+}
+touchClone.remove();touchClone=null;
+if(touchEl)touchEl.classList.remove("dragging");
+touchEl=null;touchNation=null;touchFrom=null;
+renderTiers();
+}
+function moveTouchClone(touch){
+if(!touchClone)return;
+touchClone.style.left=(touch.clientX-40)+"px";
+touchClone.style.top=(touch.clientY-30)+"px";
+}
+
+function resetDefault(){resetToDefault();renderTiers();toast("★ Reset to community consensus")}
+
+function shareTierList(){
+const data=DEFAULTS[tab].data;
+let txt="```\n";
+txt+="★ WAR THUNDER "+tab.toUpperCase()+" NATION TIER LIST ★\n";
+txt+="══════════════════════════════════\n";
+TIERS.forEach(t=>{
+const nations=state[tab][t]||[];
+if(nations.length){
+txt+=`${t} TIER: ${nations.map(n=>NATIONS[n].flag+" "+NATIONS[n].name).join(", ")}\n`;
+}
+});
+txt+="══════════════════════════════════\n";
+TIERS.forEach(t=>{
+(state[tab][t]||[]).forEach(n=>{
+const d=data[n];
+if(d)txt+=`${NATIONS[n].flag} ${NATIONS[n].name}: ${d.verdict}\n`;
+});
+});
+txt+="```";
+navigator.clipboard.writeText(txt).then(()=>toast("★ Tier list copied to clipboard!")).catch(()=>{
+const ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();
+toast("★ Tier list copied!");
+});
+}
+
+function toast(msg){
+const old=document.querySelector(".toast");if(old)old.remove();
+const t=document.createElement("div");t.className="toast";t.textContent=msg;
+document.body.appendChild(t);setTimeout(()=>t.remove(),2000);
+}
+
+loadState();renderTiers();
+</script>
+</body>
+</html>
