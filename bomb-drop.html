@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>WT Bomb Drop Calculator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0e10;--bg2:#1a1c20;--bg3:#222528;--border:#2a2c30;--red:#cc0000;--red2:#ff2222;--red-glow:rgba(204,0,0,.3);--gold:#d4a017;--text:#e0ddd8;--text2:#888;--text3:#555;--green:#4caf50;--amber:#ff9800;--blue:#4a9eff}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{text-align:center;padding:20px 16px 12px;border-bottom:2px solid var(--red);background:linear-gradient(180deg,rgba(204,0,0,.08),transparent)}
+header h1{font-size:1.6rem;color:var(--red2);text-shadow:0 0 20px var(--red-glow);letter-spacing:.05em}
+header .star{color:var(--gold);font-size:1.2rem}
+header p{color:var(--text2);font-size:.78rem;margin-top:4px;letter-spacing:.08em}
+.container{max-width:800px;margin:0 auto;padding:16px}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px}
+.panel-title{font-size:.68rem;color:var(--text3);letter-spacing:.1em;margin-bottom:10px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field.full{grid-column:1/-1}
+.field label{font-size:.58rem;color:var(--text2);letter-spacing:.06em}
+.field select,.field input{padding:9px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.82rem;outline:none}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;cursor:pointer}
+.field input:focus,.field select:focus{border-color:var(--red)}
+.field .hint{font-size:.55rem;color:var(--text3)}
+.calc-btn{width:100%;padding:12px;background:linear-gradient(180deg,#dd0000,#990000);border:2px solid var(--red2);border-radius:8px;color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;letter-spacing:.08em;margin-top:10px;transition:all .15s}
+.calc-btn:hover{box-shadow:0 0 20px var(--red-glow)}
+.calc-btn:active{transform:scale(.98)}
+.result{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px;display:none}
+.result.show{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.result-banner{padding:16px;text-align:center;background:linear-gradient(180deg,rgba(212,160,23,.08),transparent);border-bottom:1px solid var(--border)}
+.result-icon{font-size:2rem;margin-bottom:4px}
+.result-main{font-size:1.5rem;font-weight:700;color:var(--gold)}
+.result-main .unit{font-size:.8rem;color:var(--text2)}
+.result-sub{font-size:.78rem;color:var(--text2);margin-top:4px}
+.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:1px;background:var(--border)}
+.rg{background:var(--bg2);padding:10px;text-align:center}
+.rg .lbl{font-size:.52rem;color:var(--text3);letter-spacing:.06em;margin-bottom:2px}
+.rg .val{font-size:1.05rem;font-weight:700}
+.rg .unit{font-size:.6rem;color:var(--text3)}
+.danger{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px;display:none}
+.danger.show{display:block}
+.danger.safe{border-color:rgba(76,175,80,.25)}
+.danger.warn{border-color:rgba(255,152,0,.25)}
+.danger.crit{border-color:rgba(255,34,34,.3);background:rgba(255,34,34,.04)}
+.danger-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.danger-icon{font-size:1.2rem}
+.danger-title{font-size:.82rem;font-weight:700}
+.danger-text{font-size:.75rem;color:var(--text2);line-height:1.5}
+.chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px}
+.chart-wrap canvas{width:100%;display:block}
+.section-title{font-size:.75rem;color:var(--red2);letter-spacing:.08em;margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.alt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;margin-bottom:14px}
+.alt-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center}
+.alt-card .alt-name{font-size:.68rem;color:var(--text2);margin-bottom:4px}
+.alt-card .alt-val{font-size:1rem;font-weight:700;color:var(--gold)}
+.alt-card .alt-sub{font-size:.58rem;color:var(--text3);margin-top:3px}
+.tips{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px}
+.tips-title{font-size:.72rem;color:var(--gold);letter-spacing:.06em;margin-bottom:8px}
+.tip-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.tip-list li{display:flex;align-items:flex-start;gap:8px;font-size:.75rem;color:var(--text2);line-height:1.5}
+.tip-list li .ti{color:var(--red2);font-size:.7rem;flex-shrink:0;margin-top:2px}
+.hammer{opacity:.04;position:fixed;bottom:-40px;right:-40px;font-size:18rem;pointer-events:none;z-index:0}
+footer{text-align:center;padding:20px;color:var(--text2);font-size:.68rem;border-top:1px solid var(--border);margin-top:24px;letter-spacing:.06em}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--red);border-radius:3px}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}.container{padding:10px}}
+</style>
+</head>
+<body>
+<div class="hammer">☭</div>
+<header>
+<div><span class="star">★</span> <span class="star">★</span> <span class="star">★</span></div>
+<h1>WT BOMB DROP CALC</h1>
+<p>BOMBING RUN TRAJECTORY ANALYSIS</p>
+</header>
+<div class="container">
+<div class="panel">
+<div class="panel-title">★ BOMBING PARAMETERS</div>
+<div class="form-grid">
+<div class="field"><label>AIRCRAFT</label><select id="aircraft">
+<option value="tu95" data-spd="880" data-alt="12000">Tu-95M (USSR)</option>
+<option value="pe8" data-spd="440" data-alt="7700">Pe-8 (USSR)</option>
+<option value="il28" data-spd="900" data-alt="12500">Il-28 (USSR)</option>
+<option value="tu4" data-spd="558" data-alt="11200">Tu-4 (USSR)</option>
+<option value="tu2s" data-spd="547" data-alt="9500">Tu-2S (USSR)</option>
+<option value="su34" data-spd="1900" data-alt="15000">Su-34 (USSR)</option>
+<option value="b52" data-spd="957" data-alt="15000">B-52H (USA)</option>
+<option value="b29" data-spd="574" data-alt="9700">B-29A (USA)</option>
+<option value="b17g" data-spd="462" data-alt="10800">B-17G (USA)</option>
+<option value="b24" data-spd="467" data-alt="8500">B-24D (USA)</option>
+<option value="b57b" data-spd="930" data-alt="13700">B-57B (USA)</option>
+<option value="lanc" data-spd="462" data-alt="6900">Lancaster B Mk III (GB)</option>
+<option value="lanc1" data-spd="462" data-alt="6900">Lancaster B Mk I (GB)</option>
+<option value="vulcan" data-spd="1038" data-alt="17000">Avro Vulcan B.2 (GB)</option>
+<option value="victor" data-spd="990" data-alt="16700">Victor B.1 (GB)</option>
+<option value="canb" data-spd="870" data-alt="14600">Canberra B Mk 2 (GB)</option>
+<option value="halifax" data-spd="410" data-alt="6700">Halifax B Mk IIIa (GB)</option>
+<option value="stirl" data-spd="418" data-alt="5200">Stirling B Mk III (GB)</option>
+<option value="he111" data-spd="440" data-alt="8500">He 111 H-6 (DE)</option>
+<option value="do217" data-spd="510" data-alt="9000">Do 217 E-2 (DE)</option>
+<option value="ar234" data-spd="742" data-alt="10000">Ar 234 B-2 (DE)</option>
+<option value="me264" data-spd="560" data-alt="8000">Me 264 (DE)</option>
+<option value="ju88" data-spd="470" data-alt="8200">Ju 88 A-4 (DE)</option>
+<option value="ju87" data-spd="390" data-alt="8000">Ju 87 B-2 Stuka (DE)</option>
+<option value="g4m1" data-spd="428" data-alt="8900">G4M1 Betty (JP)</option>
+<option value="b7a2" data-spd="566" data-alt="10300">B7A2 Ryusei (JP)</option>
+</select></div>
+<div class="field"><label>BOMB TYPE</label><select id="bombType">
+<option value="fab9000" data-mass="9000" data-tnt="4297" data-lethal="79" data-dmg="158">FAB-9000M-54 (9000kg)</option>
+<option value="fab5000" data-mass="5000" data-tnt="2397" data-lethal="65" data-dmg="131">FAB-5000M-54 (5000kg)</option>
+<option value="fab3000" data-mass="3000" data-tnt="1400" data-lethal="55" data-dmg="110">FAB-3000M-46 (3000kg)</option>
+<option value="fab1500" data-mass="1500" data-tnt="700" data-lethal="43" data-dmg="86">FAB-1500M-46 (1500kg)</option>
+<option value="fab500" data-mass="500" data-tnt="213" data-lethal="28" data-dmg="57" selected>FAB-500M-62 (500kg)</option>
+<option value="fab250" data-mass="250" data-tnt="107" data-lethal="21" data-dmg="42">FAB-250M-62 (250kg)</option>
+<option value="ofab250" data-mass="250" data-tnt="97" data-lethal="19" data-dmg="39">OFAB-250-270 (250kg)</option>
+<option value="ofab100" data-mass="100" data-tnt="42" data-lethal="14" data-dmg="28">OFAB-100-120 (100kg)</option>
+<option value="an_m65" data-mass="454" data-tnt="240" data-lethal="30" data-dmg="60">AN-M65A1 1000lb (USA)</option>
+<option value="an_m64" data-mass="227" data-tnt="121" data-lethal="22" data-dmg="44">AN-M64A1 500lb (USA)</option>
+<option value="an_m66" data-mass="907" data-tnt="536" data-lethal="38" data-dmg="76">AN-M66A2 2000lb (USA)</option>
+<option value="gp1000" data-mass="454" data-tnt="172" data-lethal="26" data-dmg="52">GP 1000lb Mk.I (GB)</option>
+<option value="gp500" data-mass="227" data-tnt="94" data-lethal="20" data-dmg="40">GP 500lb Mk.IV (GB)</option>
+<option value="gp4000" data-mass="1814" data-tnt="1339" data-lethal="50" data-dmg="100">HC 4000lb Cookie (GB)</option>
+<option value="sc1000" data-mass="1000" data-tnt="530" data-lethal="36" data-dmg="72">SC 1000 Hermann (DE)</option>
+<option value="sc500" data-mass="500" data-tnt="260" data-lethal="28" data-dmg="56">SC 500 (DE)</option>
+<option value="sc250" data-mass="250" data-tnt="127" data-lethal="22" data-dmg="44">SC 250 (DE)</option>
+</select></div>
+<div class="field"><label>ALTITUDE</label><input type="number" id="altitude" value="3000" min="50" max="15000" step="50"><div class="hint">Metres above ground level</div></div>
+<div class="field"><label>AIRSPEED</label><input type="number" id="airspeed" value="400" min="50" max="2000" step="10"><div class="hint">km/h indicated airspeed</div></div>
+<div class="field"><label>DIVE ANGLE</label><input type="number" id="diveAngle" value="0" min="0" max="89" step="1"><div class="hint">0° = level, 45° = dive, 89° = vertical</div></div>
+</div>
+<button class="calc-btn" onclick="calculate()">★ CALCULATE DROP POINT ★</button>
+</div>
+<div class="result" id="result"></div>
+<div class="danger" id="danger"></div>
+<div class="chart-wrap" id="chartWrap"><canvas id="cv" width="760" height="320"></canvas></div>
+<div class="section-title">★ RECOMMENDED RELEASE ALTITUDES</div>
+<div class="alt-grid" id="altGrid"></div>
+<div class="section-title">★ BOMBING TIPS</div>
+<div class="tips">
+<div class="tips-title">★ ACCURATE BOMBING IN WAR THUNDER</div>
+<ul class="tip-list">
+<li><span class="ti">★</span>Level bombing is most accurate — fly straight and level for 3+ seconds before release so the bomb sight stabilises</li>
+<li><span class="ti">★</span>Use the bomb sight (default key: F7 in cockpit view) for high-altitude precision — align the crosshair on target and wait for the indicator</li>
+<li><span class="ti">★</span>For dive bombing, release between 800-1200m altitude and pull up immediately — any lower risks self-damage from your own blast</li>
+<li><span class="ti">★</span>Heavier bombs have longer fuse delays — FAB-9000 and FAB-5000 need extra altitude to avoid self-kill</li>
+<li><span class="ti">★</span>Wind doesn't affect bombs in War Thunder, but your aircraft's momentum carries the bomb forward — faster speed = release earlier</li>
+<li><span class="ti">★</span>For base bombing, drop all bombs in one pass rather than making multiple runs — you're vulnerable during each approach</li>
+<li><span class="ti">★</span>In ground RB, low-altitude bombing (200-500m) with smaller bombs is effective but requires pulling up hard after release</li>
+<li><span class="ti">★</span>Use a bomb delay fuse of 1.5-2 seconds for low-altitude drops to give yourself time to escape the blast</li>
+<li><span class="ti">★</span>CCRP (Continuously Computed Release Point) is available on modern jets — it automatically calculates the drop point for you</li>
+<li><span class="ti">★</span>When toss-bombing, pull up at 45° and release at the top of the arc for maximum standoff distance from the target</li>
+</ul>
+</div>
+</div>
+<footer>★ CALCULATIONS USE SIMPLIFIED BALLISTICS ★ ACTUAL RESULTS VARY IN-GAME ★</footer>
+<script>
+const G=9.81;
+// Auto-fill speed from aircraft
+document.getElementById("aircraft").addEventListener("change",function(){
+const opt=this.selectedOptions[0];
+document.getElementById("airspeed").value=Math.round(parseInt(opt.dataset.spd)*0.65); // cruise ~65% of max
+});
+
+function getBombData(){
+const opt=document.getElementById("bombType").selectedOptions[0];
+return{mass:parseInt(opt.dataset.mass),tnt:parseInt(opt.dataset.tnt),lethal:parseInt(opt.dataset.lethal),dmg:parseInt(opt.dataset.dmg),name:opt.textContent};
+}
+
+function calculate(){
+const alt=parseFloat(document.getElementById("altitude").value)||3000;
+const spdKmh=parseFloat(document.getElementById("airspeed").value)||400;
+const diveAngle=parseFloat(document.getElementById("diveAngle").value)||0;
+const bomb=getBombData();
+const aircraft=document.getElementById("aircraft").selectedOptions[0].textContent;
+
+const spdMs=spdKmh/3.6; // m/s
+const diveRad=diveAngle*Math.PI/180;
+const vx=spdMs*Math.cos(diveRad); // horizontal component
+const vy=spdMs*Math.sin(diveRad); // vertical component (downward)
+
+// Simplified drag coefficient based on bomb mass
+const Cd=0.3;const rho=1.1;const A=bomb.mass>2000?0.25:bomb.mass>500?0.15:0.1;
+const dragFactor=0.5*Cd*rho*A/bomb.mass;
+
+// Simulate trajectory with basic drag
+let x=0,y=alt,vxc=vx,vyc=vy;
+const dt=0.02;let t=0;
+const trajectory=[];
+trajectory.push({x:0,y:alt,t:0});
+
+while(y>0&&t<120){
+const speed=Math.sqrt(vxc*vxc+vyc*vyc);
+const drag=dragFactor*speed;
+vxc-=drag*vxc*dt;
+vyc+=G*dt;
+vyc-=drag*vyc*dt*0.3; // less drag vertically
+x+=vxc*dt;
+y-=vyc*dt;
+t+=dt;
+if(Math.floor(t*10)%2===0)trajectory.push({x,y:Math.max(0,y),t});
+}
+trajectory.push({x,y:0,t});
+
+const dropDist=Math.round(x);
+const timeOfFlight=t.toFixed(1);
+const impactSpeed=Math.round(Math.sqrt(vxc*vxc+vyc*vyc)*3.6);
+const impactAngle=Math.round(Math.atan2(vyc,vxc)*180/Math.PI);
+
+// Result
+const el=document.getElementById("result");
+el.className="result show";
+el.innerHTML=`<div class="result-banner">
+<div class="result-icon">💣</div>
+<div class="result-main">${dropDist}<span class="unit"> metres before target</span></div>
+<div class="result-sub">Release bomb ${dropDist}m before the target at ${alt}m altitude, ${spdKmh} km/h</div>
+</div>
+<div class="result-grid">
+<div class="rg"><div class="lbl">DROP DISTANCE</div><div class="val" style="color:var(--gold)">${dropDist}<span class="unit">m</span></div></div>
+<div class="rg"><div class="lbl">TIME OF FLIGHT</div><div class="val">${timeOfFlight}<span class="unit">s</span></div></div>
+<div class="rg"><div class="lbl">IMPACT SPEED</div><div class="val">${impactSpeed}<span class="unit">km/h</span></div></div>
+<div class="rg"><div class="lbl">IMPACT ANGLE</div><div class="val">${impactAngle}<span class="unit">°</span></div></div>
+<div class="rg"><div class="lbl">BOMB MASS</div><div class="val">${bomb.mass.toLocaleString()}<span class="unit">kg</span></div></div>
+<div class="rg"><div class="lbl">LETHAL RADIUS</div><div class="val" style="color:var(--red2)">${bomb.lethal}<span class="unit">m</span></div></div>
+<div class="rg"><div class="lbl">DAMAGE RADIUS</div><div class="val" style="color:var(--amber)">${bomb.dmg}<span class="unit">m</span></div></div>
+<div class="rg"><div class="lbl">TNT EQUIVALENT</div><div class="val">${bomb.tnt.toLocaleString()}<span class="unit">kg</span></div></div>
+</div>`;
+
+// Danger zone assessment
+const dg=document.getElementById("danger");
+const pullUpDist=spdMs*3; // ~3 seconds to pull up
+const blastReach=bomb.dmg;
+const safeAlt=blastReach*1.2+50; // need to be this high at detonation
+const timeToDetonation=parseFloat(timeOfFlight)+1.5; // typical fuse delay
+const altAtDetonation=alt-vy*timeToDetonation; // rough estimate staying in air
+const isSafe=alt>safeAlt*1.5;
+const isWarn=alt>safeAlt*0.8;
+
+let dgCls,dgIcon,dgTitle,dgText;
+if(isSafe){
+dgCls="safe";dgIcon="✅";dgTitle="SAFE ALTITUDE";
+dgText=`At ${alt}m, you are well above the ${bomb.dmg}m damage radius. Safe to drop without risk of self-damage. Minimum safe altitude for this bomb: ~${Math.round(safeAlt)}m.`;
+}else if(isWarn){
+dgCls="warn";dgIcon="⚠️";dgTitle="CAUTION — LOW ALTITUDE";
+dgText=`At ${alt}m, you are near the danger zone for the ${bomb.dmg}m blast radius. Use a 1.5-2s bomb delay fuse and pull up immediately after release. Begin pullup ${Math.round(pullUpDist)}m before the drop point.`;
+}else{
+dgCls="crit";dgIcon="💀";dgTitle="DANGER — SELF-DAMAGE RISK";
+dgText=`At ${alt}m with a ${bomb.dmg}m damage radius, you WILL damage yourself if you don't pull away fast enough. Minimum safe altitude: ~${Math.round(safeAlt)}m. Use maximum bomb delay (2s+) and pull up hard immediately. Consider climbing before dropping.`;
+}
+dg.className="danger show "+dgCls;
+dg.innerHTML=`<div class="danger-header"><span class="danger-icon">${dgIcon}</span><span class="danger-title" style="color:${dgCls==="safe"?"var(--green)":dgCls==="warn"?"var(--amber)":"var(--red2)"}">${dgTitle}</span></div><div class="danger-text">${dgText}</div>`;
+
+// Draw trajectory
+drawTrajectory(trajectory,alt,dropDist,bomb,aircraft,spdKmh,diveAngle);
+
+// Recommended altitudes for this bomb
+renderAltGrid(bomb,spdKmh);
+}
+
+function drawTrajectory(traj,alt,dropDist,bomb,aircraft,speed,dive){
+const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
+const w=cv.width,h=cv.height;
+ctx.clearRect(0,0,w,h);
+const pad={l:50,r:20,t:30,b:40};
+const pw=w-pad.l-pad.r,ph=h-pad.t-pad.b;
+
+// Determine scale
+const maxX=Math.max(dropDist*1.2,500);
+const maxY=Math.max(alt*1.15,500);
+const sx=pw/maxX,sy=ph/maxY;
+
+function toScreen(mx,my){return{x:pad.l+mx*sx,y:pad.t+ph-my*sy}}
+
+// Grid
+ctx.strokeStyle="rgba(255,255,255,.03)";ctx.lineWidth=1;
+for(let gx=0;gx<=maxX;gx+=Math.pow(10,Math.floor(Math.log10(maxX)))/2){
+const p=toScreen(gx,0);ctx.beginPath();ctx.moveTo(p.x,pad.t);ctx.lineTo(p.x,pad.t+ph);ctx.stroke();
+ctx.fillStyle="rgba(255,255,255,.15)";ctx.font="8px sans-serif";ctx.textAlign="center";
+ctx.fillText(Math.round(gx)+"m",p.x,pad.t+ph+12);
+}
+for(let gy=0;gy<=maxY;gy+=Math.pow(10,Math.floor(Math.log10(maxY)))/2){
+const p=toScreen(0,gy);ctx.beginPath();ctx.moveTo(pad.l,p.y);ctx.lineTo(pad.l+pw,p.y);ctx.stroke();
+ctx.fillStyle="rgba(255,255,255,.15)";ctx.font="8px sans-serif";ctx.textAlign="right";
+ctx.fillText(Math.round(gy)+"m",pad.l-4,p.y+3);
+}
+
+// Ground
+const gnd=toScreen(0,0);
+ctx.fillStyle="rgba(60,80,40,0.15)";ctx.fillRect(pad.l,gnd.y,pw,pad.b);
+ctx.strokeStyle="rgba(100,140,60,0.3)";ctx.lineWidth=2;
+ctx.beginPath();ctx.moveTo(pad.l,gnd.y);ctx.lineTo(pad.l+pw,gnd.y);ctx.stroke();
+
+// Blast radius at impact
+const impactX=traj[traj.length-1].x;
+const ip=toScreen(impactX,0);
+// Damage radius circle
+const dmgR=bomb.dmg*sx;const letR=bomb.lethal*sx;
+ctx.beginPath();ctx.arc(ip.x,ip.y,Math.min(dmgR,pw/3),0,Math.PI,true);
+ctx.fillStyle="rgba(255,152,0,0.08)";ctx.fill();
+ctx.strokeStyle="rgba(255,152,0,0.3)";ctx.lineWidth=1;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
+ctx.beginPath();ctx.arc(ip.x,ip.y,Math.min(letR,pw/4),0,Math.PI,true);
+ctx.fillStyle="rgba(255,34,34,0.1)";ctx.fill();
+ctx.strokeStyle="rgba(255,34,34,0.4)";ctx.lineWidth=1.5;ctx.stroke();
+// Impact X
+ctx.font="bold 10px sans-serif";ctx.textAlign="center";ctx.fillStyle="rgba(255,34,34,0.6)";
+ctx.fillText("✕ IMPACT",ip.x,ip.y+14);
+
+// Target marker
+ctx.fillStyle="rgba(255,255,255,0.3)";ctx.fillText("TARGET",ip.x,ip.y-8);
+
+// Trajectory arc
+ctx.beginPath();ctx.strokeStyle="rgba(212,160,23,0.7)";ctx.lineWidth=2.5;
+traj.forEach((p,i)=>{
+const s=toScreen(p.x,p.y);
+i===0?ctx.moveTo(s.x,s.y):ctx.lineTo(s.x,s.y);
+});
+ctx.stroke();
+
+// Trajectory dots at intervals
+const dotInterval=Math.max(1,Math.floor(traj.length/12));
+traj.forEach((p,i)=>{
+if(i%dotInterval===0&&i>0&&i<traj.length-1){
+const s=toScreen(p.x,p.y);
+ctx.beginPath();ctx.arc(s.x,s.y,2.5,0,Math.PI*2);
+ctx.fillStyle="rgba(212,160,23,0.5)";ctx.fill();
+}
+});
+
+// Aircraft icon at release point
+const ap=toScreen(0,alt);
+ctx.font="16px sans-serif";ctx.textAlign="center";
+ctx.fillText("✈",ap.x,ap.y-4);
+ctx.font="bold 8px sans-serif";ctx.fillStyle="rgba(255,255,255,0.4)";
+ctx.fillText("RELEASE",ap.x,ap.y-18);
+ctx.fillText(alt+"m",ap.x,ap.y+14);
+
+// Aircraft path (continues forward)
+ctx.setLineDash([4,4]);ctx.strokeStyle="rgba(255,255,255,0.1)";ctx.lineWidth=1;
+ctx.beginPath();ctx.moveTo(ap.x,ap.y);
+const endP=toScreen(dropDist*1.3,alt-dropDist*1.3*Math.tan(dive*Math.PI/180));
+ctx.lineTo(Math.min(endP.x,pad.l+pw),Math.max(endP.y,pad.t));
+ctx.stroke();ctx.setLineDash([]);
+
+// Drop distance annotation
+const annY=gnd.y+28;
+ctx.strokeStyle="rgba(212,160,23,0.4)";ctx.lineWidth=1;
+ctx.beginPath();ctx.moveTo(ap.x,annY-4);ctx.lineTo(ap.x,annY+4);ctx.stroke();
+ctx.beginPath();ctx.moveTo(ip.x,annY-4);ctx.lineTo(ip.x,annY+4);ctx.stroke();
+ctx.beginPath();ctx.moveTo(ap.x,annY);ctx.lineTo(ip.x,annY);ctx.stroke();
+ctx.font="bold 9px sans-serif";ctx.fillStyle="rgba(212,160,23,0.7)";ctx.textAlign="center";
+ctx.fillText(dropDist+"m",ap.x+(ip.x-ap.x)/2,annY-5);
+
+// Legend
+ctx.font="8px sans-serif";ctx.textAlign="left";
+ctx.fillStyle="rgba(255,34,34,0.5)";ctx.fillText("● Lethal: "+bomb.lethal+"m",pad.l+4,pad.t+10);
+ctx.fillStyle="rgba(255,152,0,0.5)";ctx.fillText("● Damage: "+bomb.dmg+"m",pad.l+4,pad.t+20);
+ctx.fillStyle="rgba(212,160,23,0.5)";ctx.fillText("━ Bomb trajectory",pad.l+pw-80,pad.t+10);
+}
+
+function renderAltGrid(bomb,speed){
+const alts=[500,1000,2000,3000,4000,5000,7000,10000];
+const el=document.getElementById("altGrid");
+const safeMin=Math.round(bomb.dmg*1.2+50);
+el.innerHTML=alts.map(a=>{
+const spdMs=speed/3.6;
+const tFall=Math.sqrt(2*a/G);
+const dist=Math.round(spdMs*tFall);
+const safe=a>=safeMin;
+const col=a<safeMin*0.6?"var(--red2)":a<safeMin?"var(--amber)":"var(--green)";
+return`<div class="alt-card"><div class="alt-name">${a.toLocaleString()}m altitude</div><div class="alt-val" style="color:${col}">${dist.toLocaleString()}m</div><div class="alt-sub">${tFall.toFixed(1)}s flight • ${safe?"Safe":"⚠ Low"}</div></div>`}).join("");
+}
+
+// Auto-calculate on load and input changes
+["aircraft","bombType","altitude","airspeed","diveAngle"].forEach(id=>{
+const el=document.getElementById(id);
+el.addEventListener("input",calculate);el.addEventListener("change",calculate);
+});
+calculate();
+</script>
+</body>
+</html>
