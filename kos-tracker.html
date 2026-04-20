@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>WT KOS Tracker</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0e10;--bg2:#1a1c20;--bg3:#222528;--border:#2a2c30;--red:#cc0000;--red2:#ff2222;--red-glow:rgba(204,0,0,.3);--gold:#d4a017;--text:#e0ddd8;--text2:#888;--text3:#555;--green:#4caf50;--amber:#ff9800;--blue:#4a9eff}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{text-align:center;padding:20px 16px 12px;border-bottom:2px solid var(--red);background:linear-gradient(180deg,rgba(204,0,0,.08),transparent)}
+header h1{font-size:1.6rem;color:var(--red2);text-shadow:0 0 20px var(--red-glow);letter-spacing:.05em}
+header .star{color:var(--gold);font-size:1.2rem}
+header p{color:var(--text2);font-size:.78rem;margin-top:4px;letter-spacing:.08em}
+.container{max-width:700px;margin:0 auto;padding:16px}
+.add-section{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px}
+.add-title{font-size:.75rem;color:var(--text2);letter-spacing:.1em;margin-bottom:12px}
+.form-row{display:flex;gap:8px;margin-bottom:10px}
+.form-row input{flex:1;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.88rem;outline:none}
+.form-row input:focus{border-color:var(--red)}
+.form-row input::placeholder{color:var(--text3)}
+.reason-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.reason-btn{padding:8px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:.78rem;cursor:pointer;transition:all .15s;flex:1;min-width:100px;text-align:center}
+.reason-btn:hover{border-color:var(--text3)}
+.reason-btn.active{background:rgba(204,0,0,.15);border-color:var(--red);color:var(--red2)}
+.reason-btn .ri{margin-right:4px}
+.kos-btn{width:100%;padding:14px;background:linear-gradient(180deg,#dd0000,#990000);border:2px solid var(--red2);border-radius:8px;color:#fff;font-size:1.1rem;font-weight:700;cursor:pointer;letter-spacing:.1em;text-shadow:0 1px 4px rgba(0,0,0,.5);transition:all .15s;text-transform:uppercase}
+.kos-btn:hover{background:linear-gradient(180deg,#ee1111,#aa0000);box-shadow:0 0 20px var(--red-glow)}
+.kos-btn:active{transform:scale(.98)}
+.kos-btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+.stats-bar{display:flex;gap:8px;margin-bottom:12px}
+.stat-card{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center}
+.stat-card .num{font-size:1.5rem;font-weight:700}
+.stat-card .num.red{color:var(--red2)}
+.stat-card .num.amber{color:var(--amber)}
+.stat-card .num.green{color:var(--green)}
+.stat-card .lbl{font-size:.6rem;color:var(--text3);letter-spacing:.08em;margin-top:2px}
+.list-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.list-title{font-size:.85rem;color:var(--red2);letter-spacing:.08em;flex:1}
+.search-filter{padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;outline:none;width:200px}
+.search-filter:focus{border-color:var(--red)}
+.search-filter::placeholder{color:var(--text3)}
+.filter-btns{display:flex;gap:4px;margin-bottom:10px}
+.fbtn{padding:4px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text3);font-size:.68rem;cursor:pointer;transition:all .15s}
+.fbtn.active{border-color:var(--gold);color:var(--gold)}
+.kos-list{display:flex;flex-direction:column;gap:6px}
+.kos-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;animation:slideIn .2s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.kos-card.warned{border-left:3px solid var(--amber)}
+.kos-card.banned{border-left:3px solid var(--red2);background:rgba(255,34,34,.04)}
+.kos-card.active-kos{border-left:3px solid var(--gold)}
+.kc-top{display:flex;align-items:center;gap:10px;padding:10px 12px}
+.kc-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.kc-status.kos{background:var(--red2);box-shadow:0 0 6px var(--red-glow)}
+.kc-status.warned{background:var(--amber)}
+.kc-status.banned{background:var(--red2);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,34,34,.5)}50%{box-shadow:0 0 0 5px rgba(255,34,34,0)}}
+.kc-name{font-weight:700;font-size:.95rem;flex:1}
+.kc-reason-badge{font-size:.65rem;padding:2px 8px;border-radius:3px;font-weight:600;flex-shrink:0}
+.kc-reason-badge.teamkill{background:rgba(255,34,34,.15);color:var(--red2);border:1px solid rgba(255,34,34,.3)}
+.kc-reason-badge.spawncamp{background:rgba(255,140,0,.15);color:var(--amber);border:1px solid rgba(255,140,0,.3)}
+.kc-reason-badge.general{background:rgba(212,160,23,.15);color:var(--gold);border:1px solid rgba(212,160,23,.3)}
+.kc-bottom{display:flex;align-items:center;gap:6px;padding:4px 12px 10px;flex-wrap:wrap}
+.kc-time{font-size:.68rem;color:var(--text3);flex:1}
+.kc-status-label{font-size:.62rem;padding:2px 6px;border-radius:3px;font-weight:600}
+.kc-status-label.s-kos{background:rgba(255,34,34,.1);color:var(--red2)}
+.kc-status-label.s-warned{background:rgba(255,140,0,.1);color:var(--amber)}
+.kc-status-label.s-banned{background:rgba(255,34,34,.2);color:var(--red2)}
+.kc-actions{display:flex;gap:4px}
+.kc-act{padding:4px 10px;border-radius:4px;font-size:.68rem;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);transition:all .15s}
+.kc-act:hover{border-color:var(--text3);color:var(--text)}
+.kc-act.warn{color:var(--amber);border-color:rgba(255,140,0,.3)}
+.kc-act.warn:hover{background:rgba(255,140,0,.1)}
+.kc-act.ban{color:var(--red2);border-color:rgba(255,34,34,.3)}
+.kc-act.ban:hover{background:rgba(255,34,34,.1)}
+.kc-act.remove{color:var(--text3)}
+.kc-act.remove:hover{color:var(--red2);border-color:var(--red)}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty-state .big{font-size:2.5rem;margin-bottom:8px}
+.empty-state p{font-size:.82rem}
+.session-note{text-align:center;padding:8px;font-size:.68rem;color:var(--text3);background:var(--bg2);border:1px solid var(--border);border-radius:6px;margin-bottom:16px}
+.session-note span{color:var(--amber)}
+.hammer{opacity:.04;position:fixed;bottom:-40px;right:-40px;font-size:18rem;pointer-events:none;z-index:0}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:10px 20px;border-radius:6px;font-size:.82rem;font-weight:600;z-index:100;animation:toastIn .3s ease,toastOut .3s ease 1.7s forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(-50%) translateY(10px)}}
+footer{text-align:center;padding:20px;color:var(--text2);font-size:.68rem;border-top:1px solid var(--border);margin-top:24px;letter-spacing:.06em}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--red);border-radius:3px}
+@media(max-width:500px){.form-row{flex-direction:column}.search-filter{width:100%}.list-header{flex-direction:column;align-items:stretch}.stats-bar{flex-wrap:wrap}.stat-card{min-width:calc(50% - 4px)}}
+</style>
+</head>
+<body>
+<div class="hammer">☭</div>
+<header>
+<div><span class="star">★</span> <span class="star">★</span> <span class="star">★</span></div>
+<h1>WT KOS TRACKER</h1>
+<p>CUSTOM BATTLE KILL-ON-SIGHT LIST</p>
+</header>
+<div class="container">
+<div class="session-note"><span>⚠</span> Session-based — list resets when you close this page</div>
+<div class="add-section">
+<div class="add-title">★ ADD PLAYER TO KOS LIST</div>
+<div class="form-row">
+<input type="text" id="nameInput" placeholder="Player name..." maxlength="32">
+</div>
+<div class="reason-row">
+<div class="reason-btn active" data-r="teamkill" onclick="setReason(this)"><span class="ri">✕</span>Teamkill</div>
+<div class="reason-btn" data-r="spawncamp" onclick="setReason(this)"><span class="ri">⊘</span>Spawn Camp</div>
+<div class="reason-btn" data-r="general" onclick="setReason(this)"><span class="ri">⚑</span>General KOS</div>
+</div>
+<button class="kos-btn" id="addBtn" onclick="addKOS()" disabled>★ ADD TO KOS LIST ★</button>
+</div>
+<div class="stats-bar">
+<div class="stat-card"><div class="num red" id="totalCount">0</div><div class="lbl">TOTAL KOS</div></div>
+<div class="stat-card"><div class="num amber" id="warnedCount">0</div><div class="lbl">WARNED</div></div>
+<div class="stat-card"><div class="num green" id="bannedCount">0</div><div class="lbl">BANNED</div></div>
+</div>
+<div class="list-header">
+<div class="list-title">★ KOS LIST</div>
+<input type="text" class="search-filter" id="searchFilter" placeholder="Search players..." oninput="render()">
+</div>
+<div class="filter-btns">
+<div class="fbtn active" data-f="all" onclick="setFilter(this)">All</div>
+<div class="fbtn" data-f="kos" onclick="setFilter(this)">KOS</div>
+<div class="fbtn" data-f="warned" onclick="setFilter(this)">Warned</div>
+<div class="fbtn" data-f="banned" onclick="setFilter(this)">Banned</div>
+<div class="fbtn" data-f="teamkill" onclick="setFilter(this)">Teamkill</div>
+<div class="fbtn" data-f="spawncamp" onclick="setFilter(this)">Spawn Camp</div>
+</div>
+<div class="kos-list" id="kosList"></div>
+</div>
+<footer>★ JUSTICE IS SERVED ★ CUSTOM BATTLES ONLY ★</footer>
+<script>
+let players=[];
+let reason="teamkill";
+let filter="all";
+const nameInput=document.getElementById("nameInput");
+const addBtn=document.getElementById("addBtn");
+
+nameInput.addEventListener("input",()=>{addBtn.disabled=!nameInput.value.trim()});
+nameInput.addEventListener("keydown",e=>{if(e.key==="Enter"&&nameInput.value.trim())addKOS()});
+
+function setReason(el){
+document.querySelectorAll(".reason-btn").forEach(b=>b.classList.remove("active"));
+el.classList.add("active");reason=el.dataset.r;
+}
+
+function setFilter(el){
+document.querySelectorAll(".fbtn").forEach(b=>b.classList.remove("active"));
+el.classList.add("active");filter=el.dataset.f;render();
+}
+
+function addKOS(){
+const name=nameInput.value.trim();
+if(!name)return;
+if(players.some(p=>p.name.toLowerCase()===name.toLowerCase())){toast("Player already on KOS list!");return}
+players.unshift({name,reason,status:"kos",time:new Date()});
+nameInput.value="";addBtn.disabled=true;nameInput.focus();
+toast("★ "+name+" added to KOS list");render();
+}
+
+function setStatus(i,s){
+players[i].status=s;
+toast(players[i].name+" marked as "+s.toUpperCase());render();
+}
+
+function removePlayer(i){
+const name=players[i].name;
+players.splice(i,1);
+toast(name+" removed from KOS list");render();
+}
+
+function render(){
+const q=document.getElementById("searchFilter").value.toLowerCase().trim();
+let list=players.map((p,i)=>({...p,idx:i}));
+if(q)list=list.filter(p=>p.name.toLowerCase().includes(q));
+if(filter==="kos")list=list.filter(p=>p.status==="kos");
+else if(filter==="warned")list=list.filter(p=>p.status==="warned");
+else if(filter==="banned")list=list.filter(p=>p.status==="banned");
+else if(filter==="teamkill")list=list.filter(p=>p.reason==="teamkill");
+else if(filter==="spawncamp")list=list.filter(p=>p.reason==="spawncamp");
+
+const el=document.getElementById("kosList");
+if(!list.length){
+el.innerHTML=players.length?'<div class="empty-state"><div class="big">⌕</div><p>No players match this filter</p></div>'
+:'<div class="empty-state"><div class="big">☮</div><p>No players on KOS list yet.<br>Add a player above to get started.</p></div>';
+}else{
+el.innerHTML=list.map(p=>{
+const t=p.time;
+const ts=t.getHours().toString().padStart(2,"0")+":"+t.getMinutes().toString().padStart(2,"0")+":"+t.getSeconds().toString().padStart(2,"0");
+const cardCls=p.status==="warned"?"warned":p.status==="banned"?"banned":"active-kos";
+const statusLbl=p.status==="kos"?"s-kos":p.status==="warned"?"s-warned":"s-banned";
+const statusTxt=p.status==="kos"?"KOS":p.status==="warned"?"WARNED":"BANNED";
+const reasonLabel=p.reason==="teamkill"?"TEAMKILL":p.reason==="spawncamp"?"SPAWN CAMP":"GENERAL KOS";
+return`<div class="kos-card ${cardCls}">
+<div class="kc-top">
+<div class="kc-status ${p.status}"></div>
+<div class="kc-name">${esc(p.name)}</div>
+<span class="kc-reason-badge ${p.reason}">${reasonLabel}</span>
+</div>
+<div class="kc-bottom">
+<div class="kc-time">Added ${ts}</div>
+<span class="kc-status-label ${statusLbl}">${statusTxt}</span>
+<div class="kc-actions">
+${p.status!=="warned"?`<div class="kc-act warn" onclick="setStatus(${p.idx},'warned')">Warn</div>`:""}
+${p.status!=="banned"?`<div class="kc-act ban" onclick="setStatus(${p.idx},'banned')">Ban</div>`:""}
+${p.status!=="kos"?`<div class="kc-act" onclick="setStatus(${p.idx},'kos')">Reset</div>`:""}
+<div class="kc-act remove" onclick="removePlayer(${p.idx})">✕</div>
+</div>
+</div>
+</div>`}).join("");
+}
+document.getElementById("totalCount").textContent=players.length;
+document.getElementById("warnedCount").textContent=players.filter(p=>p.status==="warned").length;
+document.getElementById("bannedCount").textContent=players.filter(p=>p.status==="banned").length;
+}
+
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML}
+
+function toast(msg){
+const old=document.querySelector(".toast");if(old)old.remove();
+const t=document.createElement("div");t.className="toast";t.textContent=msg;
+document.body.appendChild(t);setTimeout(()=>t.remove(),2000);
+}
+
+render();
+</script>
+</body>
+</html>
