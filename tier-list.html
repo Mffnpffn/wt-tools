@@ -34,9 +34,28 @@ header p{color:var(--text2);font-size:.78rem;margin-top:4px;letter-spacing:.08em
 .nc-flag{font-size:1.6rem;margin-bottom:2px}
 .nc-name{font-size:.65rem;font-weight:600;letter-spacing:.04em}
 .nc-verdict{font-size:.55rem;color:var(--text3);margin-top:3px;line-height:1.2;min-height:22px}
-.nc-reason{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:.68rem;color:var(--text2);width:180px;z-index:50;text-align:left;line-height:1.4;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.6)}
-.nation-card:hover .nc-reason{display:block}
-.nc-reason::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--border)}
+.nation-card.selected{border-color:var(--red);box-shadow:0 0 12px var(--red-glow)}
+.detail-panel{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;display:none;animation:fadeIn .25s ease}
+.detail-panel.show{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.dp-header{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.dp-flag{font-size:2rem}
+.dp-info{flex:1}
+.dp-name{font-size:1.1rem;font-weight:700}
+.dp-tier{font-size:.75rem;font-weight:700;margin-top:2px}
+.dp-close{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text3);cursor:pointer;font-size:.9rem;flex-shrink:0}
+.dp-close:hover{color:var(--red2);border-color:var(--red)}
+.dp-verdict{padding:12px 16px;background:rgba(212,160,23,.06);border-bottom:1px solid var(--border);font-size:.85rem;color:var(--gold);font-weight:600}
+.dp-body{padding:14px 16px}
+.dp-section{margin-bottom:12px}
+.dp-section:last-child{margin-bottom:0}
+.dp-section-title{font-size:.65rem;color:var(--text3);letter-spacing:.1em;margin-bottom:6px}
+.dp-reason{font-size:.82rem;color:var(--text2);line-height:1.6}
+.dp-tags{display:flex;gap:6px;flex-wrap:wrap}
+.dp-tag{font-size:.68rem;padding:4px 10px;border-radius:4px;border:1px solid var(--border)}
+.dp-tag.strength{background:rgba(76,175,80,.08);border-color:rgba(76,175,80,.25);color:var(--green)}
+.dp-tag.weakness{background:rgba(255,34,34,.06);border-color:rgba(255,34,34,.2);color:var(--red2)}
+.dp-tag.vehicle{background:rgba(74,158,255,.06);border-color:rgba(74,158,255,.2);color:var(--blue)}
 .section-title{font-size:.78rem;color:var(--red2);letter-spacing:.08em;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
 .legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:.68rem;color:var(--text2)}
@@ -75,7 +94,8 @@ footer{text-align:center;padding:20px;color:var(--text2);font-size:.68rem;border
 <div class="act-btn" onclick="shareTierList()">📋 Share as Text</div>
 </div>
 <div class="tier-container" id="tierContainer"></div>
-<div class="section-title">★ HOVER OVER A NATION FOR DETAILED REASONING</div>
+<div class="detail-panel" id="detailPanel"></div>
+<div class="section-title">★ TAP A NATION CARD FOR DETAILED BREAKDOWN</div>
 </div>
 <footer>★ RANKINGS BASED ON COMMUNITY CONSENSUS ★ DRAG NATIONS TO CUSTOMIZE ★</footer>
 <script>
@@ -94,16 +114,16 @@ B:["Britain","Israel","China"],
 C:["France","Japan"],
 D:["Italy"],
 data:{
-USSR:{verdict:"Best all-rounders with unmatched SPAA",reason:"T-80BVM and T-90M are extremely competitive with small profiles and autoloaded guns. Pantsir-S1 is the best SPAA in the game. Strong lineup depth from 9.3 to 12.0 with T-72s, T-80s, and BMP-2M."},
-Germany:{verdict:"Top tier MBTs with best armour in game",reason:"Leopard 2A7V has among the best turret armour and DM53 round. Excellent lineup depth with 2A6, 2A5, PUMA IFV. Strong at all ranges. FlakRakPz and other SPAA are decent."},
-USA:{verdict:"Strong MBTs with excellent survivability",reason:"M1A2 SEP V2 has great armour and blowout panels for crew survival. Deep lineup with multiple Abrams variants. Good helicopter support with AH-64D. Weakened by large profile."},
-Sweden:{verdict:"Strv 122s are mini-Leopards with better armour",reason:"Strv 122B+ has extra armour over the Leopard 2A5 base. CV90120 is a great light tank. Limited lineup depth compared to big three but quality over quantity."},
-Britain:{verdict:"Challenger 3 improved things but still slow",reason:"Challenger 3 TD is competitive but all Challengers are slow with poor reverse. Good APFSDS rounds but lack mobility meta. Limited helicopter options."},
-Israel:{verdict:"Merkava 4M is solid with good protection",reason:"Merkava Mk.4M has excellent turret armour and LAHAT ATGMs. Engine-in-front design protects crew but catches fire easily. Limited lineup beyond Merkavas."},
-China:{verdict:"Copies of Russian vehicles with slight tweaks",reason:"ZTZ99A and VT4A1 are competitive but not best in class. Limited SPAA options hurt badly. Essentially Russian vehicles without the Pantsir-S1."},
-France:{verdict:"Leclercs are fast but poorly armoured",reason:"Leclerc SXXI has great gun handling and speed but armour is below average. No stabiliser issues. Limited lineup depth and weak helicopter options."},
-Japan:{verdict:"Type 10 is mobile but fragile",reason:"Type 10 has excellent gun and mobility but paper-thin armour. Very limited lineup — essentially 3 MBTs and a Type 93 SPAA. No attack helicopters worth using."},
-Italy:{verdict:"Ariete AMV struggles against meta MBTs",reason:"Ariete variants have average armour and firepower. CL3143 round is good but platform is mediocre. Centauro wheeled vehicles are fun but not competitive at top tier."}
+USSR:{verdict:"Best all-rounders with unmatched SPAA",reason:"T-80BVM and T-90M are extremely competitive with small profiles and autoloaded guns. Pantsir-S1 is the best SPAA in the game. Strong lineup depth from 9.3 to 12.0 with T-72s, T-80s, and BMP-2M.",vehicles:["T-90M","T-80BVM","T-80U","BMP-2M","Pantsir-S1"],strengths:["Best SPAA in game","Small turret profiles","Deep lineup 9.3–12.0","Autoloaded 125mm guns"],weaknesses:["Poor gun depression","Ammo carousel detonations","Reverse speed"]},
+Germany:{verdict:"Top tier MBTs with best armour in game",reason:"Leopard 2A7V has among the best turret armour and DM53 round. Excellent lineup depth with 2A6, 2A5, PUMA IFV. Strong at all ranges. FlakRakPz and other SPAA are decent.",vehicles:["Leopard 2A7V","Leopard 2A6","Leopard 2A5","PUMA IFV","FlakRakPz 1"],strengths:["Best turret armour","DM53 top-tier round","Great gun handling","Strong lineup depth"],weaknesses:["Weak lower front plate","Large hull profiles","SPAA not best"]},
+USA:{verdict:"Strong MBTs with excellent survivability",reason:"M1A2 SEP V2 has great armour and blowout panels for crew survival. Deep lineup with multiple Abrams variants. Good helicopter support with AH-64D. Weakened by large profile.",vehicles:["M1A2 SEP V2","M1A2 SEP","M1A1 HC","AH-64D","M247"],strengths:["Blowout panels save crew","Excellent gun depression","Deep Abrams lineup","Strong CAS helis"],weaknesses:["Huge silhouette","Turret ring weak spot","Below-average SPAA"]},
+Sweden:{verdict:"Strv 122s are mini-Leopards with better armour",reason:"Strv 122B+ has extra armour over the Leopard 2A5 base. CV90120 is a great light tank. Limited lineup depth compared to big three but quality over quantity.",vehicles:["Strv 122B+","Strv 122","CV 90120","CV 90105"],strengths:["Extra armour vs Leopard 2A5","Quality over quantity","CV90 light tanks"],weaknesses:["Very limited lineup","No competitive SPAA","Few backup options"]},
+Britain:{verdict:"Challenger 3 improved things but still slow",reason:"Challenger 3 TD is competitive but all Challengers are slow with poor reverse. Good APFSDS rounds but lack mobility meta. Limited helicopter options.",vehicles:["Challenger 3 TD","Challenger 2 TES","Challenger 2 OES","Apache AH Mk.1"],strengths:["Strong turret armour","Good APFSDS rounds","Decent CAS Apache"],weaknesses:["Terrible reverse speed","Poor mobility overall","Limited lineup depth"]},
+Israel:{verdict:"Merkava 4M is solid with good protection",reason:"Merkava Mk.4M has excellent turret armour and LAHAT ATGMs. Engine-in-front design protects crew but catches fire easily. Limited lineup beyond Merkavas.",vehicles:["Merkava Mk.4M","Merkava Mk.4","Merkava Mk.3D","AH-64A Peten"],strengths:["Engine absorbs frontal shots","LAHAT gun-launched ATGMs","Good turret armour"],weaknesses:["Catches fire constantly","Limited lineup options","No domestic SPAA"]},
+China:{verdict:"Copies of Russian vehicles with slight tweaks",reason:"ZTZ99A and VT4A1 are competitive but not best in class. Limited SPAA options hurt badly. Essentially Russian vehicles without the Pantsir-S1.",vehicles:["ZTZ99A","VT4A1","ZTZ99A-III","PGZ09"],strengths:["Competitive MBTs","Russian-style armour layout","Decent gun performance"],weaknesses:["No Pantsir equivalent","Limited SPAA","Fewer lineup options than USSR"]},
+France:{verdict:"Leclercs are fast but poorly armoured",reason:"Leclerc SXXI has great gun handling and speed but armour is below average. No stabiliser issues. Limited lineup depth and weak helicopter options.",vehicles:["Leclerc SXXI","Leclerc S2","Leclerc","Tiger HAD"],strengths:["Excellent mobility","Fast reload","Good gun handling"],weaknesses:["Below-average armour","Thin lineup","Weak SPAA options"]},
+Japan:{verdict:"Type 10 is mobile but fragile",reason:"Type 10 has excellent gun and mobility but paper-thin armour. Very limited lineup — essentially 3 MBTs and a Type 93 SPAA. No attack helicopters worth using.",vehicles:["Type 10","TKX","Type 90","Type 93"],strengths:["Great gun and mobility","Excellent reload speed","Low profile"],weaknesses:["Paper-thin armour","Only 3 top MBTs","Useless attack helis"]},
+Italy:{verdict:"Ariete AMV struggles against meta MBTs",reason:"Ariete variants have average armour and firepower. CL3143 round is good but platform is mediocre. Centauro wheeled vehicles are fun but not competitive at top tier.",vehicles:["Ariete AMV","Ariete PSO","Centauro I 120","SIDAM 25"],strengths:["CL3143 is a good round","Centauro flanking ability"],weaknesses:["Mediocre armour","Thin lineup","SPAA is outdated","Outclassed by all S/A tier"]}
 }},
 air:{
 S:["USA","USSR"],
@@ -112,16 +132,16 @@ B:["Germany","France"],
 C:["Japan","Israel","China"],
 D:["Italy"],
 data:{
-USA:{verdict:"F-16C and F/A-18E dominate with best missiles",reason:"F/A-18E Super Hornet and F-16C have excellent radar missiles and dogfight capability. F-14B has Phoenix missiles for BVR. Deepest top tier fighter lineup in the game."},
-USSR:{verdict:"Su-27 and MiG-29SMT are deadly flankers",reason:"Su-27 has incredible flight performance and R-27ER missiles. Su-30MK2 adds multipathing resistance. MiG-29SMT is a strong all-rounder. Su-25T for ground attack."},
-Britain:{verdict:"Gripen and Typhoon give excellent options",reason:"Eurofighter Typhoon is extremely competitive with AMRAAM equivalents. Gripen is agile with great missiles. Tornado F.3 for longer-range engagements. Good variety."},
-Sweden:{verdict:"JAS39C Gripen is one of the best dogfighters",reason:"Gripen has incredible agility and good missile loadout. Limited to essentially one top tier airframe but it's an excellent one. Good for players who master one plane."},
-Germany:{verdict:"Eurofighter is strong but limited backup options",reason:"Eurofighter Typhoon is top tier competitive. MiG-29 provides a backup. Tornado IDS for ground attack. Less depth than USA or USSR."},
-France:{verdict:"Rafale C is competitive with good missiles",reason:"Rafale C is an excellent dogfighter with MICA missiles. Mirage 4000 provides backup. Jaguar for ground attack. Solid but not as deep as S-tier nations."},
-Japan:{verdict:"F-15J is capable but lineup is thin",reason:"F-15J and F-2A are both competitive fighters. Limited to two real options at top tier. No dedicated ground attacker. Quality is there but quantity isn't."},
-Israel:{verdict:"F-15A Baz and F-16D are solid but aging",reason:"Both fighters are competitive but facing newer airframes. Kfir C.7 is a decent backup. No domestic designs — all imported airframes."},
-China:{verdict:"J-11A is a Su-27 copy that gets the job done",reason:"J-11A matches Su-27 performance with similar missiles. J-8B at lower BR is unique. Limited options overall. Essentially flying Russian jets."},
-Italy:{verdict:"Eurofighter helps but historically weak air tree",reason:"Eurofighter Typhoon finally gives Italy a competitive top tier fighter. Before that, Tornado ADV was the best option. Very thin tree overall."}
+USA:{verdict:"F-16C and F/A-18E dominate with best missiles",reason:"F/A-18E Super Hornet and F-16C have excellent radar missiles and dogfight capability. F-14B has Phoenix missiles for BVR. Deepest top tier fighter lineup in the game.",vehicles:["F/A-18E","F-16C","F-14B","F-15C","A-10A Late"],strengths:["Deepest fighter lineup","Best BVR missiles","Excellent dogfighters","Strong CAS options"],weaknesses:["Popular = always fighting mirrors","Some airframes aging"]},
+USSR:{verdict:"Su-27 and MiG-29SMT are deadly flankers",reason:"Su-27 has incredible flight performance and R-27ER missiles. Su-30MK2 adds multipathing resistance. MiG-29SMT is a strong all-rounder. Su-25T for ground attack.",vehicles:["Su-30MK2","Su-27","MiG-29SMT","MiG-29","Su-25T"],strengths:["R-27ER meta missile","Incredible flight performance","Good CAS with Su-25T","Deep lineup"],weaknesses:["Fewer AMRAAM-type options","Radar can be inconsistent"]},
+Britain:{verdict:"Gripen and Typhoon give excellent options",reason:"Eurofighter Typhoon is extremely competitive with AMRAAM equivalents. Gripen is agile with great missiles. Tornado F.3 for longer-range engagements. Good variety.",vehicles:["Typhoon FGR4","Gripen","Tornado F.3","Harrier GR.1"],strengths:["Typhoon is top competitive","Gripen agility","Good missile selection"],weaknesses:["Tornado F.3 is aging","Limited dedicated CAS"]},
+Sweden:{verdict:"JAS39C Gripen is one of the best dogfighters",reason:"Gripen has incredible agility and good missile loadout. Limited to essentially one top tier airframe but it's an excellent one. Good for players who master one plane.",vehicles:["JAS39C Gripen","JAS39A Gripen","JA37C Viggen"],strengths:["Incredible agility","Great missile loadout","Easy to master one plane"],weaknesses:["Only one top tier option","No backup at same BR","No CAS"]},
+Germany:{verdict:"Eurofighter is strong but limited backup options",reason:"Eurofighter Typhoon is top tier competitive. MiG-29 provides a backup. Tornado IDS for ground attack. Less depth than USA or USSR.",vehicles:["Eurofighter Typhoon","MiG-29","F-4F Phantom II","Tornado IDS"],strengths:["Eurofighter is top tier","MiG-29 backup","Tornado for CAS"],weaknesses:["Less depth than big two","Mixed NATO/Soviet tech"]},
+France:{verdict:"Rafale C is competitive with good missiles",reason:"Rafale C is an excellent dogfighter with MICA missiles. Mirage 4000 provides backup. Jaguar for ground attack. Solid but not as deep as S-tier nations.",vehicles:["Rafale C","Mirage 4000","Mirage 2000C-S5","Jaguar A"],strengths:["Rafale is excellent","MICA missiles","Decent CAS Jaguar"],weaknesses:["Limited top tier depth","Mirage 4000 aging"]},
+Japan:{verdict:"F-15J is capable but lineup is thin",reason:"F-15J and F-2A are both competitive fighters. Limited to two real options at top tier. No dedicated ground attacker. Quality is there but quantity isn't.",vehicles:["F-15J","F-2A","F-16AJ","F-4EJ Phantom II"],strengths:["F-15J is very capable","F-2A strong dogfighter"],weaknesses:["Only two top options","No dedicated CAS","Thin backup lineup"]},
+Israel:{verdict:"F-15A Baz and F-16D are solid but aging",reason:"Both fighters are competitive but facing newer airframes. Kfir C.7 is a decent backup. No domestic designs — all imported airframes.",vehicles:["F-15A Baz","F-16D Barak II","Kfir C.7","Kfir C.2"],strengths:["F-15A still competitive","F-16D is capable"],weaknesses:["All imported airframes","Aging against newer jets","Limited options"]},
+China:{verdict:"J-11A is a Su-27 copy that gets the job done",reason:"J-11A matches Su-27 performance with similar missiles. J-8B at lower BR is unique. Limited options overall. Essentially flying Russian jets.",vehicles:["J-11A","J-11","J-8B","Q-5A"],strengths:["J-11A matches Su-27","Familiar Russian performance"],weaknesses:["No original designs","Limited options","Essentially copy-paste"]},
+Italy:{verdict:"Eurofighter helps but historically weak air tree",reason:"Eurofighter Typhoon finally gives Italy a competitive top tier fighter. Before that, Tornado ADV was the best option. Very thin tree overall.",vehicles:["Eurofighter Typhoon","Tornado ADV","F-104S"],strengths:["Eurofighter is competitive","Finally a real top tier"],weaknesses:["Thinnest air tree in game","Almost no backup options","No CAS"]}
 }},
 heli:{
 S:["USSR"],
@@ -130,16 +150,16 @@ B:["Britain","France","Germany"],
 C:["Israel","Italy","Japan","Sweden"],
 D:["China"],
 data:{
-USSR:{verdict:"Ka-52 and Mi-28N with Vikhrs are unmatched",reason:"Ka-52 has coaxial rotors making it incredibly agile. Vikhr ATGMs are fire-and-forget with proxy fuse for anti-air. Mi-28N has excellent armour. Best helicopter lineup by far."},
-USA:{verdict:"AH-64D Apache is strong with Hellfires",reason:"AH-64D has excellent optics and AGM-114K Hellfire IIs. AH-1Z Viper is a good backup. Solid two-helicopter lineup but Hellfires are slower than Vikhrs."},
-Britain:{verdict:"Apache AH Mk.1 is capable but alone",reason:"Apache AH Mk.1 is essentially the US Apache with Starstreak missiles as a bonus anti-air option. Lynx provides an early helicopter. Limited to two options."},
-France:{verdict:"Tiger HAD with Spikes is underrated",reason:"Tiger HAD has fire-and-forget Spike ATGMs which are excellent. SA.342M Gazelle with HOT missiles works at lower BR. Two solid options but nothing beyond that."},
-Germany:{verdict:"Eurocopter Tiger UHT has unique PARS 3",reason:"Tiger UHT has fire-and-forget PARS 3 missiles — very effective. Bo 105 and UH-1D provide lower BR options. Mi-24P is a strong backup. Decent lineup."},
-Israel:{verdict:"AH-64A Peten is good but it's just one heli",reason:"Essentially the US Apache. AH-1S Tzefa as backup. Very limited two-helicopter lineup with nothing special beyond the Apache."},
-Italy:{verdict:"A129 Mangusta is decent but outclassed",reason:"A129CBT has TOW-2 missiles which work but aren't top tier competitive. Only one real option at high BR. Needs more additions."},
-Japan:{verdict:"AH-1S is outdated at its BR",reason:"Single helicopter option that's essentially an early Cobra variant. Outclassed by dedicated attack helicopters from other nations. Badly needs additions."},
-Sweden:{verdict:"No dedicated attack helicopter yet",reason:"Sweden lacks a proper attack helicopter tree. Limited to a few options without competitive ATGMs. Major gap in the tech tree."},
-China:{verdict:"Z-10 and Z-19 are mediocre copies",reason:"Z-10 has HJ-10 ATGMs which are decent but the platform is fragile. Z-19 is a light scout. Z-9W is weak. Overall underwhelming compared to dedicated heli nations."}
+USSR:{verdict:"Ka-52 and Mi-28N with Vikhrs are unmatched",reason:"Ka-52 has coaxial rotors making it incredibly agile. Vikhr ATGMs are fire-and-forget with proxy fuse for anti-air. Mi-28N has excellent armour. Best helicopter lineup by far.",vehicles:["Ka-52","Mi-28N","Ka-50","Mi-24V","Mi-24P"],strengths:["Vikhr fire-and-forget ATGMs","Proxy fuse anti-air","Ka-52 agility","Deep lineup"],weaknesses:["Vikhrs may get nerfed","Expensive to spawn"]},
+USA:{verdict:"AH-64D Apache is strong with Hellfires",reason:"AH-64D has excellent optics and AGM-114K Hellfire IIs. AH-1Z Viper is a good backup. Solid two-helicopter lineup but Hellfires are slower than Vikhrs.",vehicles:["AH-64D Apache","AH-1Z Viper","AH-64A Apache","UH-1B"],strengths:["Excellent Apache optics","Hellfire IIs are reliable","Two strong helis"],weaknesses:["Hellfires slower than Vikhrs","No fire-and-forget"]},
+Britain:{verdict:"Apache AH Mk.1 is capable but alone",reason:"Apache AH Mk.1 is essentially the US Apache with Starstreak missiles as a bonus anti-air option. Lynx provides an early helicopter. Limited to two options.",vehicles:["Apache AH Mk.1","Lynx AH.1"],strengths:["Starstreak anti-air missiles","Apache platform is solid"],weaknesses:["Only two helicopters","No backup at top tier","Starstreaks are situational"]},
+France:{verdict:"Tiger HAD with Spikes is underrated",reason:"Tiger HAD has fire-and-forget Spike ATGMs which are excellent. SA.342M Gazelle with HOT missiles works at lower BR. Two solid options but nothing beyond that.",vehicles:["Tiger HAD","SA.342M Gazelle"],strengths:["Spike fire-and-forget ATGMs","Decent lower BR option"],weaknesses:["Only two options","Tiger is fragile","No deep lineup"]},
+Germany:{verdict:"Eurocopter Tiger UHT has unique PARS 3",reason:"Tiger UHT has fire-and-forget PARS 3 missiles — very effective. Bo 105 and UH-1D provide lower BR options. Mi-24P is a strong backup. Decent lineup.",vehicles:["Tiger UHT","Mi-24P","Bo 105 PAH-1","UH-1D"],strengths:["PARS 3 fire-and-forget","Mi-24P backup","Decent depth"],weaknesses:["Tiger is fragile","PARS 3 range limited"]},
+Israel:{verdict:"AH-64A Peten is good but it's just one heli",reason:"Essentially the US Apache. AH-1S Tzefa as backup. Very limited two-helicopter lineup with nothing special beyond the Apache.",vehicles:["AH-64A Peten","AH-1S Tzefa"],strengths:["Apache is always solid","Familiar platform"],weaknesses:["Only two options","Nothing unique","AH-1S is outdated"]},
+Italy:{verdict:"A129 Mangusta is decent but outclassed",reason:"A129CBT has TOW-2 missiles which work but aren't top tier competitive. Only one real option at high BR. Needs more additions.",vehicles:["A129CBT Mangusta"],strengths:["TOW-2 missiles work","Agile platform"],weaknesses:["Single top heli","Outclassed by all above","TOW-2 slow"]},
+Japan:{verdict:"AH-1S is outdated at its BR",reason:"Single helicopter option that's essentially an early Cobra variant. Outclassed by dedicated attack helicopters from other nations. Badly needs additions.",vehicles:["AH-1S"],strengths:["TOW missiles function"],weaknesses:["Only one option","Completely outdated","No modern ATGMs","Worst heli lineup"]},
+Sweden:{verdict:"No dedicated attack helicopter yet",reason:"Sweden lacks a proper attack helicopter tree. Limited to a few options without competitive ATGMs. Major gap in the tech tree.",vehicles:["None competitive"],strengths:["N/A"],weaknesses:["No attack helicopter tree","Major gap in lineup","Cannot compete in heli PvE"]},
+China:{verdict:"Z-10 and Z-19 are mediocre copies",reason:"Z-10 has HJ-10 ATGMs which are decent but the platform is fragile. Z-19 is a light scout. Z-9W is weak. Overall underwhelming compared to dedicated heli nations.",vehicles:["Z-10","Z-19","Z-9W"],strengths:["HJ-10 ATGMs are okay","Z-19 scouts"],weaknesses:["Fragile platforms","Z-9W is useless","No fire-and-forget"]}
 }}
 };
 
@@ -160,7 +180,7 @@ saveState();
 
 function setTab(el){
 document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
-el.classList.add("active");tab=el.dataset.t;loadState();renderTiers();
+el.classList.add("active");tab=el.dataset.t;loadState();closeDetail();renderTiers();
 }
 
 function renderTiers(){
@@ -173,11 +193,10 @@ return`<div class="tier-row">
 <div class="tier-drop" data-tier="${t}" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragleave="onDragLeave(event)">
 ${nations.map(n=>{
 const nd=NATIONS[n];const dd=data[n]||{};
-return`<div class="nation-card" draggable="true" data-nation="${n}" ondragstart="onDragStart(event)" ondragend="onDragEnd(event)" ontouchstart="onTouchStart(event)" ontouchmove="onTouchMove(event)" ontouchend="onTouchEnd(event)">
+return`<div class="nation-card" draggable="true" data-nation="${n}" data-tier="${t}" onclick="showDetail('${n}','${t}')" ondragstart="onDragStart(event)" ondragend="onDragEnd(event)" ontouchstart="onTouchStart(event)" ontouchmove="onTouchMove(event)" ontouchend="onTouchEnd(event)">
 <div class="nc-flag">${nd.flag}</div>
 <div class="nc-name">${nd.name}</div>
 <div class="nc-verdict">${dd.verdict||""}</div>
-<div class="nc-reason"><b style="color:var(--${t})">${nd.name} — Tier ${t}</b><br><br>${dd.reason||"No data available."}</div>
 </div>`}).join("")}
 </div></div>`}).join("");
 }
@@ -253,7 +272,41 @@ touchClone.style.left=(touch.clientX-40)+"px";
 touchClone.style.top=(touch.clientY-30)+"px";
 }
 
-function resetDefault(){resetToDefault();renderTiers();toast("★ Reset to community consensus")}
+let selectedNation=null;
+function showDetail(nationId,tier){
+const data=DEFAULTS[tab].data[nationId];
+const nd=NATIONS[nationId];
+if(!data||!nd)return;
+// Toggle off if same nation clicked again
+if(selectedNation===nationId){closeDetail();return}
+selectedNation=nationId;
+// Highlight selected card
+document.querySelectorAll(".nation-card").forEach(c=>c.classList.remove("selected"));
+document.querySelectorAll(`.nation-card[data-nation="${nationId}"]`).forEach(c=>c.classList.add("selected"));
+const tierColors={S:"var(--S)",A:"var(--A)",B:"var(--B)",C:"var(--C)",D:"var(--D)"};
+const panel=document.getElementById("detailPanel");
+panel.className="detail-panel show";
+panel.innerHTML=`<div class="dp-header">
+<span class="dp-flag">${nd.flag}</span>
+<div class="dp-info"><div class="dp-name">${nd.name}</div><div class="dp-tier" style="color:${tierColors[tier]||"var(--text2)"}">Tier ${tier} — ${tab.charAt(0).toUpperCase()+tab.slice(1)}</div></div>
+<div class="dp-close" onclick="closeDetail()">✕</div>
+</div>
+<div class="dp-verdict">${data.verdict}</div>
+<div class="dp-body">
+<div class="dp-section"><div class="dp-section-title">DETAILED ANALYSIS</div><div class="dp-reason">${data.reason}</div></div>
+<div class="dp-section"><div class="dp-section-title">KEY VEHICLES</div><div class="dp-tags">${(data.vehicles||[]).map(v=>`<span class="dp-tag vehicle">${v}</span>`).join("")}</div></div>
+<div class="dp-section"><div class="dp-section-title">STRENGTHS</div><div class="dp-tags">${(data.strengths||[]).map(s=>`<span class="dp-tag strength">▲ ${s}</span>`).join("")}</div></div>
+<div class="dp-section"><div class="dp-section-title">WEAKNESSES</div><div class="dp-tags">${(data.weaknesses||[]).map(w=>`<span class="dp-tag weakness">▼ ${w}</span>`).join("")}</div></div>
+</div>`;
+panel.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function closeDetail(){
+selectedNation=null;
+document.querySelectorAll(".nation-card").forEach(c=>c.classList.remove("selected"));
+document.getElementById("detailPanel").className="detail-panel";
+}
+
+function resetDefault(){resetToDefault();closeDetail();renderTiers();toast("★ Reset to community consensus")}
 
 function shareTierList(){
 const data=DEFAULTS[tab].data;
