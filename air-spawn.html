@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>WT Air Spawn Calculator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0e10;--bg2:#1a1c20;--bg3:#222528;--border:#2a2c30;--red:#cc0000;--red2:#ff2222;--red-glow:rgba(204,0,0,.3);--gold:#d4a017;--text:#e0ddd8;--text2:#888;--text3:#555;--green:#4caf50;--amber:#ff9800;--blue:#4a9eff}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{text-align:center;padding:20px 16px 12px;border-bottom:2px solid var(--red);background:linear-gradient(180deg,rgba(204,0,0,.08),transparent)}
+header h1{font-size:1.6rem;color:var(--red2);text-shadow:0 0 20px var(--red-glow);letter-spacing:.05em}
+header .star{color:var(--gold);font-size:1.2rem}
+header p{color:var(--text2);font-size:.78rem;margin-top:4px;letter-spacing:.08em}
+.container{max-width:800px;margin:0 auto;padding:16px}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px}
+.panel-title{font-size:.68rem;color:var(--text3);letter-spacing:.1em;margin-bottom:10px}
+.search-box{position:relative}
+.search-box input{width:100%;padding:9px 10px 9px 28px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.82rem;outline:none}
+.search-box input:focus{border-color:var(--red)}
+.search-box input::placeholder{color:var(--text3)}
+.si{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.8rem}
+.dd{position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:0 0 6px 6px;max-height:250px;overflow-y:auto;z-index:100;display:none}
+.dd.open{display:block}
+.dd-item{padding:7px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:.75rem;border-bottom:1px solid rgba(255,255,255,.03)}
+.dd-item:hover,.dd-item.hl{background:rgba(204,0,0,.12)}
+.dd-flag{font-size:.9rem;width:18px;text-align:center;flex-shrink:0}
+.dd-name{flex:1}
+.dd-br{color:var(--gold);font-weight:700;font-size:.7rem;flex-shrink:0}
+.dd-type{font-size:.55rem;color:var(--text3);background:var(--bg3);padding:1px 4px;border-radius:3px;flex-shrink:0}
+.dd-spawn{font-size:.5rem;padding:1px 5px;border-radius:3px;flex-shrink:0;font-weight:600}
+.dd-spawn.air{background:rgba(76,175,80,.15);color:var(--green);border:1px solid rgba(76,175,80,.2)}
+.dd-spawn.af{background:rgba(255,152,0,.08);color:var(--amber);border:1px solid rgba(255,152,0,.15)}
+.dd-empty{padding:10px;text-align:center;color:var(--text3);font-size:.72rem}
+.vh{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px;display:none}
+.vh.show{display:block}
+.vh-top{padding:12px 14px;display:flex;align-items:center;gap:10px}
+.vh.air .vh-top{background:linear-gradient(90deg,rgba(76,175,80,.15),transparent)}
+.vh.af .vh-top{background:linear-gradient(90deg,rgba(255,152,0,.12),transparent)}
+.vh-flag{font-size:1.4rem}
+.vh-info{flex:1}.vh-name{font-size:.95rem;font-weight:700}.vh-detail{font-size:.7rem;color:var(--text2);margin-top:1px}
+.vh-badge{padding:5px 14px;border-radius:6px;font-weight:700;font-size:.82rem}
+.vh-badge.air{background:rgba(76,175,80,.15);color:var(--green);border:1px solid rgba(76,175,80,.3)}
+.vh-badge.af{background:rgba(255,152,0,.1);color:var(--amber);border:1px solid rgba(255,152,0,.2)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;margin-bottom:14px}
+.sg{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center}
+.sg .lbl{font-size:.5rem;color:var(--text3);letter-spacing:.06em;margin-bottom:2px}
+.sg .val{font-size:1.15rem;font-weight:700}
+.sg .sub{font-size:.55rem;color:var(--text3);margin-top:2px}
+.compare-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px;display:none}
+.compare-box.show{display:block}
+.cb-header{padding:10px 14px;font-size:.72rem;color:var(--gold);letter-spacing:.06em;border-bottom:1px solid var(--border)}
+.cb-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
+.cb-col{background:var(--bg2);padding:12px}
+.cb-col-title{font-size:.65rem;font-weight:600;letter-spacing:.06em;margin-bottom:8px}
+.cb-col-title.air{color:var(--green)}.cb-col-title.af{color:var(--amber)}
+.cb-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:.75rem}
+.cb-row:last-child{border:none}
+.cb-row .k{color:var(--text3)}.cb-row .v{font-weight:600}
+.time-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;margin-bottom:14px}
+.tc{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center}
+.tc .spd{font-size:.6rem;color:var(--text3);letter-spacing:.04em;margin-bottom:3px}
+.tc .time{font-size:1.1rem;font-weight:700}
+.tc .dist{font-size:.58rem;color:var(--text3);margin-top:2px}
+.section-title{font-size:.75rem;color:var(--red2);letter-spacing:.08em;margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.section-title .badge{font-size:.6rem;color:var(--text3);background:var(--bg3);padding:2px 7px;border-radius:10px}
+.tips{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px}
+.tips-title{font-size:.72rem;color:var(--gold);letter-spacing:.06em;margin-bottom:8px}
+.tip-list{list-style:none;display:flex;flex-direction:column;gap:5px}
+.tip-list li{display:flex;align-items:flex-start;gap:6px;font-size:.75rem;color:var(--text2);line-height:1.5}
+.tip-list li .ti{color:var(--red2);font-size:.65rem;flex-shrink:0;margin-top:3px}
+.filter-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.filter-row select{padding:6px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.72rem;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;min-width:100px;flex:1}
+.filter-row select:focus{border-color:var(--red)}
+.fb{padding:5px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text3);font-size:.68rem;cursor:pointer;transition:all .15s}
+.fb.active{background:rgba(204,0,0,.12);border-color:var(--red);color:var(--red2)}
+.all-list{display:flex;flex-direction:column;gap:3px;margin-bottom:14px;max-height:400px;overflow-y:auto}
+.al-item{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;font-size:.72rem}
+.al-item.air{border-left:3px solid var(--green)}
+.al-item.af{border-left:3px solid var(--amber)}
+.al-flag{font-size:.85rem;flex-shrink:0}
+.al-name{flex:1;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.al-type{font-size:.55rem;color:var(--text3);background:var(--bg3);padding:1px 4px;border-radius:3px;flex-shrink:0}
+.al-br{color:var(--gold);font-weight:700;font-size:.68rem;flex-shrink:0;min-width:28px;text-align:right}
+.al-badge{font-size:.5rem;padding:1px 6px;border-radius:3px;font-weight:600;flex-shrink:0}
+.al-badge.air{background:rgba(76,175,80,.12);color:var(--green)}.al-badge.af{background:rgba(255,152,0,.08);color:var(--amber)}
+.al-alt{font-size:.6rem;color:var(--text3);flex-shrink:0;min-width:50px;text-align:right}
+.hammer{opacity:.04;position:fixed;bottom:-40px;right:-40px;font-size:18rem;pointer-events:none;z-index:0}
+footer{text-align:center;padding:20px;color:var(--text2);font-size:.68rem;border-top:1px solid var(--border);margin-top:24px;letter-spacing:.06em}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--red);border-radius:3px}
+@media(max-width:600px){.stats-grid{grid-template-columns:repeat(3,1fr)}.cb-grid{grid-template-columns:1fr}.container{padding:10px}}
+</style>
+</head>
+<body>
+<div class="hammer">☭</div>
+<header>
+<div><span class="star">★</span> <span class="star">★</span> <span class="star">★</span></div>
+<h1>WT AIR SPAWN CALC</h1>
+<p>SPAWN TYPE &amp; TRAVEL TIME ANALYSIS</p>
+</header>
+<div class="container">
+<div class="panel">
+<div class="panel-title">★ SELECT AIRCRAFT</div>
+<div class="search-box"><span class="si">⌕</span><input type="text" id="searchInput" placeholder="Search aircraft..." autocomplete="off"><div class="dd" id="dropdown"></div></div>
+</div>
+<div class="vh" id="vehicleHeader"></div>
+<div class="stats-grid" id="statsGrid"></div>
+<div id="timeSection" style="display:none">
+<div class="section-title"><span>★ TIME TO BATTLEFIELD</span></div>
+<div class="time-grid" id="timeGrid"></div>
+</div>
+<div class="compare-box" id="compareBox"></div>
+<div class="tips" id="tipsBox" style="display:none">
+<div class="tips-title">★ FUEL &amp; APPROACH TIPS</div>
+<ul class="tip-list" id="tipsList"></ul>
+</div>
+<div class="section-title"><span>★ ALL AIRCRAFT SPAWN LIST</span><span class="badge" id="listCount">0</span></div>
+<div class="filter-row">
+<select id="fNation" onchange="renderList()"><option value="">All Nations</option><option>USSR</option><option>USA</option><option>Germany</option><option>Britain</option><option>Japan</option><option>France</option><option>Italy</option><option>Sweden</option><option>Israel</option><option>China</option></select>
+<select id="fType" onchange="renderList()"><option value="">All Types</option><option value="F">Fighters</option><option value="B">Bombers</option><option value="A">Attackers</option><option value="I">Interceptors</option></select>
+<div class="fb active" data-f="all" onclick="setSpawnFilter(this)">All</div>
+<div class="fb" data-f="air" onclick="setSpawnFilter(this)">Air Spawn</div>
+<div class="fb" data-f="af" onclick="setSpawnFilter(this)">Airfield</div>
+</div>
+<div class="all-list" id="allList"></div>
+</div>
+<footer>★ SPAWN TYPES BASED ON AIR REALISTIC BATTLES ★ SUBJECT TO GAIJIN CHANGES ★</footer>
+<script>
+const FLAGS={USA:"🇺🇸",Germany:"🇩🇪",USSR:"🇷🇺",Britain:"🇬🇧",Japan:"🇯🇵",France:"🇫🇷",Italy:"🇮🇹",Sweden:"🇸🇪",Israel:"🇮🇱",China:"🇨🇳"};
+const TN={F:"Fighter",B:"Bomber",A:"Attacker",I:"Interceptor"};
+// [name, nation, BR, typeCode, spawnType("air"/"af"), spawnAlt(m), maxSpd(km/h)]
+const DB=[
+// USA
+["P-26A-34 Peashooter","USA",1.0,"F","af",0,377],["F2A-1 Buffalo","USA",1.7,"F","af",0,500],["P-36G Hawk","USA",2.3,"F","af",0,504],
+["P-39N Airacobra","USA",2.7,"F","af",0,585],["P-40E Warhawk","USA",2.7,"F","af",0,582],["F4F-4 Wildcat","USA",2.7,"F","af",0,515],
+["P-38G Lightning","USA",3.3,"F","air",3500,628],["F4U-1A Corsair","USA",3.0,"F","af",0,612],
+["P-47D-25 Thunderbolt","USA",3.7,"F","air",4500,697],["P-47D-28 Thunderbolt","USA",4.3,"F","air",4500,700],
+["F4U-4B Corsair","USA",5.7,"F","af",0,717],["P-51D-5 Mustang","USA",4.0,"F","af",0,703],["P-51D-30 Mustang","USA",4.7,"F","af",0,710],
+["P-51H-5 Mustang","USA",6.3,"F","af",0,760],["F6F-5 Hellcat","USA",3.7,"F","af",0,621],
+["F8F-1B Bearcat","USA",5.7,"F","af",0,690],["P-63A-10 Kingcobra","USA",3.7,"F","af",0,620],
+["F-80A Shooting Star","USA",7.0,"F","af",0,892],["F-84B Thunderjet","USA",7.0,"F","af",0,941],
+["F-86A-5 Sabre","USA",8.3,"F","af",0,1090],["F-86F-25 Sabre","USA",8.7,"F","af",0,1105],
+["F-100D Super Sabre","USA",9.3,"F","af",0,1390],["F-104A Starfighter","USA",9.3,"F","af",0,2137],
+["F-4C Phantom II","USA",10.3,"F","af",0,2230],["F-4E Phantom II","USA",11.0,"F","af",0,2280],
+["F-5E Tiger II","USA",10.7,"F","af",0,1742],["F-14A Tomcat","USA",11.3,"F","af",0,2485],
+["F-14B Tomcat","USA",12.0,"F","af",0,2485],["F-15A Eagle","USA",12.0,"F","af",0,2650],
+["F-16C Fighting Falcon","USA",13.0,"F","af",0,2414],["F/A-18E Super Hornet","USA",13.3,"F","af",0,1900],
+["A-10A Thunderbolt II","USA",10.0,"A","air",3000,706],["A-10A Late","USA",10.3,"A","air",3000,706],
+["F-117A Nighthawk","USA",10.3,"A","air",4000,1040],
+["B-17E Flying Fortress","USA",4.0,"B","air",4000,462],["B-17G Flying Fortress","USA",5.0,"B","air",4000,462],
+["B-24D Liberator","USA",4.3,"B","air",4000,467],["B-29A Superfortress","USA",7.7,"B","air",5500,574],
+["B-52H Stratofortress","USA",10.0,"B","air",5000,957],["B-57A Canberra","USA",7.7,"B","air",3500,930],
+["B-57B Canberra","USA",8.0,"B","air",3500,930],
+// Germany
+["Bf 109 E-1","Germany",2.0,"F","af",0,570],["Bf 109 E-3","Germany",2.3,"F","af",0,570],
+["Bf 109 F-1","Germany",2.7,"F","af",0,615],["Bf 109 F-4","Germany",3.7,"F","af",0,635],
+["Bf 109 G-2","Germany",4.0,"F","af",0,660],["Bf 109 G-6","Germany",4.7,"F","af",0,650],
+["Bf 109 K-4","Germany",5.7,"F","af",0,710],["Fw 190 A-1","Germany",3.7,"F","af",0,626],
+["Fw 190 A-5","Germany",4.3,"F","af",0,650],["Fw 190 D-9","Germany",5.3,"F","af",0,685],
+["Ta 152 H-1","Germany",6.0,"F","af",0,755],["Me 262 A-1a","Germany",7.0,"F","af",0,870],
+["Me 163 B","Germany",8.0,"I","air",5000,960],["Ho 229 V3","Germany",7.0,"F","af",0,897],
+["CL-13A Sabre","Germany",8.7,"F","af",0,1093],["MiG-29","Germany",12.3,"F","af",0,2445],
+["Eurofighter Typhoon","Germany",13.0,"F","af",0,2495],
+["Ju 87 B-2 Stuka","Germany",1.7,"B","air",2500,390],["Ju 87 D-5 Stuka","Germany",3.3,"A","air",2500,410],
+["Ju 88 A-4","Germany",3.0,"B","air",3500,470],["He 111 H-6","Germany",2.7,"B","air",3500,440],
+["Do 217 E-2","Germany",3.7,"B","air",3500,510],["Ar 234 B-2","Germany",7.0,"B","air",3000,742],
+["Me 264","Germany",4.3,"B","air",4500,560],
+// USSR
+["I-15bis","USSR",1.0,"F","af",0,370],["I-16 type 10","USSR",1.7,"F","af",0,440],
+["I-16 type 24","USSR",2.3,"F","af",0,462],["LaGG-3-8","USSR",2.3,"F","af",0,575],
+["La-5","USSR",3.3,"F","af",0,580],["La-5FN","USSR",4.0,"F","af",0,634],
+["La-7","USSR",4.3,"F","af",0,661],["La-9","USSR",5.7,"F","af",0,690],
+["Yak-1","USSR",2.3,"F","af",0,569],["Yak-3","USSR",4.0,"F","af",0,646],
+["Yak-9T","USSR",3.7,"F","af",0,590],["Yak-9U","USSR",4.7,"F","af",0,672],
+["MiG-3-15","USSR",2.3,"I","air",4000,621],["MiG-9","USSR",7.0,"F","af",0,911],
+["MiG-15","USSR",8.0,"F","af",0,1047],["MiG-15bis","USSR",8.3,"F","af",0,1076],
+["MiG-17","USSR",8.7,"F","af",0,1114],["MiG-19PT","USSR",9.3,"F","af",0,1452],
+["MiG-21F-13","USSR",9.3,"F","af",0,2175],["MiG-21bis","USSR",10.7,"F","af",0,2230],
+["MiG-23MLD","USSR",11.3,"F","af",0,2500],["MiG-29","USSR",12.3,"F","af",0,2445],
+["Su-27","USSR",12.0,"F","af",0,2500],["Su-30MK2","USSR",13.3,"F","af",0,2120],
+["Su-25","USSR",10.3,"A","air",3000,950],["Su-25T","USSR",11.3,"A","air",3000,950],
+["Su-34","USSR",13.0,"A","air",4000,1900],["Su-39","USSR",11.3,"A","air",3000,950],
+["Il-2 1941","USSR",2.0,"A","air",2000,433],["Il-2 1942","USSR",2.7,"A","air",2000,411],
+["Il-2M 1943","USSR",4.0,"A","air",2500,414],["Il-10 1946","USSR",5.7,"A","air",2500,551],
+["Pe-2-31","USSR",2.7,"B","air",3500,540],["Pe-8","USSR",4.7,"B","air",4500,440],
+["Tu-2S","USSR",4.7,"B","air",3500,547],["Tu-4","USSR",7.7,"B","air",5500,558],
+["Tu-95M","USSR",9.0,"B","air",5000,880],["Il-28","USSR",7.7,"B","air",3500,900],
+// Britain
+["Hurricane Mk I","Britain",2.0,"F","af",0,520],["Hurricane Mk II","Britain",2.7,"F","af",0,547],
+["Hurricane Mk IV","Britain",3.0,"A","air",2500,426],
+["Spitfire Mk Ia","Britain",3.0,"F","af",0,571],["Spitfire Mk Vb","Britain",4.0,"F","af",0,602],
+["Spitfire F Mk IX","Britain",4.7,"F","af",0,633],["Spitfire LF Mk IX","Britain",5.3,"F","af",0,644],
+["Spitfire F Mk XIVe","Britain",5.7,"F","af",0,721],["Spitfire F Mk 24","Britain",6.7,"F","af",0,730],
+["Typhoon Mk Ib","Britain",3.7,"F","af",0,663],["Tempest Mk V","Britain",5.3,"F","af",0,699],
+["Sea Fury FB 11","Britain",5.7,"F","af",0,740],["Meteor F Mk 8","Britain",8.0,"F","af",0,943],
+["Hunter F.6","Britain",9.0,"F","af",0,1150],["Phantom FGR.2","Britain",11.0,"F","af",0,2301],
+["Tornado F.3","Britain",11.7,"F","af",0,2337],["Typhoon FGR4","Britain",13.0,"F","af",0,2495],
+["Harrier GR.1","Britain",9.7,"A","air",3000,1176],["Sea Harrier FRS.1","Britain",10.0,"F","af",0,1186],
+["Lancaster B Mk I","Britain",4.0,"B","air",4000,462],["Lancaster B Mk III","Britain",4.3,"B","air",4000,462],
+["Halifax B Mk IIIa","Britain",3.7,"B","air",3500,410],["Stirling B Mk III","Britain",3.3,"B","air",3500,418],
+["Canberra B Mk 2","Britain",8.0,"B","air",3500,870],["Avro Vulcan B.2","Britain",9.3,"B","air",5000,1038],
+["Victor B.1","Britain",9.0,"B","air",5000,990],
+// Japan
+["Ki-43-II Hayabusa","Japan",2.7,"F","af",0,530],["A6M2 Zero","Japan",3.0,"F","af",0,533],
+["A6M5 Zero","Japan",4.7,"F","af",0,565],["Ki-84 Hayate","Japan",5.3,"F","af",0,686],
+["N1K2-J Shiden-Kai","Japan",5.7,"F","af",0,594],["J2M3 Raiden","Japan",5.0,"I","air",4500,611],
+["Ki-200","Japan",8.0,"I","air",5000,900],["R2Y2 KAI V1","Japan",7.0,"B","air",3500,860],
+["F-86F-40 Sabre","Japan",9.0,"F","af",0,1105],["F-104J Starfighter","Japan",10.0,"F","af",0,2100],
+["F-4EJ Phantom II","Japan",11.0,"F","af",0,2280],["F-15J","Japan",13.0,"F","af",0,2650],
+["G4M1 Betty","Japan",3.7,"B","air",4000,428],["B7A2 Ryusei","Japan",4.0,"A","air",2500,566],
+// France
+["D.520","France",2.3,"F","af",0,529],["M.B.157","France",4.0,"F","af",0,660],
+["Mystere IVA","France",8.7,"F","af",0,1120],["Mirage IIIC","France",10.3,"F","af",0,2229],
+["Mirage 2000C-S5","France",12.0,"F","af",0,2336],["Rafale C","France",13.3,"F","af",0,1912],
+["Etendard IVM","France",9.0,"A","air",3000,1099],["Jaguar A","France",10.3,"A","air",3500,1350],
+// Italy
+["C.202 Folgore","Italy",3.0,"F","af",0,595],["G.55 Centauro","Italy",4.7,"F","af",0,620],
+["Re.2005 Sagittario","Italy",5.7,"F","af",0,640],["F-104S Starfighter","Italy",10.3,"F","af",0,2100],
+["Eurofighter Typhoon","Italy",13.0,"F","af",0,2495],
+// Sweden
+["J21A-1","Sweden",2.7,"F","af",0,640],["J29F Tunnan","Sweden",8.3,"F","af",0,1060],
+["J35D Draken","Sweden",10.3,"F","af",0,2150],["JA37C Viggen","Sweden",11.3,"F","af",0,2231],
+["JAS39A Gripen","Sweden",12.0,"F","af",0,2204],["JAS39C Gripen","Sweden",13.3,"F","af",0,2204],
+// Israel
+["Kfir C.2","Israel",10.0,"F","af",0,2440],["Kfir C.7","Israel",10.7,"F","af",0,2440],
+["F-15A Baz","Israel",12.3,"F","af",0,2650],["F-16D Barak II","Israel",12.7,"F","af",0,2414],
+// China
+["J-2","China",8.0,"F","af",0,1076],["J-7II","China",10.0,"F","af",0,2175],
+["J-11A","China",13.0,"F","af",0,2500],["Q-5A","China",9.3,"A","air",3000,1210]
+];
+
+const vehicles=DB.map(d=>({name:d[0],nation:d[1],br:d[2],type:TN[d[3]]||d[3],tc:d[3],spawn:d[4],alt:d[5],maxSpd:d[6]}));
+function fmt(n){return n.toLocaleString()}
+
+let selectedV=null,spawnFilter="all";
+const inp=document.getElementById("searchInput"),dd=document.getElementById("dropdown");
+let hlIdx=-1,filtered=[];
+inp.addEventListener("input",()=>{
+const q=inp.value.toLowerCase().trim();
+if(!q){dd.classList.remove("open");return}
+filtered=vehicles.filter(v=>v.name.toLowerCase().includes(q)||v.nation.toLowerCase().includes(q)).slice(0,35);
+hlIdx=-1;renderDD()
+});
+inp.addEventListener("focus",()=>{if(inp.value.trim())inp.dispatchEvent(new Event("input"))});
+document.addEventListener("click",e=>{if(!e.target.closest(".search-box"))dd.classList.remove("open")});
+inp.addEventListener("keydown",e=>{
+if(!dd.classList.contains("open"))return;
+if(e.key==="ArrowDown"){e.preventDefault();hlIdx=Math.min(hlIdx+1,filtered.length-1);renderDD()}
+else if(e.key==="ArrowUp"){e.preventDefault();hlIdx=Math.max(hlIdx-1,0);renderDD()}
+else if(e.key==="Enter"&&hlIdx>=0){e.preventDefault();selectV(filtered[hlIdx])}
+});
+function renderDD(){
+if(!filtered.length){dd.innerHTML='<div class="dd-empty">No aircraft found</div>';dd.classList.add("open");return}
+dd.innerHTML=filtered.map((v,i)=>`<div class="dd-item${i===hlIdx?" hl":""}" data-i="${i}"><span class="dd-flag">${FLAGS[v.nation]||""}</span><span class="dd-name">${v.name}</span><span class="dd-type">${v.type}</span><span class="dd-br">${v.br.toFixed(1)}</span><span class="dd-spawn ${v.spawn}">${v.spawn==="air"?"AIR":"AIRFIELD"}</span></div>`).join("");
+dd.classList.add("open");
+dd.querySelectorAll(".dd-item").forEach(el=>el.addEventListener("click",()=>selectV(filtered[+el.dataset.i])));
+}
+
+function selectV(v){
+selectedV=v;inp.value=v.name;dd.classList.remove("open");
+const isAir=v.spawn==="air";
+const el=document.getElementById("vehicleHeader");
+el.className="vh show "+(isAir?"air":"af");
+el.innerHTML=`<div class="vh-top"><span class="vh-flag">${FLAGS[v.nation]||""}</span><div class="vh-info"><div class="vh-name">${v.name}</div><div class="vh-detail">${v.nation} • ${v.type} • BR ${v.br.toFixed(1)} • Max ${v.maxSpd} km/h</div></div><div class="vh-badge ${v.spawn}">${isAir?"✈ AIR SPAWN":"🛬 AIRFIELD"}</div></div>`;
+
+// Distance from spawn to battlefield
+const afDist=isAir?8:18; // km — air spawn closer
+const spawnAlt=isAir?v.alt:0;
+const climbAlt=isAir?0:4000; // airfield planes need to climb
+const cruiseSpd=Math.round(v.maxSpd*0.7); // ~70% of max
+const cruiseSpdMs=cruiseSpd/3.6;
+const timeToField=Math.round((afDist*1000)/cruiseSpdMs); // seconds
+const timeMin=(timeToField/60).toFixed(1);
+const climbTime=climbAlt>0?Math.round(climbAlt/15):0; // ~15m/s avg climb
+const totalTime=timeToField+climbTime;
+const totalMin=(totalTime/60).toFixed(1);
+const fuelRate=v.maxSpd>1500?8:v.maxSpd>800?5:3; // kg/min rough
+const fuelNeeded=Math.round(fuelRate*parseFloat(totalMin));
+
+document.getElementById("statsGrid").innerHTML=`
+<div class="sg"><div class="lbl">SPAWN TYPE</div><div class="val" style="color:${isAir?"var(--green)":"var(--amber)"}">${isAir?"Air":"Airfield"}</div></div>
+<div class="sg"><div class="lbl">SPAWN ALT</div><div class="val">${isAir?fmt(spawnAlt)+"m":"Ground"}</div></div>
+<div class="sg"><div class="lbl">DIST TO COMBAT</div><div class="val">${afDist}<span style="font-size:.6rem;color:var(--text3)">km</span></div></div>
+<div class="sg"><div class="lbl">TRAVEL TIME</div><div class="val" style="color:var(--gold)">${totalMin}<span style="font-size:.6rem;color:var(--text3)">min</span></div><div class="sub">at ${cruiseSpd} km/h</div></div>
+<div class="sg"><div class="lbl">CLIMB NEEDED</div><div class="val">${climbAlt>0?fmt(climbAlt)+"m":"None"}</div><div class="sub">${climbTime>0?Math.round(climbTime/60*10)/10+" min":"Already at alt"}</div></div>
+<div class="sg"><div class="lbl">EST. FUEL</div><div class="val">${fuelNeeded}<span style="font-size:.6rem;color:var(--text3)">kg</span></div><div class="sub">~${fuelRate} kg/min</div></div>`;
+
+// Time at different speeds
+const ts=document.getElementById("timeSection");ts.style.display="block";
+const speeds=[Math.round(v.maxSpd*0.5),Math.round(v.maxSpd*0.65),Math.round(v.maxSpd*0.8),v.maxSpd];
+document.getElementById("timeGrid").innerHTML=speeds.map(s=>{
+const t=afDist*1000/(s/3.6)+climbTime;
+const m=(t/60).toFixed(1);
+const col=parseFloat(m)<=1.5?"var(--green)":parseFloat(m)<=3?"var(--amber)":"var(--red2)";
+return`<div class="tc"><div class="spd">${s} KM/H (${Math.round(s/v.maxSpd*100)}%)</div><div class="time" style="color:${col}">${m} min</div><div class="dist">${afDist} km + ${climbAlt>0?climbAlt+"m climb":"no climb"}</div></div>`}).join("");
+
+// Compare air vs airfield
+const cb=document.getElementById("compareBox");
+cb.className="compare-box show";
+const airTime=((8000/(cruiseSpdMs))/60).toFixed(1);
+const afTime=((18000/(cruiseSpdMs))/60+climbAlt/15/60).toFixed(1);
+const afTimeClimb=Math.round(4000/15);
+const diff=(parseFloat(afTime)-parseFloat(airTime)).toFixed(1);
+const rows=[
+["Distance to combat","~8 km","~18 km"],
+["Starting altitude",spawnAlt>0?spawnAlt+"m":"4000m (after climb)","0m (must climb)"],
+["Climb time needed","None",Math.round(afTimeClimb/60*10)/10+" min"],
+["Travel time",airTime+" min",afTime+" min"],
+["Time advantage",isAir?"This aircraft ✓":"—",isAir?"—":"This aircraft"],
+["Energy state","High — already at speed + alt","Low — must build speed + alt"]
+];
+cb.innerHTML=`<div class="cb-header">★ AIR SPAWN vs AIRFIELD SPAWN (${diff} min difference)</div>
+<div class="cb-grid"><div class="cb-col"><div class="cb-col-title air">✈ AIR SPAWN</div>${rows.map(r=>`<div class="cb-row"><span class="k">${r[0]}</span><span class="v">${r[1]}</span></div>`).join("")}</div>
+<div class="cb-col"><div class="cb-col-title af">🛬 AIRFIELD SPAWN</div>${rows.map(r=>`<div class="cb-row"><span class="k">${r[0]}</span><span class="v">${r[2]}</span></div>`).join("")}</div></div>`;
+
+// Tips
+const tb=document.getElementById("tipsBox");tb.style.display="block";
+const tips=[];
+if(isAir){
+tips.push("You start with altitude and speed — don't waste it by diving immediately. Maintain energy.");
+tips.push("Reduce throttle to 85-90% during cruise to save fuel. You don't need WEP to reach the battlefield.");
+tips.push("Bombers should climb further above spawn altitude before approaching — higher = harder to intercept.");
+if(v.tc==="A")tips.push("As an attacker, use your air spawn to get to ground targets fast. Don't engage fighters head-on.");
+if(v.tc==="B")tips.push("Side-climb away from the direct path to the enemy. Approaching from an angle reduces interception risk.");
+}else{
+tips.push("Take off and immediately start climbing at ~15-20° nose up. Don't fly level at low altitude.");
+tips.push("Use WEP during the initial climb to gain altitude faster, then reduce throttle at cruise altitude.");
+tips.push("Side-climb toward the map edge first — arriving at 5000m+ is better than arriving at 2000m first.");
+tips.push("Don't rush to the centre. Airfield-spawned fighters that climb properly win the energy fight.");
+}
+tips.push("Set minimum fuel (20-30 min) for fighters to reduce weight and improve climb rate.");
+tips.push("Check your six during the approach — enemy air spawns may already be at your altitude.");
+document.getElementById("tipsList").innerHTML=tips.map(t=>`<li><span class="ti">★</span>${t}</li>`).join("");
+}
+
+function setSpawnFilter(el){
+document.querySelectorAll(".fb").forEach(b=>b.classList.remove("active"));
+el.classList.add("active");spawnFilter=el.dataset.f;renderList();
+}
+
+function renderList(){
+const nation=document.getElementById("fNation").value;
+const type=document.getElementById("fType").value;
+let list=vehicles;
+if(nation)list=list.filter(v=>v.nation===nation);
+if(type)list=list.filter(v=>v.tc===type);
+if(spawnFilter==="air")list=list.filter(v=>v.spawn==="air");
+else if(spawnFilter==="af")list=list.filter(v=>v.spawn==="af");
+list.sort((a,b)=>a.br-b.br);
+document.getElementById("listCount").textContent=list.length+" aircraft";
+const el=document.getElementById("allList");
+el.innerHTML=list.map(v=>`<div class="al-item ${v.spawn}"><span class="al-flag">${FLAGS[v.nation]||""}</span><span class="al-name">${v.name}</span><span class="al-type">${v.type}</span><span class="al-br">${v.br.toFixed(1)}</span><span class="al-badge ${v.spawn}">${v.spawn==="air"?"AIR":"AIRFIELD"}</span><span class="al-alt">${v.spawn==="air"?v.alt+"m":"—"}</span></div>`).join("");
+}
+renderList();
+</script>
+</body>
+</html>
