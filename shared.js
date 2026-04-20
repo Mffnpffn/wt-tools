@@ -23,19 +23,8 @@ const TOOLS=[
 {href:"air-spawn.html",label:"Air Spawn",icon:"✈️"}
 ];
 
-// Inline SVG flags — accurate designs, no external files needed
-const SVG_FLAGS={
-USSR:"data:image/svg+xml,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 213'><rect fill='%23cc0000' width='320' height='213'/><g fill='%23ffd700' transform='translate(50,25)'><path d='M20 5l3 9h10l-8 6 3 9-8-6-8 6 3-9-8-6h10z'/><path d='M0 45h8v-20l15 20h-5l-10-13v13h-8zm25-5l7-15 7 15h-4l-1.5-4h-7l-1.5 4zm5-7h4l-2-5zm15 12v-20h8v17h9v3zm12 0v-3h12v-5h-9v-3h9v-5h-12v-4h15v20z'/></g></svg>`),
-USA:"data:image/svg+xml,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 168'><rect fill='%23fff' width='320' height='168'/><g fill='%23b22234'><rect width='320' height='13'/><rect y='26' width='320' height='13'/><rect y='52' width='320' height='13'/><rect y='78' width='320' height='13'/><rect y='104' width='320' height='13'/><rect y='130' width='320' height='13'/><rect y='155' width='320' height='13'/></g><rect fill='%233c3b6e' width='137' height='91'/><g fill='%23fff' font-size='8' font-family='serif'><text x='12' y='14'>★★★★★★</text><text x='22' y='28'>★★★★★</text><text x='12' y='42'>★★★★★★</text><text x='22' y='56'>★★★★★</text><text x='12' y='70'>★★★★★★</text><text x='22' y='84'>★★★★★</text></g></svg>`),
-Germany:"data:image/svg+xml,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 192'><rect fill='%23000' width='320' height='64'/><rect y='64' fill='%23dd0000' width='320' height='64'/><rect y='128' fill='%23ffcc00' width='320' height='64'/></svg>`),
-Britain:"data:image/svg+xml,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 160'><rect fill='%23012169' width='320' height='160'/><path d='M0 0L320 160M320 0L0 160' stroke='%23fff' stroke-width='32'/><path d='M0 0L320 160M320 0L0 160' stroke='%23c8102e' stroke-width='20'/><path d='M160 0v160M0 80h320' stroke='%23fff' stroke-width='52'/><path d='M160 0v160M0 80h320' stroke='%23c8102e' stroke-width='32'/></svg>`),
-Japan:"data:image/svg+xml,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 213'><rect fill='%23fff' width='320' height='213'/><circle cx='160' cy='106.5' r='64' fill='%23bc002d'/></svg>`),
-France:"data:image/svg+xml,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 213'><rect fill='%23002395' width='107' height='213'/><rect x='107' fill='%23fff' width='106' height='213'/><rect x='213' fill='%23ed2939' width='107' height='213'/></svg>`),
-Italy:"data:image/svg+xml,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 213'><rect fill='%23009246' width='107' height='213'/><rect x='107' fill='%23fff' width='106' height='213'/><rect x='213' fill='%23ce2b37' width='107' height='213'/></svg>`),
-Sweden:"data:image/svg+xml,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 200'><rect fill='%23006aa7' width='320' height='200'/><rect x='100' fill='%23fecc00' width='40' height='200'/><rect y='80' fill='%23fecc00' width='320' height='40'/></svg>`),
-Israel:"data:image/svg+xml,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 232'><rect fill='%23fff' width='320' height='232'/><rect y='18' fill='%230038b8' width='320' height='30'/><rect y='184' fill='%230038b8' width='320' height='30'/><g fill='none' stroke='%230038b8' stroke-width='5' transform='translate(160,116)'><path d='M0-40L35 20H-35Z'/><path d='M0 40L35-20H-35Z'/></g></svg>`),
-China:"data:image/svg+xml,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 213'><rect fill='%23de2910' width='320' height='213'/><g fill='%23ffde00' transform='translate(53,36)'><path d='M0-30L7-9h22L11 4l7 22L0 12l-18 14 7-22L-22-9h22z'/></g><g fill='%23ffde00' transform='translate(107,18) scale(.4)'><path d='M0-30L7-9h22L11 4l7 22L0 12l-18 14 7-22L-22-9h22z'/></g><g fill='%23ffde00' transform='translate(127,40) scale(.4)'><path d='M0-30L7-9h22L11 4l7 22L0 12l-18 14 7-22L-22-9h22z'/></g><g fill='%23ffde00' transform='translate(127,70) scale(.4)'><path d='M0-30L7-9h22L11 4l7 22L0 12l-18 14 7-22L-22-9h22z'/></g><g fill='%23ffde00' transform='translate(107,90) scale(.4)'><path d='M0-30L7-9h22L11 4l7 22L0 12l-18 14 7-22L-22-9h22z'/></g></svg>`)
-};
+// Emoji flags — perfect on every device, no downloads needed
+const SVG_FLAGS={USSR:"🇷🇺",USA:"🇺🇸",Germany:"🇩🇪",Britain:"🇬🇧",Japan:"🇯🇵",France:"🇫🇷",Italy:"🇮🇹",Sweden:"🇸🇪",Israel:"🇮🇱",China:"🇨🇳"};
 const NATIONS=[
 {id:"USSR",flag:SVG_FLAGS.USSR,label:"USSR",header:"СОВЕТСКИЕ ИНСТРУМЕНТЫ",sub:"SOVIET ORDNANCE TOOLS",tagline:"Soviet Engineering"},
 {id:"USA",flag:SVG_FLAGS.USA,label:"USA",header:"WT TOOLS",sub:"AMERICAN ORDNANCE SUITE",tagline:"American Firepower"},
@@ -59,13 +48,14 @@ const active=currentPage===t.href?" active":"";
 return`<a class="wt-nav-link${active}" href="${t.href}">${t.label}</a>`;
 }).join("");
 const themeOpts=NATIONS.map(n=>
-`<div class="wt-theme-opt" data-nation="${n.id}" onclick="wtSetNation('${n.id}')"><img src="${n.flag}" width="32" height="20" style="border-radius:2px;object-fit:cover">${n.label}</div>`
+`<div class="wt-theme-opt" data-nation="${n.id}" onclick="wtSetNation('${n.id}')"><span class="tf">${n.flag}</span>${n.label}</div>`
 ).join("");
+const initFlag=SVG_FLAGS[localStorage.getItem("wt_nation_theme")||"USSR"]||SVG_FLAGS.USSR;
 nav.innerHTML=`<div class="wt-nav-inner">
-<a class="wt-nav-brand" href="home.html"><img src="${SVG_FLAGS.USSR}" width="24" height="16" id="wtBrandFlag" style="border-radius:2px"> <span>WT TOOLS</span></a>
+<a class="wt-nav-brand" href="home.html"><span id="wtBrandFlag">${initFlag}</span> <span>WT TOOLS</span></a>
 <div class="wt-nav-scroll">${links}</div>
 <div class="wt-nav-theme">
-<button class="wt-theme-btn" onclick="document.querySelector('.wt-theme-dd').classList.toggle('open')" title="Nation Theme"><img src="${SVG_FLAGS.USSR}" width="24" height="16" id="wtThemeFlag" style="border-radius:2px"></button>
+<button class="wt-theme-btn" onclick="document.querySelector('.wt-theme-dd').classList.toggle('open')" title="Nation Theme"><span id="wtThemeFlag">${initFlag}</span></button>
 <div class="wt-theme-dd" id="wtThemeDD">${themeOpts}</div>
 </div>
 </div>`;
@@ -79,11 +69,11 @@ if(dd)dd.classList.remove("open");
 }
 });
 
-// ===== FLAG BACKGROUND (SVG) =====
+// ===== FLAG BACKGROUND (emoji) =====
 const flagBg=document.createElement("div");
 flagBg.className="wt-flag-bg";
 flagBg.id="wtFlagBg";
-flagBg.style.backgroundImage="url('"+SVG_FLAGS.USSR+"')";
+flagBg.textContent=SVG_FLAGS[localStorage.getItem("wt_nation_theme")||"USSR"]||"🇷🇺";
 document.body.prepend(flagBg);
 
 // ===== SCROLL TO TOP =====
@@ -103,19 +93,19 @@ if(!nation)return;
 document.documentElement.setAttribute("data-nation",nationId);
 localStorage.setItem("wt_nation_theme",nationId);
 
-// Update flag background image
+// Update flag background emoji
 const fb=document.getElementById("wtFlagBg");
-if(fb)fb.style.backgroundImage="url('"+nation.flag+"')";
+if(fb)fb.textContent=nation.flag;
 
 // Update navbar brand flag + text
 const brandFlag=document.getElementById("wtBrandFlag");
-if(brandFlag)brandFlag.src=nation.flag;
-const brandText=document.querySelector(".wt-nav-brand span");
+if(brandFlag)brandFlag.textContent=nation.flag;
+const brandText=document.querySelector(".wt-nav-brand span:last-child");
 if(brandText)brandText.textContent=nation.header;
 
 // Update theme picker flag
 const themeFlag=document.getElementById("wtThemeFlag");
-if(themeFlag)themeFlag.src=nation.flag;
+if(themeFlag)themeFlag.textContent=nation.flag;
 
 // Update ALL header text on every page
 const h1=document.querySelector("header h1");

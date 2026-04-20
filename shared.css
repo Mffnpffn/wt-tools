@@ -5,17 +5,17 @@ html{scroll-behavior:smooth}
 body{animation:wtPageIn .35s ease both}
 @keyframes wtPageIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-/* ===== NATION THEMES — full colour override ===== */
-[data-nation="USSR"]{--accent:#cc0000;--accent2:#ff2222;--accent-glow:rgba(204,0,0,.3);--nav-bg:rgba(120,10,10,.88);--flag-file:flags/ru.png}
-[data-nation="USA"]{--accent:#1a5276;--accent2:#4a9eff;--accent-glow:rgba(74,158,255,.3);--nav-bg:rgba(10,40,90,.88);--flag-file:flags/us.png;--red:#1a5276;--red2:#4a9eff;--red-glow:rgba(74,158,255,.3);--gold:#e0c040;--card-border:rgba(74,158,255,.12)}
-[data-nation="Germany"]{--accent:#666;--accent2:#bbb;--accent-glow:rgba(170,170,170,.25);--nav-bg:rgba(50,50,50,.92);--flag-file:flags/de.png;--red:#666;--red2:#bbb;--red-glow:rgba(170,170,170,.2);--gold:#c0a030;--card-border:rgba(170,170,170,.1)}
-[data-nation="Britain"]{--accent:#1a6b3a;--accent2:#4caf70;--accent-glow:rgba(76,175,80,.25);--nav-bg:rgba(10,60,30,.88);--flag-file:flags/gb.png;--red:#1a6b3a;--red2:#4caf70;--red-glow:rgba(76,175,80,.2);--gold:#d4a017;--card-border:rgba(76,175,80,.12)}
-[data-nation="Japan"]{--accent:#c62828;--accent2:#ef5350;--accent-glow:rgba(239,83,80,.25);--nav-bg:rgba(100,15,15,.88);--flag-file:flags/jp.png;--red:#c62828;--red2:#ef5350;--red-glow:rgba(239,83,80,.2);--gold:#e8d0a0;--card-border:rgba(239,83,80,.1)}
-[data-nation="France"]{--accent:#1a3a8a;--accent2:#5577dd;--accent-glow:rgba(85,119,221,.25);--nav-bg:rgba(15,30,80,.88);--flag-file:flags/fr.png;--red:#1a3a8a;--red2:#5577dd;--red-glow:rgba(85,119,221,.2);--gold:#d4a017;--card-border:rgba(85,119,221,.1)}
-[data-nation="Italy"]{--accent:#2e7d32;--accent2:#66bb6a;--accent-glow:rgba(102,187,106,.25);--nav-bg:rgba(20,60,20,.88);--flag-file:flags/it.png;--red:#2e7d32;--red2:#66bb6a;--red-glow:rgba(102,187,106,.2);--gold:#d4a017;--card-border:rgba(102,187,106,.1)}
-[data-nation="Sweden"]{--accent:#0d47a1;--accent2:#42a5f5;--accent-glow:rgba(66,165,245,.25);--nav-bg:rgba(10,40,100,.88);--flag-file:flags/se.png;--red:#0d47a1;--red2:#42a5f5;--red-glow:rgba(66,165,245,.2);--gold:#fdd835;--card-border:rgba(253,216,53,.12)}
-[data-nation="Israel"]{--accent:#1565c0;--accent2:#64b5f6;--accent-glow:rgba(100,181,246,.25);--nav-bg:rgba(15,50,100,.88);--flag-file:flags/il.png;--red:#1565c0;--red2:#64b5f6;--red-glow:rgba(100,181,246,.2);--gold:#d4a017;--card-border:rgba(100,181,246,.1)}
-[data-nation="China"]{--accent:#c62828;--accent2:#e53935;--accent-glow:rgba(229,57,53,.25);--nav-bg:rgba(100,15,15,.88);--flag-file:flags/cn.png;--red:#c62828;--red2:#e53935;--red-glow:rgba(229,57,53,.2);--gold:#ffd600;--card-border:rgba(255,214,0,.12)}
+/* ===== NATION THEMES — historically accurate colours ===== */
+[data-nation="USSR"]{--accent:#CC0000;--accent2:#ff2222;--accent-glow:rgba(204,0,0,.3);--nav-bg:rgba(130,5,5,.9);--gold:#FFD700;--card-border:rgba(204,0,0,.12)}
+[data-nation="USA"]{--accent:#3C3B6E;--accent2:#6872B0;--accent-glow:rgba(60,59,110,.35);--nav-bg:rgba(30,30,60,.9);--red:#3C3B6E;--red2:#6872B0;--red-glow:rgba(60,59,110,.25);--gold:#B22234;--card-border:rgba(60,59,110,.15)}
+[data-nation="Germany"]{--accent:#555;--accent2:#aaa;--accent-glow:rgba(160,160,160,.2);--nav-bg:rgba(40,40,40,.92);--red:#555;--red2:#aaa;--red-glow:rgba(160,160,160,.15);--gold:#FFCE00;--card-border:rgba(160,160,160,.1)}
+[data-nation="Britain"]{--accent:#012169;--accent2:#4477CC;--accent-glow:rgba(1,33,105,.3);--nav-bg:rgba(1,20,65,.9);--red:#012169;--red2:#4477CC;--red-glow:rgba(1,33,105,.2);--gold:#CF142B;--card-border:rgba(1,33,105,.12)}
+[data-nation="Japan"]{--accent:#BC002D;--accent2:#E04060;--accent-glow:rgba(188,0,45,.25);--nav-bg:rgba(100,0,25,.88);--red:#BC002D;--red2:#E04060;--red-glow:rgba(188,0,45,.2);--gold:#ddd;--card-border:rgba(188,0,45,.1)}
+[data-nation="France"]{--accent:#002395;--accent2:#4466CC;--accent-glow:rgba(0,35,149,.3);--nav-bg:rgba(0,20,80,.9);--red:#002395;--red2:#4466CC;--red-glow:rgba(0,35,149,.2);--gold:#ED2939;--card-border:rgba(0,35,149,.12)}
+[data-nation="Italy"]{--accent:#009246;--accent2:#40B878;--accent-glow:rgba(0,146,70,.25);--nav-bg:rgba(0,70,35,.9);--red:#009246;--red2:#40B878;--red-glow:rgba(0,146,70,.2);--gold:#CE2B37;--card-border:rgba(0,146,70,.12)}
+[data-nation="Sweden"]{--accent:#006AA7;--accent2:#4499CC;--accent-glow:rgba(0,106,167,.3);--nav-bg:rgba(0,50,90,.9);--red:#006AA7;--red2:#4499CC;--red-glow:rgba(0,106,167,.2);--gold:#FECC02;--card-border:rgba(254,204,2,.15)}
+[data-nation="Israel"]{--accent:#0038B8;--accent2:#4477DD;--accent-glow:rgba(0,56,184,.3);--nav-bg:rgba(0,30,100,.9);--red:#0038B8;--red2:#4477DD;--red-glow:rgba(0,56,184,.2);--gold:#d4a017;--card-border:rgba(0,56,184,.12)}
+[data-nation="China"]{--accent:#DE2910;--accent2:#EE5540;--accent-glow:rgba(222,41,16,.3);--nav-bg:rgba(120,20,8,.9);--red:#DE2910;--red2:#EE5540;--red-glow:rgba(222,41,16,.2);--gold:#FFDE00;--card-border:rgba(255,222,0,.15)}
 
 /* Non-USSR: override ALL red elements to nation accent */
 [data-nation]:not([data-nation="USSR"]) header{border-color:var(--accent)!important;background:linear-gradient(180deg,var(--accent-glow),transparent)!important}
@@ -36,7 +36,7 @@ body{animation:wtPageIn .35s ease both}
 .wt-nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;padding:0 10px;height:52px}
 .wt-nav-brand{font-weight:700;font-size:1rem;color:var(--accent2,#ff2222);text-decoration:none;padding:0 12px;flex-shrink:0;letter-spacing:.06em;display:flex;align-items:center;gap:6px;transition:color .3s}
 .wt-nav-brand:hover{opacity:.85}
-.wt-nav-brand img{width:20px;height:14px;border-radius:2px;object-fit:cover}
+.wt-nav-brand #wtBrandFlag{font-size:1.1rem}
 .wt-nav-scroll{display:flex;overflow-x:auto;flex:1;gap:2px;scrollbar-width:none;-ms-overflow-style:none;padding:0 4px}
 .wt-nav-scroll::-webkit-scrollbar{display:none}
 .wt-nav-link{padding:8px 11px;font-size:.72rem;color:rgba(255,255,255,.45);text-decoration:none;white-space:nowrap;border-radius:5px;transition:all .15s;letter-spacing:.02em;flex-shrink:0;font-weight:500}
@@ -44,20 +44,20 @@ body{animation:wtPageIn .35s ease both}
 .wt-nav-link.active{color:var(--accent2,#ff2222);background:rgba(255,255,255,.05);font-weight:700;box-shadow:inset 0 -2px 0 var(--accent2,#ff2222)}
 .wt-nav-theme{position:relative;flex-shrink:0;padding:0 6px}
 .wt-theme-btn{background:none;border:1px solid rgba(255,255,255,.12);border-radius:5px;padding:5px 10px;cursor:pointer;transition:all .15s;line-height:1;overflow:hidden}
-.wt-theme-btn img{width:22px;height:15px;border-radius:2px;object-fit:cover;display:block}
+.wt-theme-btn{font-size:1rem;line-height:1.2}
 .wt-theme-btn:hover{border-color:var(--accent2,#ff2222);box-shadow:0 0 10px var(--accent-glow)}
 .wt-theme-dd{display:none;position:absolute;top:100%;right:0;background:var(--bg2,#1a1c20);border:1px solid var(--border,#2a2c30);border-radius:6px;padding:4px;min-width:180px;z-index:10000;box-shadow:0 8px 30px rgba(0,0,0,.6);margin-top:8px}
 .wt-theme-dd.open{display:block}
 .wt-theme-opt{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:5px;cursor:pointer;font-size:.78rem;color:var(--text2,#888);transition:background .1s}
 .wt-theme-opt:hover{background:rgba(255,255,255,.06);color:var(--text,#e0ddd8)}
 .wt-theme-opt.active{color:var(--accent2,#ff2222);font-weight:600}
-.wt-theme-opt img{width:22px;height:15px;border-radius:2px;object-fit:cover}
+.wt-theme-opt .tf{font-size:1.1rem}
 
 /* Push body below BIGGER navbar */
 body{padding-top:54px!important}
 
-/* ===== FLAG BACKGROUND — SVG at 18% ===== */
-.wt-flag-bg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(80vw,700px);height:auto;aspect-ratio:3/2;pointer-events:none;z-index:0;opacity:.18;background-size:contain;background-repeat:no-repeat;background-position:center;transition:background-image .5s,opacity .5s}
+/* ===== FLAG BACKGROUND — emoji at 8% ===== */
+.wt-flag-bg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:0;opacity:.08;font-size:min(60vw,500px);line-height:1;transition:opacity .4s}
 
 /* ===== HOVER GLOW on interactive elements ===== */
 .tool-card:hover{box-shadow:0 8px 32px var(--accent-glow,rgba(204,0,0,.15)),0 0 0 1px var(--accent,#cc0000)!important}
