@@ -136,6 +136,203 @@ if("serviceWorker" in navigator){
 navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
 
+// ===== SETTINGS BUTTON IN NAVBAR =====
+const settingsBtn=document.createElement("button");
+settingsBtn.className="wt-settings-btn";
+settingsBtn.textContent="⚙";
+settingsBtn.title="Settings";
+settingsBtn.onclick=()=>wtOpenSettings();
+document.querySelector(".wt-nav-inner")?.appendChild(settingsBtn);
+
+// ===== SETTINGS OVERLAY =====
+const settingsOverlay=document.createElement("div");
+settingsOverlay.className="wt-settings-overlay";
+settingsOverlay.id="wtSettingsOverlay";
+settingsOverlay.onclick=e=>{if(e.target===settingsOverlay)wtCloseSettings()};
+document.body.appendChild(settingsOverlay);
+
+function wtGetSettings(){
+try{return JSON.parse(localStorage.getItem("wt_settings")||"{}")}catch(e){return{}}
+}
+function wtSaveSettings(s){localStorage.setItem("wt_settings",JSON.stringify(s))}
+
+const TOOL_LIST=[
+{href:"index.html",label:"Bomb Damage Calculator"},
+{href:"br-calc.html",label:"BR Calculator"},
+{href:"ammo-picker.html",label:"Ammo Picker"},
+{href:"kos-tracker.html",label:"KOS Tracker"},
+{href:"repair-cost.html",label:"Repair Cost Calculator"},
+{href:"vehicle-comparer.html",label:"Vehicle Comparer"},
+{href:"spawn-points.html",label:"Spawn Point Calculator"},
+{href:"pen-calculator.html",label:"Penetration Calculator"},
+{href:"crew-skills.html",label:"Crew Skill Calculator"},
+{href:"premium-rp.html",label:"Premium RP Calculator"},
+{href:"mission-tracker.html",label:"Mission Tracker"},
+{href:"tier-list.html",label:"Nation Tier List"},
+{href:"lineup-builder.html",label:"Lineup Builder"},
+{href:"wishlist.html",label:"Wishlist & Mod Tracker"},
+{href:"grind-planner.html",label:"Grind Planner"},
+{href:"stat-tracker.html",label:"Stat Tracker"},
+{href:"bomb-drop.html",label:"Bomb Drop Calculator"},
+{href:"talisman.html",label:"Talisman Calculator"},
+{href:"air-spawn.html",label:"Air Spawn Calculator"}
+];
+
+window.wtOpenSettings=function(){
+const s=wtGetSettings();
+const mode=s.mode||"advanced";
+const cb=s.colorblind||false;
+const hidden=s.hiddenTools||[];
+settingsOverlay.innerHTML=`<div class="wt-settings-box">
+<div class="wt-settings-title"><span>⚙ Settings</span><span class="wt-settings-close" onclick="wtCloseSettings()">✕</span></div>
+<div class="wt-settings-section">DISPLAY MODE</div>
+<div class="wt-toggle-row"><span class="wt-toggle-label">Beginner Mode <span style="font-size:.6rem;color:var(--text3)">(hides advanced stats)</span></span>
+<div class="wt-toggle-sw${mode==="beginner"?" on":""}" onclick="wtToggleMode(this)"></div></div>
+<div class="wt-settings-section">ACCESSIBILITY</div>
+<div class="wt-toggle-row"><span class="wt-toggle-label">Colorblind Friendly <span style="font-size:.6rem;color:var(--text3)">(blue/orange instead of green/red)</span></span>
+<div class="wt-toggle-sw${cb?" on":""}" onclick="wtToggleCB(this)"></div></div>
+<div class="wt-settings-section">TOOL VISIBILITY (HOME PAGE)</div>
+${TOOL_LIST.map(t=>{
+const vis=!hidden.includes(t.href);
+return`<div class="wt-toggle-row"><span class="wt-toggle-label">${t.label}</span>
+<div class="wt-toggle-sw${vis?" on":""}" data-tool="${t.href}" onclick="wtToggleTool(this)"></div></div>`;
+}).join("")}
+<div class="wt-settings-btn-row">
+<div class="btn" onclick="wtResetSettings()">Reset to Default</div>
+<div class="btn" onclick="wtCloseSettings()">Close</div>
+</div>
+</div>`;
+settingsOverlay.classList.add("open");
+};
+window.wtCloseSettings=function(){settingsOverlay.classList.remove("open")};
+
+window.wtToggleMode=function(el){
+el.classList.toggle("on");
+const s=wtGetSettings();
+s.mode=el.classList.contains("on")?"beginner":"advanced";
+wtSaveSettings(s);
+wtApplySettings();
+};
+window.wtToggleCB=function(el){
+el.classList.toggle("on");
+const s=wtGetSettings();
+s.colorblind=el.classList.contains("on");
+wtSaveSettings(s);
+wtApplySettings();
+};
+window.wtToggleTool=function(el){
+el.classList.toggle("on");
+const s=wtGetSettings();
+if(!s.hiddenTools)s.hiddenTools=[];
+const tool=el.dataset.tool;
+if(el.classList.contains("on"))s.hiddenTools=s.hiddenTools.filter(t=>t!==tool);
+else if(!s.hiddenTools.includes(tool))s.hiddenTools.push(tool);
+wtSaveSettings(s);
+wtApplyToolVisibility();
+};
+window.wtResetSettings=function(){
+localStorage.removeItem("wt_settings");
+wtApplySettings();
+wtCloseSettings();
+wtShowCopied("Settings reset to default");
+};
+
+function wtApplySettings(){
+const s=wtGetSettings();
+document.documentElement.setAttribute("data-mode",s.mode||"advanced");
+document.documentElement.setAttribute("data-cb",s.colorblind?"1":"0");
+wtApplyToolVisibility();
+}
+function wtApplyToolVisibility(){
+const s=wtGetSettings();
+const hidden=s.hiddenTools||[];
+document.querySelectorAll(".tool-card").forEach(card=>{
+const href=card.getAttribute("href");
+if(href)card.classList.toggle("wt-hidden",hidden.includes(href));
+});
+}
+wtApplySettings();
+
+// ===== GAMEMODE SELECTOR (home only) =====
+if(currentPage==="home.html"){
+const gmOrders={
+"all":null,
+"ground":["br-calc.html","repair-cost.html","ammo-picker.html","pen-calculator.html","spawn-points.html","lineup-builder.html","vehicle-comparer.html","crew-skills.html","grind-planner.html","wishlist.html","premium-rp.html","stat-tracker.html","talisman.html","mission-tracker.html","tier-list.html","index.html","bomb-drop.html","air-spawn.html","kos-tracker.html"],
+"air":["br-calc.html","air-spawn.html","bomb-drop.html","index.html","ammo-picker.html","vehicle-comparer.html","crew-skills.html","grind-planner.html","premium-rp.html","talisman.html","repair-cost.html","wishlist.html","stat-tracker.html","mission-tracker.html","tier-list.html","lineup-builder.html","spawn-points.html","pen-calculator.html","kos-tracker.html"],
+"heli":["br-calc.html","air-spawn.html","vehicle-comparer.html","spawn-points.html","crew-skills.html","lineup-builder.html","grind-planner.html","premium-rp.html","talisman.html","repair-cost.html","wishlist.html","stat-tracker.html","mission-tracker.html","tier-list.html","ammo-picker.html","pen-calculator.html","index.html","bomb-drop.html","kos-tracker.html"],
+"custom":["kos-tracker.html","lineup-builder.html","br-calc.html","spawn-points.html","ammo-picker.html","pen-calculator.html","vehicle-comparer.html","crew-skills.html","repair-cost.html","tier-list.html","stat-tracker.html","mission-tracker.html","grind-planner.html","premium-rp.html","talisman.html","wishlist.html","index.html","bomb-drop.html","air-spawn.html"],
+"sim":["br-calc.html","air-spawn.html","bomb-drop.html","repair-cost.html","crew-skills.html","spawn-points.html","ammo-picker.html","pen-calculator.html","vehicle-comparer.html","lineup-builder.html","grind-planner.html","premium-rp.html","talisman.html","wishlist.html","stat-tracker.html","mission-tracker.html","tier-list.html","index.html","kos-tracker.html"]
+};
+// Insert gamemode bar after header
+setTimeout(()=>{
+const container=document.querySelector(".container");
+if(!container)return;
+const gmBar=document.createElement("div");
+gmBar.className="wt-gamemode";
+gmBar.innerHTML=[
+{id:"all",icon:"⭐",label:"All Tools"},
+{id:"ground",icon:"🛡️",label:"Ground RB"},
+{id:"air",icon:"✈️",label:"Air RB"},
+{id:"heli",icon:"🚁",label:"Heli EC"},
+{id:"custom",icon:"⚔️",label:"Custom"},
+{id:"sim",icon:"🎯",label:"Simulator"}
+].map(m=>`<div class="wt-gm-btn${m.id==="all"?" active":""}" data-gm="${m.id}" onclick="wtSetGamemode('${m.id}',this)"><span class="gm-icon">${m.icon}</span>${m.label}</div>`).join("");
+container.prepend(gmBar);
+},100);
+
+window.wtSetGamemode=function(mode,el){
+document.querySelectorAll(".wt-gm-btn").forEach(b=>b.classList.remove("active"));
+if(el)el.classList.add("active");
+const container=document.querySelector(".container");
+if(!container)return;
+const cards=[...container.querySelectorAll(".tool-card")];
+const divider=container.querySelector(".divider");
+if(mode==="all"){
+// Reset to original DOM order — just remove and re-add all cards before divider
+cards.forEach(c=>container.insertBefore(c,divider));
+return;
+}
+const order=gmOrders[mode];
+if(!order)return;
+// Sort cards by the order array
+const sorted=[...cards].sort((a,b)=>{
+const aH=a.getAttribute("href");const bH=b.getAttribute("href");
+const aI=order.indexOf(aH);const bI=order.indexOf(bH);
+return(aI===-1?99:aI)-(bI===-1?99:bI);
+});
+sorted.forEach(c=>container.insertBefore(c,divider));
+};
+}
+
+// ===== WISHLIST INTEGRATION =====
+function wtGetWishlistNames(){
+try{return JSON.parse(localStorage.getItem("wt_wishlist_vehicles")||"[]")}catch(e){return[]}
+}
+window.wtIsWishlisted=function(name){return wtGetWishlistNames().includes(name)};
+
+// Mark wishlisted items in dropdowns via MutationObserver (extends existing observer)
+function wtMarkWishlisted(){
+const wl=wtGetWishlistNames();
+if(!wl.length)return;
+document.querySelectorAll(".dd-item,.dd-item").forEach(item=>{
+const nameEl=item.querySelector(".dd-name");
+if(!nameEl)return;
+const name=nameEl.textContent.trim();
+if(wl.includes(name)){
+if(!item.classList.contains("wt-wishlisted")){
+item.classList.add("wt-wishlisted");
+if(!item.querySelector(".wt-wishlist-badge")){
+const badge=document.createElement("span");
+badge.className="wt-wishlist-badge";
+badge.textContent="📋";
+badge.title="On your wishlist";
+nameEl.appendChild(badge);
+}
+}
+}
+});
+}
+
 // ===== FUZZY SEARCH =====
 function wtLevenshtein(a,b){
 const m=a.length,n=b.length;
@@ -405,12 +602,22 @@ wtSetURLParam("vehicle",name);
 }
 },true);
 
+// ===== BEGINNER MODE — MARK ADVANCED ELEMENTS =====
+function wtMarkAdvanced(){
+// Mark complex stats as advanced-only
+document.querySelectorAll(".ammo-stat,.mod-bar,.pen-bar,.wl-pbar,.skill-cost,.snap-stat,.cp-stat,.be-text,.norm-info,.cc-row").forEach(el=>{
+if(!el.classList.contains("wt-advanced"))el.classList.add("wt-advanced");
+});
+}
+
 // ===== PERIODIC ENHANCEMENT =====
-// Re-run enhancements periodically to catch dynamically created elements
 function wtEnhanceAll(){
 wtEnhanceSearchBoxes();
 wtSetupCopyable();
 wtSetupTooltips();
+wtMarkWishlisted();
+wtMarkAdvanced();
+wtApplyToolVisibility();
 }
 wtEnhanceAll();
 setInterval(wtEnhanceAll,2000);
