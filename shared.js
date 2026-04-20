@@ -86,6 +86,24 @@ window.addEventListener("scroll",()=>{
 stt.classList.toggle("show",window.scrollY>300);
 });
 
+// ===== DISCLAIMER + REPORT BUTTON =====
+// Append disclaimer to existing footer
+const existingFooter=document.querySelector("footer");
+if(existingFooter){
+existingFooter.innerHTML+=`<br><span style="opacity:.5;font-size:.6rem">Not affiliated with Gaijin Entertainment or War Thunder. All game data is for reference only.</span>`;
+if(currentPage!=="home.html"){
+existingFooter.innerHTML+=`<br><a href="https://github.com/Mffnpffn/wt-tools/issues" target="_blank" style="color:var(--accent2);text-decoration:none;font-size:.6rem;opacity:.6">🐛 Report incorrect data</a>`;
+}
+}
+
+// ===== FONT SIZE =====
+function wtApplyFontSize(){
+const s=wtGetSettings?.()?.fontSize||"medium";
+const sizes={small:"14px",medium:"16px",large:"18px"};
+document.documentElement.style.fontSize=sizes[s]||"16px";
+}
+wtApplyFontSize();
+
 // ===== THEME ENGINE =====
 window.wtSetNation=function(nationId){
 const nation=NATIONS.find(n=>n.id===nationId);
@@ -196,12 +214,19 @@ window.wtOpenSettings=function(){
 const s=wtGetSettings();
 const mode=s.mode||"advanced";
 const cb=s.colorblind||false;
+const fs=s.fontSize||"medium";
 const hidden=s.hiddenTools||[];
 settingsOverlay.innerHTML=`<div class="wt-settings-box">
 <div class="wt-settings-title"><span>⚙ Settings</span><span class="wt-settings-close" onclick="wtCloseSettings()">✕</span></div>
 <div class="wt-settings-section">DISPLAY MODE</div>
 <div class="wt-toggle-row"><span class="wt-toggle-label">Beginner Mode <span style="font-size:.6rem;color:var(--text3)">(hides advanced stats)</span></span>
 <div class="wt-toggle-sw${mode==="beginner"?" on":""}" onclick="wtToggleMode(this)"></div></div>
+<div class="wt-settings-section">FONT SIZE</div>
+<div class="wt-toggle-row" style="gap:6px">
+<span class="wt-toggle-label">Text Size</span>
+<div style="display:flex;gap:4px">${["small","medium","large"].map(sz=>
+`<div onclick="wtSetFontSize('${sz}')" style="padding:4px 10px;border-radius:4px;font-size:${sz==="small"?".7":sz==="medium"?".8":".9"}rem;cursor:pointer;border:1px solid ${fs===sz?"var(--accent2)":"var(--border)"};color:${fs===sz?"var(--accent2)":"var(--text3)"};background:${fs===sz?"rgba(204,0,0,.08)":"var(--bg3)"}">${sz.charAt(0).toUpperCase()+sz.slice(1)}</div>`
+).join("")}</div></div>
 <div class="wt-settings-section">ACCESSIBILITY</div>
 <div class="wt-toggle-row"><span class="wt-toggle-label">Colorblind Friendly <span style="font-size:.6rem;color:var(--text3)">(blue/orange instead of green/red)</span></span>
 <div class="wt-toggle-sw${cb?" on":""}" onclick="wtToggleCB(this)"></div></div>
@@ -211,6 +236,8 @@ const vis=!hidden.includes(t.href);
 return`<div class="wt-toggle-row"><span class="wt-toggle-label">${t.label}</span>
 <div class="wt-toggle-sw${vis?" on":""}" data-tool="${t.href}" onclick="wtToggleTool(this)"></div></div>`;
 }).join("")}
+<div class="wt-settings-section">FEEDBACK</div>
+<div class="wt-toggle-row"><a href="https://github.com/Mffnpffn/wt-tools/issues" target="_blank" style="color:var(--accent2);text-decoration:none;font-size:.75rem">🐛 Report Incorrect Data or Bug</a></div>
 <div class="wt-settings-btn-row">
 <div class="btn" onclick="wtResetSettings()">Reset to Default</div>
 <div class="btn" onclick="wtCloseSettings()">Close</div>
@@ -244,6 +271,10 @@ else if(!s.hiddenTools.includes(tool))s.hiddenTools.push(tool);
 wtSaveSettings(s);
 wtApplyToolVisibility();
 };
+window.wtSetFontSize=function(sz){
+const s=wtGetSettings();s.fontSize=sz;wtSaveSettings(s);wtApplyFontSize();
+wtCloseSettings();setTimeout(wtOpenSettings,100);// reopen to show updated state
+};
 window.wtResetSettings=function(){
 localStorage.removeItem("wt_settings");
 wtApplySettings();
@@ -256,6 +287,7 @@ const s=wtGetSettings();
 document.documentElement.setAttribute("data-mode",s.mode||"advanced");
 document.documentElement.setAttribute("data-cb",s.colorblind?"1":"0");
 wtApplyToolVisibility();
+wtApplyFontSize();
 }
 function wtApplyToolVisibility(){
 const s=wtGetSettings();

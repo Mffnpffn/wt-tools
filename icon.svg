@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<rect fill="#0d0e10" width="512" height="512" rx="80"/>
+<g transform="translate(256,240)">
+<path d="M0,-120 L28,-37 L114,-37 L45,14 L70,97 L0,46 L-70,97 L-45,14 L-114,-37 L-28,-37 Z" fill="#cc0000" stroke="#ff2222" stroke-width="4"/>
+</g>
+<text x="256" y="430" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="120" fill="#ff2222">WT</text>
+</svg>
