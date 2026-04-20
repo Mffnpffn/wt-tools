@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>WT Penetration Calculator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0e10;--bg2:#1a1c20;--bg3:#222528;--border:#2a2c30;--red:#cc0000;--red2:#ff2222;--red-glow:rgba(204,0,0,.3);--gold:#d4a017;--text:#e0ddd8;--text2:#888;--text3:#555;--green:#4caf50;--amber:#ff9800;--blue:#4a9eff}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{text-align:center;padding:20px 16px 12px;border-bottom:2px solid var(--red);background:linear-gradient(180deg,rgba(204,0,0,.08),transparent)}
+header h1{font-size:1.6rem;color:var(--red2);text-shadow:0 0 20px var(--red-glow);letter-spacing:.05em}
+header .star{color:var(--gold);font-size:1.2rem}
+header p{color:var(--text2);font-size:.78rem;margin-top:4px;letter-spacing:.08em}
+.container{max-width:750px;margin:0 auto;padding:16px}
+.calc-panel{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px}
+.calc-title{font-size:.7rem;color:var(--text3);letter-spacing:.1em;margin-bottom:14px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field.full{grid-column:1/-1}
+.field label{font-size:.68rem;color:var(--text2);letter-spacing:.06em}
+.field input,.field select{padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.9rem;outline:none}
+.field input:focus,.field select:focus{border-color:var(--red)}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer}
+.field .hint{font-size:.6rem;color:var(--text3)}
+.calc-btn{width:100%;padding:14px;background:linear-gradient(180deg,#dd0000,#990000);border:2px solid var(--red2);border-radius:8px;color:#fff;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:.08em;margin-top:14px;transition:all .15s}
+.calc-btn:hover{box-shadow:0 0 20px var(--red-glow)}
+.calc-btn:active{transform:scale(.98)}
+.result{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px;display:none}
+.result.show{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.result-banner{padding:16px;text-align:center}
+.result-banner.pen{background:linear-gradient(180deg,rgba(76,175,80,.12),transparent);border-bottom:2px solid var(--green)}
+.result-banner.no-pen{background:linear-gradient(180deg,rgba(255,34,34,.12),transparent);border-bottom:2px solid var(--red2)}
+.result-banner.ricochet{background:linear-gradient(180deg,rgba(255,152,0,.12),transparent);border-bottom:2px solid var(--amber)}
+.result-icon{font-size:2.2rem;margin-bottom:4px}
+.result-text{font-size:1.2rem;font-weight:700}
+.result-text.pen{color:var(--green)}.result-text.no-pen{color:var(--red2)}.result-text.ricochet{color:var(--amber)}
+.result-sub{font-size:.78rem;color:var(--text2);margin-top:4px}
+.result-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--border)}
+.rs{background:var(--bg2);padding:10px;text-align:center}
+.rs .lb{font-size:.58rem;color:var(--text3);letter-spacing:.06em;margin-bottom:2px}
+.rs .vl{font-size:1.1rem;font-weight:700}
+.rs .unit{font-size:.65rem;color:var(--text3)}
+.diagram{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px}
+.diagram canvas{width:100%;display:block}
+.section-title{font-size:.8rem;color:var(--red2);letter-spacing:.08em;margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.norm-info{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:16px}
+.norm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px}
+.norm-item{background:var(--bg);border-radius:6px;padding:8px 10px;display:flex;align-items:center;gap:8px}
+.norm-badge{font-size:.6rem;font-weight:700;padding:3px 6px;border-radius:3px;min-width:48px;text-align:center;color:#000;flex-shrink:0}
+.norm-badge.APHE{background:var(--gold)}.norm-badge.AP{background:#b0b0b0}.norm-badge.HEAT{background:var(--amber)}
+.norm-badge.APDS{background:var(--blue)}.norm-badge.APFSDS{background:var(--green);color:#fff}
+.norm-badge.HE{background:var(--red2)}.norm-badge.APCR{background:#c77dff}.norm-badge.HESH{background:#e67e22}
+.norm-text{font-size:.7rem;color:var(--text2)}.norm-text b{color:var(--text)}
+.weakspot-section{margin-bottom:16px}
+.ws-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:8px}
+.ws-header{padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;user-select:none}
+.ws-header:hover{background:rgba(255,255,255,.02)}
+.ws-flag{font-size:1rem}
+.ws-name{flex:1;font-size:.85rem;font-weight:600}
+.ws-br{font-size:.75rem;color:var(--gold);font-weight:700}
+.ws-arrow{color:var(--text3);font-size:.7rem;transition:transform .2s}
+.ws-card.open .ws-arrow{transform:rotate(90deg)}
+.ws-body{display:none;padding:0 14px 12px;border-top:1px solid var(--border)}
+.ws-card.open .ws-body{display:block}
+.ws-spot{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.ws-spot:last-child{border:none}
+.ws-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.ws-dot.easy{background:var(--green)}.ws-dot.med{background:var(--amber)}.ws-dot.hard{background:var(--red2)}
+.ws-spot-info{flex:1}
+.ws-spot-name{font-size:.78rem;font-weight:600}
+.ws-spot-detail{font-size:.68rem;color:var(--text2);margin-top:1px}
+.hammer{opacity:.04;position:fixed;bottom:-40px;right:-40px;font-size:18rem;pointer-events:none;z-index:0}
+footer{text-align:center;padding:20px;color:var(--text2);font-size:.68rem;border-top:1px solid var(--border);margin-top:24px;letter-spacing:.06em}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--red);border-radius:3px}
+@media(max-width:500px){.form-grid{grid-template-columns:1fr}.container{padding:10px}}
+</style>
+</head>
+<body>
+<div class="hammer">☭</div>
+<header>
+<div><span class="star">★</span> <span class="star">★</span> <span class="star">★</span></div>
+<h1>WT PEN CALCULATOR</h1>
+<p>SHELL PENETRATION &amp; ARMOUR ANALYSIS</p>
+</header>
+<div class="container">
+<div class="calc-panel">
+<div class="calc-title">★ PENETRATION PARAMETERS</div>
+<div class="form-grid">
+<div class="field"><label>ARMOUR THICKNESS</label><input type="number" id="armour" value="200" min="1" max="1000" step="1"><div class="hint">Base plate thickness in mm</div></div>
+<div class="field"><label>ARMOUR ANGLE (°)</label><input type="number" id="angle" value="30" min="0" max="89" step="1"><div class="hint">0° = flat, 89° = extreme angle</div></div>
+<div class="field"><label>SHELL TYPE</label><select id="shellType">
+<option value="APHE">APHE — Armour-Piercing High-Explosive</option>
+<option value="AP">AP — Armour-Piercing (Solid Shot)</option>
+<option value="APCR">APCR — Armour-Piercing Composite Rigid</option>
+<option value="APDS">APDS — Armour-Piercing Discarding Sabot</option>
+<option value="APFSDS" selected>APFSDS — Armour-Piercing Fin-Stabilised</option>
+<option value="HEAT">HEAT — High-Explosive Anti-Tank</option>
+<option value="HESH">HESH — High-Explosive Squash Head</option>
+<option value="HE">HE — High-Explosive</option>
+</select></div>
+<div class="field"><label>SHELL PENETRATION @ 0°</label><input type="number" id="shellPen" value="480" min="1" max="1500" step="1"><div class="hint">Flat penetration in mm</div></div>
+</div>
+<button class="calc-btn" onclick="calculate()">★ CALCULATE PENETRATION ★</button>
+</div>
+<div class="result" id="result"></div>
+<div class="diagram" id="diagram"><canvas id="cv" width="600" height="280"></canvas></div>
+<div class="section-title">★ NORMALISATION REFERENCE</div>
+<div class="norm-info">
+<div class="norm-grid">
+<div class="norm-item"><span class="norm-badge APHE">APHE</span><div class="norm-text"><b>4°</b> norm, 72° ric</div></div>
+<div class="norm-item"><span class="norm-badge AP">AP</span><div class="norm-text"><b>5°</b> norm, 70° ric</div></div>
+<div class="norm-item"><span class="norm-badge APCR">APCR</span><div class="norm-text"><b>1.5°</b> norm, 76° ric</div></div>
+<div class="norm-item"><span class="norm-badge APDS">APDS</span><div class="norm-text"><b>2°</b> norm, 77° ric</div></div>
+<div class="norm-item"><span class="norm-badge APFSDS">APFSDS</span><div class="norm-text"><b>0°</b> norm, 80° ric</div></div>
+<div class="norm-item"><span class="norm-badge HEAT">HEAT</span><div class="norm-text"><b>0°</b> norm, no ric</div></div>
+<div class="norm-item"><span class="norm-badge HESH">HESH</span><div class="norm-text"><b>0°</b> norm, no ric</div></div>
+<div class="norm-item"><span class="norm-badge HE">HE</span><div class="norm-text"><b>0°</b> norm, no ric</div></div>
+</div>
+</div>
+<div class="section-title">★ COMMON WEAK SPOTS GUIDE</div>
+<div class="weakspot-section" id="weakspots"></div>
+</div>
+<footer>★ CALCULATIONS USE WAR THUNDER NORMALISATION FORMULAS ★ RESULTS ARE APPROXIMATE ★</footer>
+<script>
+// Shell properties: normalisation angle, ricochet angle, can ricochet
+const SHELLS={
+APHE:{norm:4,ricochet:72,canRic:true,chemical:false},
+AP:{norm:5,ricochet:70,canRic:true,chemical:false},
+APCR:{norm:1.5,ricochet:76,canRic:true,chemical:false},
+APDS:{norm:2,ricochet:77,canRic:true,chemical:false},
+APFSDS:{norm:0,ricochet:80,canRic:true,chemical:false},
+HEAT:{norm:0,ricochet:90,canRic:false,chemical:true},
+HESH:{norm:0,ricochet:90,canRic:false,chemical:true},
+HE:{norm:0,ricochet:90,canRic:false,chemical:true}
+};
+
+function calculate(){
+const armour=parseFloat(document.getElementById("armour").value)||200;
+const angle=parseFloat(document.getElementById("angle").value)||0;
+const type=document.getElementById("shellType").value;
+const pen=parseFloat(document.getElementById("shellPen").value)||480;
+const shell=SHELLS[type];
+const clampAngle=Math.max(0,Math.min(angle,89));
+
+// Effective angle after normalisation
+const effectiveAngle=Math.max(0,clampAngle-shell.norm);
+const radians=effectiveAngle*Math.PI/180;
+
+// Effective armour thickness
+let effectiveArmour;
+if(shell.chemical){
+// HEAT/HESH/HE: line-of-sight thickness
+effectiveArmour=armour/Math.cos(radians);
+}else{
+// Kinetic: LOS thickness
+effectiveArmour=armour/Math.cos(radians);
+}
+effectiveArmour=Math.round(effectiveArmour);
+
+// Check ricochet
+const ricocheted=shell.canRic&&clampAngle>=shell.ricochet;
+
+// Result
+let status,icon,text,sub,cls;
+if(ricocheted){
+status="ricochet";icon="↩️";cls="ricochet";
+text="RICOCHET";
+sub=`Shell bounces at ${clampAngle}° (ricochet threshold: ${shell.ricochet}° for ${type})`;
+}else if(pen>=effectiveArmour){
+status="pen";icon="💥";cls="pen";
+text="PENETRATION";
+const margin=pen-effectiveArmour;
+sub=`${pen}mm pen vs ${effectiveArmour}mm effective — ${margin}mm to spare`;
+}else{
+status="no-pen";icon="🛡️";cls="no-pen";
+text="NO PENETRATION";
+const deficit=effectiveArmour-pen;
+sub=`${pen}mm pen vs ${effectiveArmour}mm effective — need ${deficit}mm more`;
+}
+
+const penNeeded=effectiveArmour;
+const overMatch=pen/armour;
+const losMultiplier=(effectiveArmour/armour).toFixed(2);
+
+const el=document.getElementById("result");
+el.className="result show";
+el.innerHTML=`<div class="result-banner ${cls}">
+<div class="result-icon">${icon}</div>
+<div class="result-text ${cls}">${text}</div>
+<div class="result-sub">${sub}</div>
+</div>
+<div class="result-stats">
+<div class="rs"><div class="lb">BASE ARMOUR</div><div class="vl">${armour}<span class="unit">mm</span></div></div>
+<div class="rs"><div class="lb">IMPACT ANGLE</div><div class="vl">${clampAngle}<span class="unit">°</span></div></div>
+<div class="rs"><div class="lb">NORMALISATION</div><div class="vl">${shell.norm}<span class="unit">°</span></div></div>
+<div class="rs"><div class="lb">EFFECTIVE ANGLE</div><div class="vl">${effectiveAngle.toFixed(1)}<span class="unit">°</span></div></div>
+<div class="rs"><div class="lb">EFFECTIVE ARMOUR</div><div class="vl" style="color:${pen>=effectiveArmour&&!ricocheted?"var(--green)":"var(--red2)"}">${effectiveArmour}<span class="unit">mm</span></div></div>
+<div class="rs"><div class="lb">LOS MULTIPLIER</div><div class="vl">${losMultiplier}<span class="unit">×</span></div></div>
+<div class="rs"><div class="lb">PEN NEEDED</div><div class="vl" style="color:var(--gold)">${penNeeded}<span class="unit">mm</span></div></div>
+<div class="rs"><div class="lb">OVERMATCH RATIO</div><div class="vl">${overMatch.toFixed(2)}<span class="unit">×</span></div></div>
+</div>`;
+
+drawDiagram(armour,clampAngle,effectiveAngle,pen,effectiveArmour,ricocheted,status,type);
+}
+
+function drawDiagram(armour,angle,effAngle,pen,effArmour,ric,status,type){
+const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
+const w=cv.width,h=cv.height;
+ctx.clearRect(0,0,w,h);
+
+// Background grid
+ctx.strokeStyle="rgba(255,255,255,.03)";
+for(let i=0;i<w;i+=30){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,h);ctx.stroke()}
+for(let i=0;i<h;i+=30){ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(w,i);ctx.stroke()}
+
+const cx=w/2,cy=h/2;
+const rad=angle*Math.PI/180;
+const plateLen=120;
+const plateThick=Math.max(8,Math.min(armour/10,40));
+
+// Draw armour plate
+ctx.save();ctx.translate(cx,cy);ctx.rotate(-rad);
+ctx.fillStyle="rgba(100,100,120,.6)";
+ctx.fillRect(-plateLen,-plateThick/2,plateLen*2,plateThick);
+ctx.strokeStyle="rgba(200,200,220,.4)";ctx.lineWidth=2;
+ctx.strokeRect(-plateLen,-plateThick/2,plateLen*2,plateThick);
+// Hatch pattern
+ctx.strokeStyle="rgba(200,200,220,.1)";ctx.lineWidth=1;
+for(let i=-plateLen;i<plateLen;i+=12){
+ctx.beginPath();ctx.moveTo(i,-plateThick/2);ctx.lineTo(i+plateThick,plateThick/2);ctx.stroke();
+}
+ctx.restore();
+
+// Draw normal line (perpendicular to plate)
+ctx.save();ctx.translate(cx,cy);ctx.rotate(-rad);
+ctx.setLineDash([4,4]);ctx.strokeStyle="rgba(255,255,255,.15)";ctx.lineWidth=1;
+ctx.beginPath();ctx.moveTo(0,-100);ctx.lineTo(0,100);ctx.stroke();
+ctx.setLineDash([]);
+// Normal label
+ctx.fillStyle="rgba(255,255,255,.25)";ctx.font="9px sans-serif";ctx.textAlign="center";
+ctx.fillText("Normal",0,-108);
+ctx.restore();
+
+// Shell trajectory (comes from top)
+const shellLen=100;
+const shellColor=ric?"#ff9800":status==="pen"?"#4caf50":"#ff2222";
+ctx.save();ctx.translate(cx,cy);
+// Shell comes straight down (0° from vertical = along normal when plate is flat)
+ctx.strokeStyle=shellColor;ctx.lineWidth=2.5;
+ctx.beginPath();ctx.moveTo(0,-130);ctx.lineTo(0,-10);ctx.stroke();
+// Arrow head
+ctx.fillStyle=shellColor;
+ctx.beginPath();ctx.moveTo(0,-5);ctx.lineTo(-5,-15);ctx.lineTo(5,-15);ctx.closePath();ctx.fill();
+
+if(ric){
+// Ricochet path
+const ricAngle=rad*2;// reflection
+ctx.strokeStyle="rgba(255,152,0,.6)";ctx.lineWidth=2;ctx.setLineDash([6,4]);
+ctx.beginPath();ctx.moveTo(0,-5);
+ctx.lineTo(Math.sin(ricAngle)*80,-Math.cos(ricAngle)*80-5);
+ctx.stroke();ctx.setLineDash([]);
+}else if(status==="pen"){
+// Through penetration
+ctx.strokeStyle="rgba(76,175,80,.4)";ctx.lineWidth=2;ctx.setLineDash([4,4]);
+ctx.beginPath();ctx.moveTo(0,-5);ctx.lineTo(0,80);ctx.stroke();ctx.setLineDash([]);
+// Explosion
+ctx.fillStyle="rgba(255,200,0,.3)";
+ctx.beginPath();ctx.arc(0,40,15,0,Math.PI*2);ctx.fill();
+ctx.fillStyle="rgba(255,100,0,.2)";
+ctx.beginPath();ctx.arc(0,40,25,0,Math.PI*2);ctx.fill();
+}
+ctx.restore();
+
+// Angle arc
+ctx.save();ctx.translate(cx,cy);
+ctx.strokeStyle="rgba(255,191,0,.4)";ctx.lineWidth=1;
+ctx.beginPath();ctx.arc(0,0,35,-(Math.PI/2),-rad-(Math.PI/2),true);ctx.stroke();
+ctx.fillStyle="var(--gold)";ctx.font="bold 11px sans-serif";
+const midAng=-rad/2-Math.PI/2;
+ctx.fillText(angle+"°",Math.cos(midAng)*48,Math.sin(midAng)*48);
+ctx.restore();
+
+// Labels
+ctx.fillStyle="rgba(255,255,255,.5)";ctx.font="10px sans-serif";ctx.textAlign="left";
+ctx.fillText("Armour: "+armour+"mm",12,20);
+ctx.fillText("Angle: "+angle+"°",12,34);
+ctx.fillText("Eff: "+effArmour+"mm",12,48);
+ctx.textAlign="right";
+ctx.fillText("Shell: "+type,w-12,20);
+ctx.fillText("Pen: "+pen+"mm",w-12,34);
+
+// Result label
+ctx.textAlign="center";ctx.font="bold 12px sans-serif";
+ctx.fillStyle=shellColor;
+ctx.fillText(ric?"RICOCHET":status==="pen"?"PENETRATES":"BOUNCED",cx,h-12);
+}
+
+// Weak spots data
+const WEAKSPOTS=[
+{name:"T-80BVM",nation:"USSR",br:"11.7",spots:[
+{name:"Driver's hatch",mm:"45mm",angle:"68°",diff:"easy",detail:"Flat area on upper glacis left side, most rounds go through"},
+{name:"Lower front plate",mm:"80mm",angle:"55°",diff:"easy",detail:"Below the upper glacis, leads to ammo carousel"},
+{name:"Turret ring",mm:"65mm",angle:"0°",diff:"med",detail:"Small gap between hull and turret, disables turret rotation"},
+{name:"Turret roof",mm:"30mm",angle:"80°",diff:"hard",detail:"Vulnerable to HE overpressure from above"},
+{name:"Breach area",mm:"250mm",angle:"0°",diff:"med",detail:"Gun mantlet edges can trap shots into the breach"}
+]},
+{name:"M1A2 Abrams",nation:"USA",br:"11.7",spots:[
+{name:"Turret ring",mm:"50mm",angle:"0°",diff:"easy",detail:"Large neck area visible when hull-down, instant disable"},
+{name:"Lower front plate",mm:"38mm",angle:"55°",diff:"easy",detail:"Very weak, leads straight to hull ammo if carried"},
+{name:"Turret cheek edges",mm:"100mm",angle:"30°",diff:"med",detail:"Outer edges of turret cheeks bypass composite"},
+{name:"Commander's cupola",mm:"25mm",angle:"0°",diff:"med",detail:"Small but very thin, HE overpressure possible"},
+{name:"Hull side behind tracks",mm:"30mm",angle:"0°",diff:"easy",detail:"Side armour is paper thin, even autocannons penetrate"}
+]},
+{name:"Leopard 2A7V",nation:"Germany",br:"12.0",spots:[
+{name:"Lower front plate",mm:"35mm",angle:"50°",diff:"easy",detail:"Standard NATO weakness, thin and leads to crew/ammo"},
+{name:"Turret ring",mm:"55mm",angle:"0°",diff:"easy",detail:"Visible gap below turret, reliable two-shot kill"},
+{name:"Gun mantlet edges",mm:"120mm",angle:"10°",diff:"med",detail:"Around the main gun area, bypasses turret composite"},
+{name:"Hull roof behind turret",mm:"20mm",angle:"85°",diff:"hard",detail:"Aircraft strafing or artillery can penetrate here"},
+{name:"Driver's viewport",mm:"60mm",angle:"20°",diff:"med",detail:"Small optic on upper glacis right side"}
+]},
+{name:"Tiger II H",nation:"Germany",br:"6.7",spots:[
+{name:"Turret face flat",mm:"185mm",angle:"10°",diff:"med",detail:"Turret front is flat — most 122mm+ rounds go through"},
+{name:"Lower front plate",mm:"100mm",angle:"50°",diff:"med",detail:"~130mm effective, 85mm guns can pen at close range"},
+{name:"Turret ring",mm:"80mm",angle:"0°",diff:"easy",detail:"Where turret meets hull, very reliable weak spot"},
+{name:"Commander's cupola",mm:"40mm",angle:"0°",diff:"easy",detail:"Tall cupola on top, easy to hit and overpressure"},
+{name:"Upper glacis",mm:"150mm",angle:"50°",diff:"hard",detail:"~233mm effective, needs high-pen APHE or HEAT"}
+]},
+{name:"IS-3",nation:"USSR",br:"7.0",spots:[
+{name:"Lower front plate",mm:"110mm",angle:"55°",diff:"med",detail:"Below the pike nose, hits engine or ammo"},
+{name:"Shot trap under turret",mm:"110mm",angle:"curved",diff:"med",detail:"Curved turret base can deflect shots into hull roof"},
+{name:"Turret ring",mm:"60mm",angle:"0°",diff:"easy",detail:"Gap between pike hull and turret"},
+{name:"Commander's cupola",mm:"30mm",angle:"0°",diff:"easy",detail:"Cupola on turret roof, HE overpressure viable"},
+{name:"Pike nose joint",mm:"120mm",angle:"55°",diff:"hard",detail:"Centre line where pike halves meet, varies by angle"}
+]},
+{name:"M4A3E2 Jumbo",nation:"USA",br:"5.3",spots:[
+{name:"Machine gun port",mm:"63mm",angle:"0°",diff:"med",detail:"Hull MG opening, bypasses the 101mm front plate"},
+{name:"Lower side hull",mm:"38mm",angle:"0°",diff:"easy",detail:"Flank shots go straight through to ammo"},
+{name:"Turret roof",mm:"25mm",angle:"85°",diff:"hard",detail:"Extreme angle but HE overpressure can work"},
+{name:"Commander's cupola",mm:"50mm",angle:"0°",diff:"easy",detail:"Cupola is a reliable pen for 75mm+ guns"},
+{name:"Rear hull",mm:"38mm",angle:"0°",diff:"easy",detail:"Paper-thin rear, any shell penetrates"}
+]},
+{name:"Panther D",nation:"Germany",br:"5.3",spots:[
+{name:"Turret mantlet edges",mm:"100mm",angle:"round",diff:"med",detail:"Rounded mantlet can be penned around the edges"},
+{name:"Hull MG port",mm:"60mm",angle:"0°",diff:"easy",detail:"Small flat spot on glacis, 76mm APHE goes through"},
+{name:"Lower side hull",mm:"40mm",angle:"0°",diff:"easy",detail:"Thin side armour, trivial flank shots"},
+{name:"Turret side",mm:"45mm",angle:"25°",diff:"easy",detail:"Very thin turret sides when angled"},
+{name:"Upper glacis",mm:"80mm",angle:"55°",diff:"hard",detail:"~140mm effective, resists most same-BR guns frontally"}
+]},
+{name:"T-34-85",nation:"USSR",br:"5.3",spots:[
+{name:"Turret cheeks",mm:"90mm",angle:"0°",diff:"easy",detail:"Flat turret face, most guns at 5.3 penetrate easily"},
+{name:"Hull front plate",mm:"45mm",angle:"60°",diff:"med",detail:"~90mm effective, angled but thin base armour"},
+{name:"Driver's hatch",mm:"75mm",angle:"60°",diff:"med",detail:"Small hatch area, slightly less sloped than hull"},
+{name:"Turret ring",mm:"45mm",angle:"0°",diff:"easy",detail:"Below turret junction, instant crew knockout"},
+{name:"Hull sides",mm:"45mm",angle:"0°",diff:"easy",detail:"Paper-thin sides, any flanking shot is lethal"}
+]},
+{name:"Challenger 2 TES",nation:"Britain",br:"11.0",spots:[
+{name:"Lower front plate",mm:"50mm",angle:"60°",diff:"easy",detail:"Standard NATO LFP weakness"},
+{name:"Turret ring",mm:"60mm",angle:"0°",diff:"easy",detail:"Gap below turret mantlet"},
+{name:"Gun mantlet",mm:"80mm",angle:"0°",diff:"med",detail:"Area around the gun itself is thinner than cheeks"},
+{name:"Driver's port",mm:"60mm",angle:"30°",diff:"med",detail:"Viewport area on upper glacis"},
+{name:"Hull roof",mm:"20mm",angle:"88°",diff:"hard",detail:"Aircraft bombs and artillery"}
+]},
+{name:"Merkava Mk.4M",nation:"Israel",br:"11.7",spots:[
+{name:"Lower front plate",mm:"50mm",angle:"55°",diff:"easy",detail:"Below composite array, leads to engine (front-mounted)"},
+{name:"Turret ring",mm:"50mm",angle:"0°",diff:"easy",detail:"Visible turret neck area"},
+{name:"Turret sides",mm:"50mm",angle:"15°",diff:"easy",detail:"Beyond the frontal composite wedges, very thin"},
+{name:"Upper glacis corners",mm:"40mm",angle:"45°",diff:"med",detail:"Where composite coverage ends on hull sides"},
+{name:"Turret roof",mm:"30mm",angle:"80°",diff:"hard",detail:"Vulnerable to top-attack ATGMs"}
+]}
+];
+
+const wsEl=document.getElementById("weakspots");
+wsEl.innerHTML=WEAKSPOTS.map((v,i)=>`<div class="ws-card" id="ws${i}">
+<div class="ws-header" onclick="document.getElementById('ws${i}').classList.toggle('open')">
+<span class="ws-flag">${FLAGS[v.nation]||""}</span>
+<span class="ws-name">${v.name}</span>
+<span class="ws-br">${v.br}</span>
+<span class="ws-arrow">▶</span>
+</div>
+<div class="ws-body">${v.spots.map(s=>`<div class="ws-spot">
+<div class="ws-dot ${s.diff}"></div>
+<div class="ws-spot-info"><div class="ws-spot-name">${s.name} — ${s.mm} @ ${s.angle}</div><div class="ws-spot-detail">${s.detail}</div></div>
+</div>`).join("")}</div></div>`).join("");
+
+const FLAGS={USA:"🇺🇸",Germany:"🇩🇪",USSR:"🇷🇺",Britain:"🇬🇧",Japan:"🇯🇵",France:"🇫🇷",Italy:"🇮🇹",Sweden:"🇸🇪",Israel:"🇮🇱",China:"🇨🇳"};
+
+// Auto-calculate on any input change
+["armour","angle","shellType","shellPen"].forEach(id=>{
+document.getElementById(id).addEventListener("input",calculate);
+document.getElementById(id).addEventListener("change",calculate);
+});
+calculate();
+</script>
+</body>
+</html>
